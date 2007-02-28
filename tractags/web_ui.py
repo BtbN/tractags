@@ -1,12 +1,21 @@
 from trac.core import *
 from trac.web.main import IRequestHandler
 from trac.web.chrome import ITemplateProvider, INavigationContributor
+from trac.web.api import IStreamFilter, IRequestFilter
 from trac.util import Markup
 from StringIO import StringIO
 from trac.wiki.web_ui import WikiModule
 from trac.wiki.formatter import wiki_to_oneliner
+from genshi.builder import tag
+from genshi.core import START, END
 from tractags.expr import Expression
+
+from api import TagEngine
+
 import re
+
+
+
 try:
     set = set
 except:
@@ -67,6 +76,51 @@ class TagsWikiModule(WikiModule):
         if result[0] == 'wiki.cs':
             return 'tagswiki.cs', None
         return result
+
+class TagsWikiFilter(Component):
+
+    implements(IStreamFilter, IRequestFilter)
+    
+    # IStreamFilter methods
+    def match_stream(self, req, stream, method):
+        return req.path_info.startswith('/wiki') and \
+               req.args.get('action') == 'edit' and \
+               method == 'xhtml'
+               
+    def process_stream(self, req, stream, method):
+        page_name = req.path_info[6:] or 'WikiStart'
+        stage = 1
+        elm = tag.div([tag.label('Tag under: (', 
+                                 tag.a('view all tags', href=req.href.tags()),
+                                  ')', 
+                                  for_='tags'), 
+                       tag.br(), 
+                       tag.input(title='Comma separated list of tags',
+                                 type='text',
+                                 id='tags',
+                                 size='30',
+                                 name='tags',
+                                 value=', '.join(TagEngine(self.env).tagspace.wiki.get_tags([page_name]))
+                                ),
+                      ], class_='field')
+                      
+        for kind, data, pos in stream:            
+            yield kind, data, pos
+            if stage == 1 and \
+               kind is START and \
+               data[0].localname == 'input' and \
+               data[1].get('id') == 'comment':
+                stage = 2
+            elif stage == 2 and \
+                 kind is END and \
+                 data.localname == 'div':
+                for e in elm.generate():
+                    yield e
+                stage = None
+            
+    # IRequestFilter methods
+    def pre_process_request(self, req, handler):
+        
 
 class TagsModule(Component):
     """ Serve a /tags namespace. Top-level displays tag cloud, sub-levels
