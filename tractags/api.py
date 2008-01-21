@@ -11,11 +11,14 @@ from trac.core import *
 from trac.resource import Resource
 from tractags.query import *
 from trac.perm import IPermissionRequestor, PermissionError
+from trac.web.chrome import add_warning
 from trac.wiki.model import WikiPage
 from trac.util.text import to_unicode
 from trac.util.compat import set, groupby
 from trac.resource import IResourceManager, get_resource_url, \
     get_resource_description
+from genshi import Markup
+from genshi.builder import tag as tag_
 
 
 class InvalidTagRealm(TracError):
@@ -94,6 +97,9 @@ class DefaultTagProvider(Component):
             if self.check_permission(req.perm(resource), 'view'):
                 resources[resource.id] = resource
 
+        if not resources:
+          return
+
         args = [self.realm] + list(resources)
         # XXX Is this going to be excruciatingly slow?
         sql = 'SELECT DISTINCT name, tag FROM tags WHERE tagspace=%%s AND ' \
@@ -120,24 +126,32 @@ class DefaultTagProvider(Component):
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
         db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        cursor.execute('DELETE FROM tags WHERE tagspace=%s AND name=%s',
-                       (self.realm, resource.id))
-        for tag in tags:
-            cursor.execute('INSERT INTO tags (tagspace, name, tag) '
-                           'VALUES (%s, %s, %s)',
-                           (self.realm, resource.id, tag))
-        db.commit()
+        try:
+            cursor = db.cursor()
+            cursor.execute('DELETE FROM tags WHERE tagspace=%s AND name=%s',
+                           (self.realm, resource.id))
+            for tag in tags:
+                cursor.execute('INSERT INTO tags (tagspace, name, tag) '
+                               'VALUES (%s, %s, %s)',
+                               (self.realm, resource.id, tag))
+            db.commit()
+        except:
+            db.rollback()
+            raise
 
     def remove_resource_tags(self, req, resource):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
         db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        cursor.execute('DELETE FROM tags WHERE tagspace=%s AND name=%s',
-                       (self.realm, resource.id))
-        db.commit()
+        try:
+            cursor = db.cursor()
+            cursor.execute('DELETE FROM tags WHERE tagspace=%s AND name=%s',
+                           (self.realm, resource.id))
+            db.commit()
+        except:
+            db.rollback()
+            raise
 
 
 class TagSystem(Component):
@@ -168,6 +182,13 @@ class TagSystem(Component):
             'realm': realm_handler,
             }
         all_attribute_handlers.update(attribute_handlers or {})
+        if re.search(r'(expression|tagspace|tagspaces|operation|showheadings'
+                     '|expression)=', query):
+            message = Markup('You seem to be using an old Tag query. '
+                             'Try using the <a href="%s">new syntax</a> in your '
+                             '<strong>ListTagged</strong> macro.',
+                             req.href('tags'))
+            add_warning(req, message)
         query = Query(query, attribute_handlers=all_attribute_handlers)
 
         query_tags = set(query.terms())
@@ -225,7 +246,7 @@ class TagSystem(Component):
         page = WikiPage(self.env, resource.id)
         if page.exists:
             return get_resource_url(self.env, page.resource, href, **kwargs)
-        return href('tags', "'%s'" % unicode(resource.id).replace("'", "\\'"))
+        return href("tags/'%s'" % unicode(resource.id).replace("'", "\\'"))
 
     def get_resource_description(self, resource, format='default', context=None,
                                  **kwargs):

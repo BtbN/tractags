@@ -52,7 +52,7 @@ class WikiTagInterface(Component):
         if req and 'TAGS_MODIFY' in req.perm(page.resource) \
                 and req.path_info.startswith('/wiki') and 'save' in req.args:
             if self._update_tags(req, page) and \
-                    page.text == req.args.get('text') and \
+                    page.text == page.old_text and \
                     page.readonly == int('readonly' in req.args):
                 req.redirect(get_resource_url(self.env, page.resource, req.href, version=None))
         return []
@@ -96,7 +96,7 @@ class WikiTagInterface(Component):
                 Context.from_request(req, resource), resource)
             li.append(tag.li(anchor, ' '))
 
-        insert = tag.ul(class_='tags')(tag.lh('Tags'), li)
+        insert = tag.ul(class_='tags')(tag.li('Tags', class_='header'), li)
         return stream | Transformer('//div[@class="buttons"]').before(insert)
 
     def _update_tags(self, req, page):
@@ -132,10 +132,10 @@ class TagWikiSyntaxProvider(Component):
                lambda f, n, m: self._format_tagged(f,
                                     m.group('tlpexpr'),
                                     m.group('tlptitle')))
-        yield (r'''tag(?:ged)?:(?P<texpr>(?:'.*?'|".*?"|\S)+)''',
+        yield (r'''(?P<tagsyn>tag(?:ged)?):(?P<texpr>(?:'.*?'|".*?"|\S)+)''',
                lambda f, n, m: self._format_tagged(f,
                                     m.group('texpr'),
-                                    'tagged:' + m.group('texpr')))
+                                    '%s:%s' % (m.group('tagsyn'), m.group('texpr'))))
 
     def get_link_resolvers(self):
         return []
@@ -143,16 +143,8 @@ class TagWikiSyntaxProvider(Component):
     def _format_tagged(self, formatter, target, label):
         if label:
             href = formatter.context.href
-            if target[0] in '\'"':
-                q = target.strip('\'"')
-                target = None
-            else:
-                q = None
-            url = get_resource_url(
-                self.env, Resource('tag', target),
-                formatter.context.href
-                )
-            return tag.a(label, href=href(url, q=q))
+            url = get_resource_url(self.env, Resource('tag', target), href)
+            return tag.a(label, href=url)
         return render_resource_link(self.env, formatter.context,
                                     Resource('tag', target))
 
