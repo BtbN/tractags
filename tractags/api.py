@@ -366,10 +366,10 @@ class TagSystem(Component):
 
     def _populate_provider_map(self):
         if self._realm_provider_map is None:
-            self._realm_provider_map = {}
-            for provider in self.tag_providers:
-                self._realm_provider_map[provider.get_taggable_realm()] = \
-                    provider
+            # Only use the map once it is fully initialized.
+            map = dict((provider.get_taggable_realm(), provider)
+                       for provider in self.tag_providers)
+            self._realm_provider_map = map
 
     def _get_provider(self, realm):
         self._populate_provider_map()
