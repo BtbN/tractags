@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2011,2012 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -270,22 +270,24 @@ class TagSystem(Component):
         provider.reparent_resource_tags(req, old_resource, resource, comment)
 
     def replace_tag(self, req, old_tags, new_tag=None, comment=u'',
-                    allow_delete=False):
+                    allow_delete=False, filter=[]):
         """Replace one or more tags in all resources it exists/they exist in.
 
-        Tag deletion is optionally allowed for convenience as well.
+        Tagged resources may be filtered by realm and tag deletion is
+        optionally allowed for convenience as well.
         """
         # Provide list regardless of attribute type.
-        for resource_provider in self.tag_providers:
+        for provider in [p for p in self.tag_providers
+                         if not filter or p.get_taggable_realm() in filter]:
             for resource, tags in \
-                    resource_provider.get_tagged_resources(req, old_tags):
+                    provider.get_tagged_resources(req, old_tags):
                 old_tags = set(old_tags)
                 if old_tags.issuperset(tags) and not new_tag:
                     if allow_delete:
                         self.delete_tags(req, resource, None, comment)
                 else:
                     s_tags = set(tags)
-                    eff_tags = s_tag - old_tags
+                    eff_tags = s_tags - old_tags
                     if new_tag:
                         eff_tags.add(new_tag)
                     # Prevent to touch resources without effective change.

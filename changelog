@@ -67,7 +67,7 @@ tractags-0.7 (not yet released)
  * #7787: Add i18n support
  * #8638: Should implement wiki_page_renamed of IWikiChangeListener interface
  * #9058: Let `TAGS_MODIFY` inherited `TAGS_VIEW` for intuitive permissions
- * #9061: Mass tag replacement functionality
+ * #9061: Mass tag replacement functionality with tagged realm filtering
  * #9063: Allow excluding realms from queries by default
  * #9064: More rendering options for ListTagged macro and tag-handler
  * #9194: Add unittest and functional test infrastructure

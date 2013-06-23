@@ -14,6 +14,26 @@
   </head>
   <body>
     <h2>Manage Tags</h2>
+     <form id="filter" method="get" action="">
+       <fieldset id="filters">
+         <legend>Filters</legend>
+         <table summary="Tag filters">
+           <th scope="row">Realms</th>
+           <td class="filter">
+             <label class="control" py:for="realm in tag_realms">
+               <input type="checkbox" name="${realm.name}"
+                      checked="${realm.checked or None}"/> ${realm.name}
+             </label>
+           </td>
+           <td>
+             <div class="inlinebuttons">
+               <input type="submit" name="update" value="${_('Update')}" />
+             </div>
+           </td>
+         </table>
+       </fieldset>
+     </form>
+
     <form id="tagchange" class="mod" method="post" action="">
       <fieldset>
         <div class="system-message" py:if="error">
@@ -63,6 +83,9 @@
         </div>
       </fieldset>
       <div class="buttons">
+        <!--! Preserve previous realm filter selection -->
+        <input py:for="realm in checked_realms"
+               type="hidden" name="${realm}" value="1" />
         <input type="submit" value="${_('Change')}" />
       </div>
     </form>
