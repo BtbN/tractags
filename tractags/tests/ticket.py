@@ -90,6 +90,20 @@ class TicketTagProviderTestCase(unittest.TestCase):
 
     # Tests
 
+    def test_get_tagged_resources(self):
+        # No tags, no restrictions, all resources.
+        self.assertEquals(
+            [r for r in
+             self.provider.get_tagged_resources(self.req, None)][0][1],
+            set(self.tags))
+        # Force fine-grained perm-check.
+        self.provider.fast_permcheck = False
+        self.assertEquals(
+            [r for r in
+             self.provider.get_tagged_resources(self.req,
+                                                set(self.tags))][0][1],
+            set(self.tags))
+
     def test_get_tags(self):
         resource = Resource('ticket', 2)
         self.assertRaises(ResourceNotFound, self.provider.get_resource_tags,

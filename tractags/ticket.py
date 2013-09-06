@@ -88,9 +88,9 @@ class TicketTagProvider(DefaultTagProvider):
             args = [self.realm] + list(tags)
             cursor.execute(sql, args)
             for name, tags in groupby(cursor, lambda row: row[0]):
+                resource = Resource(self.realm, name)
                 if self.fast_permcheck or \
-                        self._check_permission(req, name, 'view'):
-                    resource = Resource(self.realm, name)
+                        self._check_permission(req, resource, 'view'):
                     yield resource, set([tag[1] for tag in tags])
 
     def get_resource_tags(self, req, resource):
