@@ -160,8 +160,7 @@ class TagWikiMacros(TagTemplateProvider):
         self.realms = realms
 
         if name == 'TagCloud':
-            args.append(' or '.join(['realm:%s' % r for r in realms]))
-            all_tags = tag_system.get_all_tags(req, ' '.join(args))
+            all_tags = tag_system.get_all_tags(req, realms=realms)
             mincount = 'mincount' in kw and kw['mincount'] or None
             return self.render_cloud(req, all_tags,
                                      caseless_sort=self.caseless_sort,

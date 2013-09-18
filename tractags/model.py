@@ -1,19 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2012 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
 
 from trac.resource import Resource
-from trac.util.compat import groupby
+from trac.wiki.web_ui import WikiModule
+from trac.util.compat import groupby, set
 
 
 # Public functions (not yet)
 
 
 # Utility functions
+
+def tag_frequency(env, realms, db=None):
+    """Return tags and numbers of their occurrence."""
+    db = _get_db(env, db)
+    cursor = db.cursor()
+    filter = ' OR '.join(["tagspace='%s'" % r for r in realms])
+    if 'wiki' in realms and \
+            env.config.getbool('tags', 'query_exclude_wiki_templates'):
+        like_templates = ''.join(
+            ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
+        filter = '(%s) AND (%s)' % (filter,
+                                    ' '.join(['name NOT',
+                                              db.like() % like_templates]))
+    cursor.execute("""
+        SELECT tag,count(tag)
+          FROM tags%s
+         GROUP BY tag
+    """ % (filter and ' WHERE %s' % filter or ''))
+    for row in cursor:
+        yield (row[0], row[1])
 
 def tag_resource(env, realm, id, new_id=None, tags=None, db=None):
     """Change recorded tags for a Trac resource.

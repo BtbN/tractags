@@ -359,6 +359,37 @@ class Query(QueryNode):
                 raise NotImplementedError
         return _convert(self)
 
+    def as_sql(self, col_name):
+        """Convert Query to a SQL expression.
+
+        The table column name must be given as argument.
+
+        >>> Query('foo bar').as_sql('c')
+        "c='foo' AND c='bar'"
+        >>> Query('foo bar or baz').as_sql('c')
+        "c='foo' AND c='bar' OR c='baz'"
+        >>> Query('foo -bar or baz').as_sql('c')
+        "c='foo' AND NOT c='bar' OR c='baz'"
+        """
+        def _convert(node):
+            if not node or not node.type or node.type == node.NULL:
+                return ''
+            if node.type == node.AND:
+                return '%s AND %s' % (_convert(node.left),
+                                   _convert(node.right))
+            elif node.type == node.OR:
+                return '%s OR %s' % (_convert(node.left),
+                                   _convert(node.right))
+            elif node.type == node.NOT:
+                return 'NOT %s' % _convert(node.left)
+            elif node.type == node.TERM:
+                return "%s='%s'" % (col_name, node.value)
+            elif node.type == node.ATTR:
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
+        return _convert(self)
+
     def reduce(self, reduce):
         """Pass each TERM node through `Reducer`."""
         def _reduce(node):

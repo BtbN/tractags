@@ -23,8 +23,9 @@ from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator, \
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import DefaultTagProvider, TagSystem, _
+from tractags.api import Counter, DefaultTagProvider, TagSystem, _
 from tractags.macros import TagTemplateProvider
+from tractags.query import Query
 
 
 class WikiTagProvider(DefaultTagProvider):
