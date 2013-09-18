@@ -297,13 +297,14 @@ class TagSystem(Component):
 
     # Internal variables
     _realm = re.compile('realm:(\w+)', re.U | re.I)
-    _tag_split = re.compile('[,\s]+')
     _realm_provider_map = None
 
     def __init__(self):
         # Bind the 'tractags' catalog to the specified locale directory.
         locale_dir = resource_filename(__name__, 'locale')
         add_domain(self.env.path, locale_dir)
+
+        self._populate_provider_map()
 
     # Public methods
 
@@ -444,11 +445,6 @@ class TagSystem(Component):
                  # Handle old style tag providers gracefully.
                 provider.set_resource_tags(req, resource, current_tags)
 
-    def split_into_tags(self, text):
-        """Split plain text into tags."""
-        return set([tag.strip() for tag in self._tag_split.split(text)
-                   if tag.strip()])
-
     def describe_tagged_resource(self, req, resource):
         """Return a short description of a taggable resource."""
         provider = self._get_provider(resource.realm)
@@ -502,7 +498,6 @@ class TagSystem(Component):
             self._realm_provider_map = map
 
     def _get_provider(self, realm):
-        self._populate_provider_map()
         try:
             return self._realm_provider_map[realm]
         except KeyError:

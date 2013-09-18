@@ -20,7 +20,8 @@ from trac.util import get_reporter_id
 from trac.util.compat import all, any, groupby
 from trac.util.text import to_unicode
 
-from tractags.api import DefaultTagProvider, ITagProvider, TagSystem, _
+from tractags.api import DefaultTagProvider, ITagProvider, _
+from tractags.util import split_into_tags
 
 
 class TicketTagProvider(DefaultTagProvider):
@@ -115,7 +116,6 @@ class TicketTagProvider(DefaultTagProvider):
             # Avoid unnecessary ticket changes, considering comments below.
             if tag_set != all:
                 # Will only alter tags in 'keywords' ticket field.
-                split_into_tags = TagSystem(self.env).split_into_tags
                 keywords = split_into_tags(tkt['keywords'])
                 # Assume, that duplication is depreciated and consolitation
                 # wanted to primarily affect 'keywords' ticket field.
@@ -201,8 +201,8 @@ class TicketTagProvider(DefaultTagProvider):
             SELECT *
               FROM (SELECT id, %s, %s AS std_fields
                       FROM ticket%s) s
+             WHERE std_fields != '' ORDER BY id
             """ % (','.join(self.fields), db.concat(*fields), ignore)
-        sql += " WHERE std_fields != '' ORDER BY id"
         self.env.log.debug(sql)
         # Obtain cursors for reading tickets and altering tags db table.
         # DEVEL: Use appropriate cursor typs from Trac 1.0 db API.
@@ -214,7 +214,6 @@ class TicketTagProvider(DefaultTagProvider):
         self.log.debug('ENTER_TAG_DB_CHECKOUT')
         ro_cursor.execute(sql)
         self.log.debug('EXIT_TAG_DB_CHECKOUT')
-        split_into_tags = TagSystem(self.env).split_into_tags
         self.log.debug('ENTER_TAG_SYNC')
 
         for row in ro_cursor:
@@ -281,6 +280,5 @@ class TicketTagProvider(DefaultTagProvider):
             self.log.debug('EXIT_TAG_GRID_MAKER_UNCACHED')
 
     def _ticket_tags(self, ticket):
-        split_into_tags = TagSystem(self.env).split_into_tags
         return split_into_tags(
             ' '.join(filter(None, [ticket[f] for f in self.fields])))

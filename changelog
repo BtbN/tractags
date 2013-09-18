@@ -27,6 +27,7 @@ tractags-0.7 (not yet released)
    * mirroring ticket tags into normalized `tags` db table
    * caching `get_tagged_resources` for tickets
    * optionally skipping fine-grained view permission tests for tickets
+   * using resource-less tag counters for tags-only tasks (i.e. tag cloud)
  * #4996: TagsPlugin fails on upgrading
  * #5345: TracError: The Trac Environment needs to be upgraded
  * #5575: UnicodeEncodeError on Japanese tag

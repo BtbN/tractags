@@ -26,6 +26,7 @@ from trac.wiki.web_ui import WikiModule
 from tractags.api import Counter, DefaultTagProvider, TagSystem, _
 from tractags.macros import TagTemplateProvider
 from tractags.query import Query
+from tractags.util import split_into_tags
 
 
 class WikiTagProvider(DefaultTagProvider):
@@ -46,7 +47,7 @@ class WikiTagProvider(DefaultTagProvider):
 
     def get_tagged_resources(self, req, tags, filter=None):
         if self.exclude_templates:
-            db =  self.env.get_db_cnx()
+            db = self.env.get_db_cnx()
             like_templates = ''.join(
                 ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
             filter = (' '.join(['name NOT', db.like() % like_templates]),)
@@ -183,7 +184,7 @@ class WikiTagInterface(TagTemplateProvider):
 
     def _update_tags(self, req, page):
         tag_system = TagSystem(self.env)
-        newtags = tag_system.split_into_tags(req.args.get('tags', ''))
+        newtags = split_into_tags(req.args.get('tags', ''))
         oldtags = tag_system.get_tags(req, page.resource)
 
         if oldtags != newtags:
