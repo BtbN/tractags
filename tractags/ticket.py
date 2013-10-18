@@ -21,7 +21,7 @@ from trac.util.compat import all, any, groupby
 from trac.util.text import to_unicode
 
 from tractags.api import DefaultTagProvider, ITagProvider, _
-from tractags.util import split_into_tags
+from tractags.util import get_db_exc, split_into_tags
 
 
 class TicketTagProvider(DefaultTagProvider):
@@ -50,7 +50,16 @@ class TicketTagProvider(DefaultTagProvider):
     use_cache = False
 
     def __init__(self):
-        self._fetch_tkt_tags()
+        db = self.env.get_db_cnx()
+        try:
+            self._fetch_tkt_tags(db)
+            db.commit()
+        except get_db_exc(self.env).IntegrityError, e:
+            self.log.warn('tags for ticket already exist: %s', to_unicode(e))
+            db.rollback()
+        except:
+            db.rollback()
+            raise
         cfg = self.config
         cfg_key = 'permission_policies'
         default_policies = cfg.defaults().get('trac', {}).get(cfg_key)
@@ -188,11 +197,10 @@ class TicketTagProvider(DefaultTagProvider):
 
     # Private methods
 
-    def _fetch_tkt_tags(self):
+    def _fetch_tkt_tags(self, db):
         """Transfer all relevant ticket attributes to tags db table."""
         # Initial sync is done by forced, stupid one-way mirroring.
         # Data aquisition for this utilizes the known ticket tags query.
-        db = self.env.get_db_cnx()
         fields = ["COALESCE(%s, '')" % f for f in self.fields]
         ignore = ''
         if self.ignore_closed_tickets:
@@ -224,7 +232,6 @@ class TicketTagProvider(DefaultTagProvider):
                        (tagspace, name, tag)
                 VALUES (%s, %s, %s)
                 """, [(self.realm, str(tkt_id), tag) for tag in ticket_tags])
-        db.commit()
         self.log.debug('EXIT_TAG_SYNC')
 
     try:

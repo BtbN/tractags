@@ -17,3 +17,17 @@ def split_into_tags(text):
     return set([tag.strip() for tag in _TAG_SPLIT.split(text)
                if tag.strip()])
 
+
+def get_db_exc(env):
+    if hasattr(env, 'db_exc'):
+        return env.db_exc
+    database = env.config.get('trac', 'database')
+    if database.startswith('sqlite:'):
+        from trac.db.sqlite_backend import sqlite
+        return sqlite
+    if database.startswith('postgres:'):
+        from trac.db.postgres_backend import psycopg
+        return psycopg
+    if database.startswith('mysql:'):
+        from trac.db.mysql_backend import MySQLdb
+        return MySQLdb
