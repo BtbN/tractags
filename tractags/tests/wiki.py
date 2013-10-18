@@ -13,8 +13,10 @@ import unittest
 
 try:
     from babel import Locale
+    locale_en = Locale.parse('en_US')
 except ImportError:
     Locale = None
+    locale_en = None
 
 from datetime import datetime
 
@@ -212,7 +214,7 @@ def wiki_setup(tc):
 
     req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
                authname='anonymous', perm=MockPerm(), tz=utc, args={},
-               locale=Locale.parse('en_US') if Locale else None)
+               locale=locale_en)
     tc.env.href = req.href
     tc.env.abs_href = req.abs_href
     tc.context = Context.from_request(req)
