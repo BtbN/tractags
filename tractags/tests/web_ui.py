@@ -27,16 +27,15 @@ class TagRequestHandlerTestCase(unittest.TestCase):
         self.env = EnvironmentStub(
                 enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
-
-        self.tag_s = TagSystem(self.env)
-        self.tag_rh = TagRequestHandler(self.env)
-
         self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting a clean setup.
         self._revert_tractags_schema_init()
         setup.upgrade_environment(self.db)
+
+        self.tag_s = TagSystem(self.env)
+        self.tag_rh = TagRequestHandler(self.env)
 
         perms = PermissionSystem(self.env)
         # Revoke default permissions, because more diversity is required here.

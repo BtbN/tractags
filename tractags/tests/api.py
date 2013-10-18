@@ -34,13 +34,13 @@ class TagSystemTestCase(unittest.TestCase):
         self.req = Mock()
 
         self.actions = ['TAGS_ADMIN', 'TAGS_MODIFY', 'TAGS_VIEW']
-        self.tag_s = tractags.api.TagSystem(self.env)
         self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting default permissions inserted.
         self._revert_tractags_schema_init()
         setup.upgrade_environment(self.db)
+        self.tag_s = tractags.api.TagSystem(self.env)
 
     def tearDown(self):
         self.db.close()

@@ -115,17 +115,16 @@ class WikiTagProviderTestCase(unittest.TestCase):
         self.env = EnvironmentStub(default_data=True,
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
-        self.perms = PermissionSystem(self.env)
-
-        self.tag_s = TagSystem(self.env)
-        self.tag_wp = WikiTagProvider(self.env)
-
         self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is partially setup with enabled component.
         #   Revert these changes for getting a clean setup.
         self._revert_tractags_schema_init()
         setup.upgrade_environment(self.db)
+
+        self.perms = PermissionSystem(self.env)
+        self.tag_s = TagSystem(self.env)
+        self.tag_wp = WikiTagProvider(self.env)
 
         cursor = self.db.cursor()
         # Populate table with initial test data.
