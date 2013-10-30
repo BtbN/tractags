@@ -204,23 +204,34 @@ class TicketTagProvider(DefaultTagProvider):
         fields = ["COALESCE(%s, '')" % f for f in self.fields]
         ignore = ''
         if self.ignore_closed_tickets:
-            ignore = " WHERE status != 'closed'"
+            ignore = " AND status != 'closed'"
         sql = """
             SELECT *
               FROM (SELECT id, %s, %s AS std_fields
-                      FROM ticket%s) s
-             WHERE std_fields != '' ORDER BY id
-            """ % (','.join(self.fields), db.concat(*fields), ignore)
+                      FROM ticket AS tkt
+                     WHERE NOT EXISTS (SELECT * FROM tags
+                                       WHERE tagspace=%%s AND name=%s)
+                     %s) AS s
+             WHERE std_fields != ''
+             ORDER BY id
+            """ % (','.join(self.fields), db.concat(*fields),
+                   db.cast('tkt.id', 'text'), ignore)
         self.env.log.debug(sql)
         # Obtain cursors for reading tickets and altering tags db table.
         # DEVEL: Use appropriate cursor typs from Trac 1.0 db API.
         ro_cursor = db.cursor()
         rw_cursor = db.cursor()
-        # Delete all previous entries for 'ticket' tagspace.
-        rw_cursor.execute('DELETE FROM tags WHERE tagspace=%s', (self.realm,))
+        # Delete tags for non-existent ticket
+        rw_cursor.execute("""
+            DELETE FROM tags
+             WHERE tagspace=%%s
+               AND NOT EXISTS (SELECT * FROM ticket AS tkt
+                               WHERE tkt.id=%s%s)
+            """ % (db.cast('tags.name', 'int'), ignore),
+            (self.realm,))
 
         self.log.debug('ENTER_TAG_DB_CHECKOUT')
-        ro_cursor.execute(sql)
+        ro_cursor.execute(sql, (self.realm,))
         self.log.debug('EXIT_TAG_DB_CHECKOUT')
         self.log.debug('ENTER_TAG_SYNC')
 
