@@ -12,6 +12,7 @@ from trac.env import IEnvironmentSetupParticipant
 
 from tractags import db_default
 from tractags.api import _
+from tractags.ticket import TicketTagProvider
 
 
 class TagSetup(Component):
@@ -75,6 +76,10 @@ class TagSetup(Component):
             """, (db_default.schema_version,))
         self.log.info("Upgraded TracTags db schema from version %d to %d"
                       % (schema_ver, db_default.schema_version))
+
+        TicketTagProvider(self.env)._fetch_tkt_tags(db)
+        self.log.info("Synchronized ticket attributes to tags table")
+
         db.commit()
 
     # Internal methods
