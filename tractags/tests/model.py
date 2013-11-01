@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2012 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -27,6 +27,7 @@ class TagModelTestCase(unittest.TestCase):
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
         self.perms = PermissionSystem(self.env)
+        self.req = Mock(authname='editor')
 
         self.check_perm = WikiTagProvider(self.env).check_permission
         self.db = self.env.get_db_cnx()
@@ -56,6 +57,7 @@ class TagModelTestCase(unittest.TestCase):
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
         cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
         cursor.execute("DELETE FROM system WHERE name='tags_version'")
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
@@ -99,35 +101,35 @@ class TagModelTestCase(unittest.TestCase):
     def test_reparent(self):
         res_id = 'TaggedPage'
         old_res_id = 'WikiStart'
-        tag_resource(self.env, self.realm, old_res_id, res_id)
+        tag_resource(self.env, self.req, self.realm, old_res_id, res_id)
         self.assertEquals(dict(TaggedPage=set(['tag1'])), self._tags())
 
     def test_tag_changes(self):
         # Add previously untagged resource.
         res_id = 'TaggedPage'
         tags = set(['tag1'])
-        tag_resource(self.env, self.realm, res_id, tags=tags)
+        tag_resource(self.env, self.req, self.realm, res_id, tags=tags)
         self.assertEquals(dict(TaggedPage=tags, WikiStart=set(['tag1'])),
                           self._tags())
         # Add new tag to already tagged resource.
         res_id = 'WikiStart'
         tags = set(['tag1', 'tag2'])
-        tag_resource(self.env, self.realm, res_id, tags=tags)
+        tag_resource(self.env, self.req, self.realm, res_id, tags=tags)
         self.assertEquals(dict(TaggedPage=set(['tag1']), WikiStart=tags),
                           self._tags())
         # Exchange tags for already tagged resource.
         tags = set(['tag1', 'tag3'])
-        tag_resource(self.env, self.realm, res_id, tags=tags)
+        tag_resource(self.env, self.req, self.realm, res_id, tags=tags)
         self.assertEquals(dict(TaggedPage=set(['tag1']), WikiStart=tags),
                           self._tags())
         # Delete a subset of tags for already tagged resource.
         tags = set(['tag3'])
-        tag_resource(self.env, self.realm, res_id, tags=tags)
+        tag_resource(self.env, self.req, self.realm, res_id, tags=tags)
         self.assertEquals(dict(TaggedPage=set(['tag1']), WikiStart=tags),
                           self._tags())
         # Empty tag iterable deletes all resource tag references.
         tags = tuple()
-        tag_resource(self.env, self.realm, res_id, tags=tags)
+        tag_resource(self.env, self.req, self.realm, res_id, tags=tags)
         self.assertEquals(dict(TaggedPage=set(['tag1'])), self._tags())
 
 

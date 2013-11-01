@@ -31,7 +31,7 @@ class TagSystemTestCase(unittest.TestCase):
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
         self.perms = PermissionSystem(self.env)
-        self.req = Mock()
+        self.req = Mock(authname='editor')
 
         self.actions = ['TAGS_ADMIN', 'TAGS_MODIFY', 'TAGS_VIEW']
         self.db = self.env.get_db_cnx()
@@ -53,6 +53,7 @@ class TagSystemTestCase(unittest.TestCase):
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
         cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
         cursor.execute("DELETE FROM system WHERE name='tags_version'")
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
@@ -84,7 +85,7 @@ class TagSystemTestCase(unittest.TestCase):
     def test_set_tags(self):
         resource = Resource('wiki', 'WikiStart')
         tags = ['tag1']
-        self.req.perm = PermissionCache(self.env, username='authenticated')
+        self.req.perm = PermissionCache(self.env, username='editor')
         # Shouldn't raise an error with appropriate permission.
         self.tag_s.set_tags(self.req, resource, tags)
 

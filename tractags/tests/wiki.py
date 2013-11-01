@@ -134,7 +134,7 @@ class WikiTagProviderTestCase(unittest.TestCase):
             VALUES ('wiki', 'WikiStart', 'tag1')
         """)
 
-        self.req = Mock()
+        self.req = Mock(authname='editor')
         # Mock an anonymous request.
         self.req.perm = PermissionCache(self.env)
         self.realm = 'wiki'
@@ -151,6 +151,7 @@ class WikiTagProviderTestCase(unittest.TestCase):
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
         cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
         cursor.execute("DELETE FROM system WHERE name='tags_version'")
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
@@ -183,9 +184,20 @@ class WikiTagProviderTestCase(unittest.TestCase):
 
     def test_set_tags(self):
         resource = Resource('wiki', 'TaggedPage')
-        self.req.perm = PermissionCache(self.env, username='user')
+        self.req.perm = PermissionCache(self.env, username='editor')
         # Shouldn't raise an error with appropriate permission.
         self.tag_wp.set_resource_tags(self.req, resource, self.tags)
+        cursor = self.db.cursor()
+        # Check change record.
+        cursor.execute("""
+            SELECT *
+              FROM tags_change
+             WHERE tagspace=%s
+               AND name=%s
+             ORDER by time
+        """, ('wiki', 'TaggedPage'))
+        row = cursor.fetchone()
+        self.assertEqual([v for v in row[-3:]], ['editor', '', 'tag1'])
 
 
 def wiki_setup(tc):
@@ -194,6 +206,13 @@ def wiki_setup(tc):
     tc.env.path = tempfile.mkdtemp()
     tc.db_mgr = DatabaseManager(tc.env)
     tc.db = tc.env.get_db_cnx()
+
+    cursor = tc.db.cursor()
+    cursor.execute("DROP TABLE IF EXISTS tags")
+    cursor.execute("DROP TABLE IF EXISTS tags_change")
+    cursor.execute("DELETE FROM system WHERE name='tags_version'")
+    cursor.execute("DELETE FROM permission WHERE action %s"
+                   % tc.db.like(), ('TAGS_%',))
 
     TagSetup(tc.env).upgrade_environment(tc.db)
 

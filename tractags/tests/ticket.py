@@ -73,6 +73,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
         cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
         cursor.execute("DELETE FROM system WHERE name='tags_version'")
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))

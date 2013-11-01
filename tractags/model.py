@@ -6,14 +6,34 @@
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
 
+from datetime import datetime
+
 from trac.resource import Resource
 from trac.util.compat import groupby, set
+from trac.util.datefmt import to_datetime, utc
+from trac.util.text import to_unicode
+
+from tractags.compat import to_datetime, to_utimestamp
 
 
 # Public functions (not yet)
 
 
 # Utility functions
+
+def tag_changes(env, resource):
+    """Return tag history for a Trac resource."""
+    db = _get_db(env)
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT time,author,oldtags,newtags
+          FROM tags_change
+         WHERE tagspace=%s
+           AND name=%s
+         ORDER BY time DESC
+    """, (resource.realm, to_unicode(resource.id)))
+    return [(to_datetime(row[0]), row[1], row[2], row[3])
+            for row in cursor.fetchall()]
 
 def tag_frequency(env, realm, filter=None, db=None):
     """Return tags and numbers of their occurrence."""
@@ -30,8 +50,9 @@ def tag_frequency(env, realm, filter=None, db=None):
     for row in cursor:
         yield (row[0], row[1])
 
-def tag_resource(env, realm, id, new_id=None, tags=None, db=None):
-    """Change recorded tags for a Trac resource.
+def tag_resource(env, req, realm, id, new_id=None, tags=None, log=False,
+                 db=None):
+    """Save tags and tag changes for a Trac resource.
 
     This function combines delete, reparent and set actions now, but it could
     possibly be still a bit more efficient.
@@ -46,7 +67,18 @@ def tag_resource(env, realm, id, new_id=None, tags=None, db=None):
              WHERE tagspace=%s
                AND name=%s
         """, (new_id, realm, id))
+        cursor.execute("""
+            UPDATE tags_change
+               SET name=%s
+             WHERE tagspace=%s
+               AND name=%s
+        """, (new_id, realm, id))
+        
     else:
+        if log:
+            old_tags = u' '.join(sorted(map(to_unicode,
+                                            resource_tags(env, realm, id,
+                                                          db=db))))
         # DEVEL: Work out the difference instead of stupid delete/re-insertion.
         cursor.execute("""
             DELETE FROM tags
@@ -59,6 +91,14 @@ def tag_resource(env, realm, id, new_id=None, tags=None, db=None):
                    (tagspace, name, tag)
             VALUES (%s,%s,%s)
         """, [(realm, id, tag) for tag in tags])
+    if log and not new_id:
+        cursor.execute("""
+            INSERT INTO tags_change
+                   (tagspace, name, time, author, oldtags, newtags)
+            VALUES (%s,%s,%s,%s,%s,%s)
+        """, (realm, id, to_utimestamp(datetime.now(utc)), req.authname,
+              old_tags,
+              tags and u' '.join(sorted(map(to_unicode, tags))) or ''))
     db.commit()
 
 def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,

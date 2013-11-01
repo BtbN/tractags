@@ -26,6 +26,7 @@ from trac.wiki.web_ui import WikiModule
 
 from tractags.api import Counter, DefaultTagProvider, TagSystem, _
 from tractags.macros import TagTemplateProvider
+from tractags.model import tag_changes
 from tractags.query import Query
 from tractags.util import split_into_tags
 
@@ -85,25 +86,65 @@ class WikiTagInterface(TagTemplateProvider):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        if req.method == 'GET' and req.path_info.startswith('/wiki/') and \
-                req.args.get('action') == 'edit' and \
-                req.args.get('template') and 'tags' not in req.args:
-            # Retrieve template resource to be queried for tags.
-            template_page = WikiPage(self.env,''.join(
-                                     [WikiModule.PAGE_TEMPLATES_PREFIX,
-                                      req.args.get('template')]))
-            if template_page and template_page.exists and \
-                    'TAGS_VIEW' in req.perm(template_page.resource):
-                ts = TagSystem(self.env)
-                tags = sorted(ts.get_tags(req, template_page.resource))
-                # Prepare tags as content for the editor field.
-                tags_str = ' '.join(tags)
-                self.env.log.debug("Tags retrieved from template: '%s'" \
-                                   % unicode(tags_str).encode('utf-8'))
-                # DEVEL: More arguments need to be propagated here?
-                req.redirect(req.href(req.path_info,
-                                      action='edit', tags=tags_str,
-                                      template=req.args.get('template')))
+        if req.method == 'GET' and req.path_info.startswith('/wiki/'):
+            if req.args.get('action') == 'edit' and \
+                    req.args.get('template') and 'tags' not in req.args:
+                # Retrieve template resource to be queried for tags.
+                template_page = WikiPage(self.env,''.join(
+                                         [WikiModule.PAGE_TEMPLATES_PREFIX,
+                                          req.args.get('template')]))
+                if template_page and template_page.exists and \
+                        'TAGS_VIEW' in req.perm(template_page.resource):
+                    ts = TagSystem(self.env)
+                    tags = sorted(ts.get_tags(req, template_page.resource))
+                    # Prepare tags as content for the editor field.
+                    tags_str = ' '.join(tags)
+                    self.env.log.debug("Tags retrieved from template: '%s'" \
+                                       % unicode(tags_str).encode('utf-8'))
+                    # DEVEL: More arguments need to be propagated here?
+                    req.redirect(req.href(req.path_info,
+                                          action='edit', tags=tags_str,
+                                          template=req.args.get('template')))
+            if req.args.get('action') == 'history' and data and \
+                    'history' in data:
+                history = []
+                page_history = data.get('history', [])
+                resource = data['resource']
+                tags_history = tag_changes(self.env, data['resource'])
+                for i in range(len(page_history)):
+                    while tags_history and \
+                            tags_history[0][0] > page_history[i]['date']:
+                        old_tags = split_into_tags(tags_history[0][2] or '')
+                        new_tags = split_into_tags(tags_history[0][3] or '')
+                        added = new_tags - old_tags
+                        removed = old_tags - new_tags
+                        # TRANSLATOR: Care for valid WikiFormatting.
+                        comment = _(
+                            "'''tags''' %(added)s%(delim)s%(removed)s",
+                            added=added and _("''%(tags)s'' added",
+                                              tags=', '.join(added)) or '',
+                            delim=added and removed and _("; ") or '',
+                            removed=removed and _("''%(tags)s'' removed",
+                                                  tags=', '.join(removed))
+                                    or '')
+                        history.append({
+                            'version': '*',
+                            'url': req.href(resource.realm, resource.id,
+                                            version=page_history[i]['version']),
+                            'date': tags_history[0][0],
+                            'author': tags_history[0][1],
+                            'comment': comment,
+                            'ipnr': ''
+                        })
+                        tags_history.pop(0)
+                    history.append({
+                        'version': page_history[i]['version'],
+                        'date': page_history[i]['date'],
+                        'author': page_history[i]['author'],
+                        'comment': page_history[i]['comment'],
+                        'ipnr': page_history[i]['ipnr']
+                    })
+                data.update(dict(history=history))
         return (template, data, content_type)
 
     # ITemplateStreamFilter methods
@@ -112,8 +153,12 @@ class WikiTagInterface(TagTemplateProvider):
         resource = Resource('wiki', page_name)
         if filename == 'wiki_view.html' and 'TAGS_VIEW' in req.perm(resource):
             return self._wiki_view(req, stream)
-        elif filename == 'wiki_edit.html' and 'TAGS_MODIFY' in req.perm(resource):
+        elif filename == 'wiki_edit.html' and \
+                         'TAGS_MODIFY' in req.perm(resource):
             return self._wiki_edit(req, stream)
+        elif filename == 'history_view.html' and \
+                         'TAGS_VIEW' in req.perm(resource):
+            return self._wiki_history(req, stream)
         return stream
 
     # IWikiPageManipulator methods
@@ -215,6 +260,13 @@ class WikiTagInterface(TagTemplateProvider):
         )
         insert = tag.div(tag.label(insert), class_='field')
         return stream | Transformer('//div[@id="changeinfo1"]').append(insert)
+
+    def _wiki_history(self, req, stream):
+        xpath = '//input[@type="radio" and @value="*"]'
+        stream = stream | Transformer(xpath).remove()
+        # Remove invalid links to wiki page revisions (fix for Trac < 0.12).
+        xpath = '//a[contains(@href,"%2A")]'
+        return stream | Transformer(xpath).remove()
 
 
 class TagWikiSyntaxProvider(Component):

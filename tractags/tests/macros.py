@@ -45,6 +45,13 @@ class ListTaggedMacroTestCase(unittest.TestCase):
         self.env.path = tempfile.mkdtemp()
 
         self.db = self.env.get_db_cnx()
+        cursor = self.db.cursor()
+        cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
+        cursor.execute("DELETE FROM system WHERE name='tags_version'")
+        cursor.execute("DELETE FROM permission WHERE action %s"
+                       % self.db.like(), ('TAGS_%',))
+
         setup = TagSetup(self.env)
         setup.upgrade_environment(self.db)
         self.tag_twm = TagWikiMacros(self.env)

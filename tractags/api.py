@@ -13,7 +13,7 @@ from genshi import Markup
 from operator import itemgetter
 from pkg_resources import resource_filename
 
-from trac.config import BoolOption
+from trac.config import BoolOption, ListOption
 from trac.core import Component, ExtensionPoint, Interface, TracError, \
                       implements
 from trac.perm import IPermissionRequestor, PermissionError
@@ -239,6 +239,13 @@ class DefaultTagProvider(Component):
     # Resource realm this provider manages tags for. Set this.
     realm = None
 
+    revisable = False
+
+    def __init__(self):
+        # Do this once, because configuration lookups are costly.
+        cfg = self.env.config
+        self.revisable = self.realm in cfg.getlist('tags', 'revisable_realms')
+
     # Public methods
 
     def check_permission(self, perm, action):
@@ -277,7 +284,8 @@ class DefaultTagProvider(Component):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, self.realm, to_unicode(resource.id), tags=tags)
+        tag_resource(self.env, req, self.realm, to_unicode(resource.id),
+                     tags=tags, log=self.revisable)
 
     def reparent_resource_tags(self, req, old_resource, resource,
                                comment=u''):
@@ -287,14 +295,15 @@ class DefaultTagProvider(Component):
             raise PermissionError(resource=old_resource, env=self.env)
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, self.realm, to_unicode(old_resource.id),
-                     to_unicode(resource.id))
+        tag_resource(self.env, req, self.realm, to_unicode(old_resource.id),
+                     to_unicode(resource.id), log=self.revisable)
 
     def remove_resource_tags(self, req, resource, comment=u''):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, self.realm, to_unicode(resource.id))
+        tag_resource(self.env, req, self.realm, to_unicode(resource.id),
+                     log=self.revisable)
 
     def describe_tagged_resource(self, req, resource):
         return ''
@@ -307,6 +316,8 @@ class TagSystem(Component):
 
     tag_providers = ExtensionPoint(ITagProvider)
 
+    revisable = ListOption('tags', 'revisable_realms', 'wiki',
+        doc="Comma-separated list of realms requiring tag change history.")
     wiki_page_link = BoolOption('tags', 'wiki_page_link', True,
         doc="Link a tag to the wiki page with same name, if it exists.")
 
