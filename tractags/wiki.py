@@ -26,7 +26,7 @@ from trac.wiki.web_ui import WikiModule
 
 from tractags.api import Counter, DefaultTagProvider, TagSystem, _
 from tractags.macros import TagTemplateProvider
-from tractags.model import tag_changes
+from tractags.model import delete_tags, tag_changes
 from tractags.query import Query
 from tractags.util import split_into_tags
 
@@ -200,11 +200,8 @@ class WikiTagInterface(TagTemplateProvider):
         tag_system.reparent_tags(req, Resource('wiki', page.name), old_name)
 
     def wiki_page_deleted(self, page):
-        tag_system = TagSystem(self.env)
-        # XXX Ugh. Hopefully this will be sufficient to fool any endpoints.
-        from trac.test import Mock, MockPerm
-        req = Mock(authname='anonymous', perm=MockPerm())
-        tag_system.delete_tags(req, page.resource)
+        # Page gone, so remove all records on it.
+        delete_tags(self.env, page.resource)
 
     def wiki_page_version_deleted(self, page):
         pass

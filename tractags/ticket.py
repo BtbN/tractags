@@ -21,6 +21,7 @@ from trac.util.compat import all, any, groupby
 from trac.util.text import to_unicode
 
 from tractags.api import DefaultTagProvider, ITagProvider, _
+from tractags.model import delete_tags
 from tractags.util import get_db_exc, split_into_tags
 
 
@@ -192,7 +193,8 @@ class TicketTagProvider(DefaultTagProvider):
 
     def ticket_deleted(self, ticket):
         """Called when a ticket is deleted."""
-        self.remove_resource_tags(Mock(perm=MockPerm()), ticket)
+        # Ticket gone, so remove all records on it.
+        delete_tags(self.env, ticket.resource)
         if self.use_cache:
             # Invalidate resource cache.
             del self._tagged_resources

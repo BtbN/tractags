@@ -21,6 +21,31 @@ from tractags.compat import to_datetime, to_utimestamp
 
 # Utility functions
 
+def delete_tags(env, resource, tags=None, db=None):
+    """Delete tags and tag changes for a Trac resource."""
+    do_commit = db is None or False
+    db = _get_db(env, db)
+    cursor = db.cursor()
+    args = [resource.realm, to_unicode(resource.id)]
+    sql = ''
+    if tags:
+        args += list(tags)
+        sql += " AND tags.tag IN (%s)" % ','.join(['%s' for tag in tags])
+    cursor.execute("""
+        DELETE FROM tags
+         WHERE tagspace=%%s
+           AND name=%%s%s
+    """ % sql, args)
+    if do_commit:
+        # Call outside of another db transaction means resource destruction,
+        # so purge change records too.
+        cursor.execute("""
+            DELETE FROM tags_change
+             WHERE tagspace=%s
+               AND name=%s
+        """, (resource.realm, to_unicode(resource.id)))
+        db.commit()
+
 def tag_changes(env, resource):
     """Return tag history for a Trac resource."""
     db = _get_db(env)
@@ -50,14 +75,14 @@ def tag_frequency(env, realm, filter=None, db=None):
     for row in cursor:
         yield (row[0], row[1])
 
-def tag_resource(env, resource, old_id=None, author='anonymous', tags=None,
-                 log=False, db=None):
+def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
+                 log=False):
     """Save tags and tag changes for a Trac resource.
 
     This function combines delete, reparent and set actions now, but it could
     possibly be still a bit more efficient.
     """
-    db = _get_db(env, db)
+    db = _get_db(env)
     cursor = db.cursor()
 
     if old_id:
@@ -73,32 +98,34 @@ def tag_resource(env, resource, old_id=None, author='anonymous', tags=None,
              WHERE tagspace=%s
                AND name=%s
         """, (to_unicode(resource.id), resource.realm, to_unicode(old_id)))
-        
     else:
+        # Calculate effective tag changes.
+        old_tags = set(resource_tags(env, resource, db=db))
+        tags = set(tags)
+        remove = old_tags - tags
+        if remove:
+            if tags:
+                delete_tags(env, resource, remove, db=db)
+            else:
+                # Delete all resource's tags - simplified transaction.
+                delete_tags(env, resource, db=db)
+        add = tags - old_tags
+        if add:
+            cursor.executemany("""
+                INSERT INTO tags
+                       (tagspace, name, tag)
+                VALUES (%s,%s,%s)
+            """, [(resource.realm, to_unicode(resource.id), tag)
+                  for tag in add])
         if log:
-            old_tags = u' '.join(sorted(map(to_unicode,
-                                            resource_tags(env, resource,
-                                                          db=db))))
-        # DEVEL: Work out the difference instead of stupid delete/re-insertion.
-        cursor.execute("""
-            DELETE FROM tags
-             WHERE tagspace=%s
-               AND name=%s
-        """, (resource.realm, to_unicode(resource.id)))
-    if tags:
-        cursor.executemany("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
-            VALUES (%s,%s,%s)
-        """, [(resource.realm, to_unicode(resource.id), tag) for tag in tags])
-    if log and not old_id:
-        cursor.execute("""
-            INSERT INTO tags_change
-                   (tagspace, name, time, author, oldtags, newtags)
-            VALUES (%s,%s,%s,%s,%s,%s)
-        """, (resource.realm, to_unicode(resource.id),
-              to_utimestamp(datetime.now(utc)), author, old_tags,
-              tags and u' '.join(sorted(map(to_unicode, tags))) or ''))
+            cursor.execute("""
+                INSERT INTO tags_change
+                       (tagspace, name, time, author, oldtags, newtags)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """, (resource.realm, to_unicode(resource.id),
+                  to_utimestamp(datetime.now(utc)), author,
+                  u' '.join(sorted(map(to_unicode, old_tags))),
+                  u' '.join(sorted(map(to_unicode, tags))),))
     db.commit()
 
 def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
