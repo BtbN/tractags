@@ -50,8 +50,8 @@ def tag_frequency(env, realm, filter=None, db=None):
     for row in cursor:
         yield (row[0], row[1])
 
-def tag_resource(env, req, realm, id, new_id=None, tags=None, log=False,
-                 db=None):
+def tag_resource(env, resource, old_id=None, author='anonymous', tags=None,
+                 log=False, db=None):
     """Save tags and tag changes for a Trac resource.
 
     This function combines delete, reparent and set actions now, but it could
@@ -60,44 +60,44 @@ def tag_resource(env, req, realm, id, new_id=None, tags=None, log=False,
     db = _get_db(env, db)
     cursor = db.cursor()
 
-    if new_id:
+    if old_id:
         cursor.execute("""
             UPDATE tags
                SET name=%s
              WHERE tagspace=%s
                AND name=%s
-        """, (new_id, realm, id))
+        """, (to_unicode(resource.id), resource.realm, to_unicode(old_id)))
         cursor.execute("""
             UPDATE tags_change
                SET name=%s
              WHERE tagspace=%s
                AND name=%s
-        """, (new_id, realm, id))
+        """, (to_unicode(resource.id), resource.realm, to_unicode(old_id)))
         
     else:
         if log:
             old_tags = u' '.join(sorted(map(to_unicode,
-                                            resource_tags(env, realm, id,
+                                            resource_tags(env, resource,
                                                           db=db))))
         # DEVEL: Work out the difference instead of stupid delete/re-insertion.
         cursor.execute("""
             DELETE FROM tags
              WHERE tagspace=%s
                AND name=%s
-        """, (realm, id))
+        """, (resource.realm, to_unicode(resource.id)))
     if tags:
         cursor.executemany("""
             INSERT INTO tags
                    (tagspace, name, tag)
             VALUES (%s,%s,%s)
-        """, [(realm, id, tag) for tag in tags])
-    if log and not new_id:
+        """, [(resource.realm, to_unicode(resource.id), tag) for tag in tags])
+    if log and not old_id:
         cursor.execute("""
             INSERT INTO tags_change
                    (tagspace, name, time, author, oldtags, newtags)
             VALUES (%s,%s,%s,%s,%s,%s)
-        """, (realm, id, to_utimestamp(datetime.now(utc)), req.authname,
-              old_tags,
+        """, (resource.realm, to_unicode(resource.id),
+              to_utimestamp(datetime.now(utc)), author, old_tags,
               tags and u' '.join(sorted(map(to_unicode, tags))) or ''))
     db.commit()
 
@@ -148,7 +148,7 @@ def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
         resource = resources[name]
         yield resource, set([tag[1] for tag in tags])
 
-def resource_tags(env, realm, id, db=None):
+def resource_tags(env, resource, db=None):
     """Return all tags for a Trac resource by realm and ID."""
     db = _get_db(env, db)
     cursor = db.cursor()
@@ -158,7 +158,7 @@ def resource_tags(env, realm, id, db=None):
           FROM tags
          WHERE tagspace=%s
            AND name=%s
-    """, (realm, id))
+    """, (resource.realm, to_unicode(resource.id)))
     for row in cursor:
         yield row[0]
 

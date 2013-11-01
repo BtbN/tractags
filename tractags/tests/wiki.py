@@ -187,15 +187,18 @@ class WikiTagProviderTestCase(unittest.TestCase):
         self.req.perm = PermissionCache(self.env, username='editor')
         # Shouldn't raise an error with appropriate permission.
         self.tag_wp.set_resource_tags(self.req, resource, self.tags)
+        self.tag_wp.set_resource_tags(self.req, resource, ['tag2'])
         cursor = self.db.cursor()
-        # Check change record.
+        # Check change records.
         cursor.execute("""
             SELECT *
               FROM tags_change
              WHERE tagspace=%s
                AND name=%s
-             ORDER by time
+             ORDER by time DESC
         """, ('wiki', 'TaggedPage'))
+        row = cursor.fetchone()
+        self.assertEqual([v for v in row[-3:]], ['editor', 'tag1', 'tag2'])
         row = cursor.fetchone()
         self.assertEqual([v for v in row[-3:]], ['editor', '', 'tag1'])
 

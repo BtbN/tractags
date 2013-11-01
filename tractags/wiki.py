@@ -166,20 +166,20 @@ class WikiTagInterface(TagTemplateProvider):
         pass
 
     def validate_wiki_page(self, req, page):
-        # If we're saving the wiki page, and can modify tags, do so
+        # If we're saving the wiki page, and can modify tags, do so.
         if req and 'TAGS_MODIFY' in req.perm(page.resource) \
                 and req.path_info.startswith('/wiki') and 'save' in req.args:
             page_modified = req.args.get('text') != page.old_text or \
                     page.readonly != int('readonly' in req.args)
-            # Always save tags if the page has been otherwise modified
+            # Always save tags if the page has been otherwise modified.
             if page_modified:
                 self._update_tags(req, page)
             elif page.version > 0:
-                # If the page hasn't been otherwise modified, save the tags
-                # and redirect so we don't get the "page has not been modified"
-                # warning
+                # If the page hasn't been otherwise modified, save tags and
+                # redirect to avoid the "page has not been modified" warning.
                 if self._update_tags(req, page):
-                    req.redirect(get_resource_url(self.env, page.resource, req.href, version=None))
+                    req.redirect(get_resource_url(self.env, page.resource,
+                                                  req.href, version=None))
         return []
 
     # IWikiChangeListener methods
@@ -191,15 +191,13 @@ class WikiTagInterface(TagTemplateProvider):
 
     def wiki_page_renamed(self, page, old_name):
         """Called when a page has been renamed (since Trac 0.12)."""
-        new_resource = Resource('wiki', page.name)
-        old_resource = Resource('wiki', old_name)
-        self.log.debug("Moving tags from %s to %s",
-                       old_resource.id, new_resource.id)
+        self.log.debug("Moving wiki page tags from %s to %s",
+                       old_name, page.name)
         tag_system = TagSystem(self.env)
         # XXX Ugh. Hopefully this will be sufficient to fool any endpoints.
         from trac.test import Mock, MockPerm
         req = Mock(authname='anonymous', perm=MockPerm())
-        tag_system.reparent_tags(req, old_resource, new_resource)
+        tag_system.reparent_tags(req, Resource('wiki', page.name), old_name)
 
     def wiki_page_deleted(self, page):
         tag_system = TagSystem(self.env)

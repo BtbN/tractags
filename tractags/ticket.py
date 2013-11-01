@@ -174,7 +174,8 @@ class TicketTagProvider(DefaultTagProvider):
     def ticket_created(self, ticket):
         """Called when a ticket is created."""
         # Add any tags unconditionally.
-        self.set_resource_tags(Mock(perm=MockPerm()), ticket, None)
+        self.set_resource_tags(Mock(authname=ticket['reporter'],
+                                    perm=MockPerm()), ticket, None)
         if self.use_cache:
             # Invalidate resource cache.
             del self._tagged_resources
@@ -183,7 +184,8 @@ class TicketTagProvider(DefaultTagProvider):
         """Called when a ticket is modified."""
         # Sync only on change of ticket fields, that are exposed as tags.
         if any(f in self.fields for f in old_values.keys()):
-            self.set_resource_tags(Mock(perm=MockPerm()), ticket, None)
+            self.set_resource_tags(Mock(authname=author, perm=MockPerm()),
+                                   ticket, None)
             if self.use_cache:
                 # Invalidate resource cache.
                 del self._tagged_resources

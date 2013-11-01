@@ -213,7 +213,7 @@ class ITagProvider(Interface):
     def set_resource_tags(req, resource, tags, comment=u''):
         """Set tags for a resource."""
 
-    def reparent_resource_tags(req, old_resource, resource, comment=u''):
+    def reparent_resource_tags(req, resource, old_id, comment=u''):
         """Move tags, typically when renaming an existing resource."""
 
     def remove_resource_tags(req, resource, comment=u''):
@@ -278,31 +278,27 @@ class DefaultTagProvider(Component):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'view'):
             return
-        return resource_tags(self.env, self.realm, resource.id)
+        return resource_tags(self.env, resource)
 
     def set_resource_tags(self, req, resource, tags, comment=u''):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, req, self.realm, to_unicode(resource.id),
-                     tags=tags, log=self.revisable)
+        tag_resource(self.env, resource, author=req.authname, tags=tags,
+                     log=self.revisable)
 
-    def reparent_resource_tags(self, req, old_resource, resource,
-                               comment=u''):
-        assert old_resource.realm == self.realm
+    def reparent_resource_tags(self, req, resource, old_id, comment=u''):
         assert resource.realm == self.realm
-        if not self.check_permission(req.perm(old_resource), 'modify'):
-            raise PermissionError(resource=old_resource, env=self.env)
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, req, self.realm, to_unicode(old_resource.id),
-                     to_unicode(resource.id), log=self.revisable)
+        tag_resource(self.env, resource, old_id, req.authname,
+                     log=self.revisable)
 
     def remove_resource_tags(self, req, resource, comment=u''):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, req, self.realm, to_unicode(resource.id),
+        tag_resource(self.env, resource, author=req.authname,
                      log=self.revisable)
 
     def describe_tagged_resource(self, req, resource):
@@ -415,13 +411,13 @@ class TagSystem(Component):
             # Handle old style tag providers gracefully.
             self.set_tags(req, resource, tags)
 
-    def reparent_tags(self, req, old_resource, resource, comment=u''):
+    def reparent_tags(self, req, resource, old_name, comment=u''):
         """Move tags, typically when renaming an existing resource.
 
         Tags can't be moved between different tag realms with intention.
         """
-        provider = self._get_provider(old_resource.realm)
-        provider.reparent_resource_tags(req, old_resource, resource, comment)
+        provider = self._get_provider(resource.realm)
+        provider.reparent_resource_tags(req, resource, old_name, comment)
 
     def replace_tag(self, req, old_tags, new_tag=None, comment=u'',
                     allow_delete=False, filter=[]):

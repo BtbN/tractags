@@ -44,17 +44,16 @@ class TicketTagProviderTestCase(unittest.TestCase):
         self.tags = ['tag1']
 
         cursor = self.db.cursor()
-        # Populate table with initial test data, not synced with tickets yet.
-        cursor.execute("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
-            VALUES ('ticket', '1', 'deleted')""")
-        self.realm = 'ticket'
+        # Populate tables with initial test data.
         self._create_ticket(self.tags)
 
-        self.req = Mock()
         # Mock an anonymous request.
-        self.req.perm = PermissionCache(self.env)
+        self.anon_req = Mock()
+        self.anon_req.perm = PermissionCache(self.env)
+
+        self.req = Mock(authname='editor')
+        self.req.authname = 'editor'
+        self.req.perm = PermissionCache(self.env, username='editor')
 
     def tearDown(self):
         self.db.close()
@@ -116,29 +115,22 @@ class TicketTagProviderTestCase(unittest.TestCase):
         #ignore_closed_tickets
 
     def test_set_tags(self):
-        resource = Resource('ticket', 1)
-        self.tags = ['tag2']
-        # Anonymous lacks required permissions.
-        self.assertRaises(PermissionError, self.provider.set_resource_tags,
-                          self.req, resource, self.tags)
-        self.req.authname = 'user'
-        self.req.perm = PermissionCache(self.env, username='user')
-        # Shouldn't raise an error with appropriate permission.
-        self.provider.set_resource_tags(self.req, resource, self.tags)
-        self.assertEquals(self.tag_sys.get_all_tags(self.req, '').keys(),
-                          self.tags)
+        tags = ['tag2']
+        ticket = Ticket(self.env, 1)
+        ticket['keywords'] = tags[0]
+        # Tags get updated by TicketChangeListener method.
+        ticket.save_changes(self.req.authname)
+        self.assertEquals(self.tag_sys.get_all_tags(self.req).keys(), tags)
 
     def test_remove_tags(self):
         resource = Resource('ticket', 1)
         # Anonymous lacks required permissions.
         self.assertRaises(PermissionError, self.provider.remove_resource_tags,
-                          self.req, resource)
-        self.req.authname = 'user'
-        self.req.perm = PermissionCache(self.env, username='user')
+                          self.anon_req, resource)
         # Shouldn't raise an error with appropriate permission.
         self.provider.remove_resource_tags(self.req, resource, 'comment')
-        tkt = Ticket(self.env, 1)
-        self.assertEquals(tkt['keywords'], '')
+        ticket = Ticket(self.env, 1)
+        self.assertEquals(ticket['keywords'], '')
 
     def test_describe_tagged_resource(self):
         resource = Resource('ticket', 1)
