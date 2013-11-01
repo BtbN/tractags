@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2011 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -11,6 +11,7 @@ import re
 
 from genshi.builder import Markup, tag
 from genshi.filters.transform import Transformer
+
 from trac.config import BoolOption
 from trac.core import Component, ExtensionPoint, implements
 from trac.mimeview.api import Context
@@ -18,8 +19,8 @@ from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.compat import sorted
 from trac.web.api import IRequestFilter, ITemplateStreamFilter
 from trac.web.chrome import add_stylesheet
-from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator, \
-                          IWikiSyntaxProvider
+from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
+from trac.wiki.api import IWikiSyntaxProvider
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
@@ -53,6 +54,16 @@ class WikiTagProvider(DefaultTagProvider):
             filter = (' '.join(['name NOT', db.like() % like_templates]),)
         return super(WikiTagProvider, self).get_tagged_resources(req, tags,
                                                                  filter)
+
+    def get_all_tags(self, req, filter=None):
+        if not self.check_permission(req.perm, 'view'):
+            return
+        if self.exclude_templates:
+            db = self.env.get_db_cnx()
+            like_templates = ''.join(
+                ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
+            filter = (' '.join(['name NOT', db.like() % like_templates]),)
+        return super(WikiTagProvider, self).get_all_tags(req, filter)
 
     def describe_tagged_resource(self, req, resource):
         if not self.check_permission(req.perm(resource), 'view'):

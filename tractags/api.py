@@ -198,6 +198,15 @@ class ITagProvider(Interface):
         :rtype: Sequence of (resource, tags) tuples.
         """
 
+    def get_all_tags(req, filter=None):
+        """Return all tags with numbers of occurance.
+
+        :param filter: If provided, skip matching resources.
+
+        :rtype: Counter object (dict sub-class: {tag_name: tag_frequency} ).
+
+        """
+
     def get_resource_tags(req, resource):
         """Get tags for a Resource object."""
 
@@ -251,6 +260,12 @@ class DefaultTagProvider(Component):
             return
         return tagged_resources(self.env, self.check_permission, req.perm,
                                 self.realm, tags, filter)
+
+    def get_all_tags(self, req, filter=None):
+        all_tags = Counter()
+        for tag, count in tag_frequency(self.env, self.realm, filter):
+            all_tags[tag] = count
+        return all_tags
 
     def get_resource_tags(self, req, resource):
         assert resource.realm == self.realm
@@ -340,26 +355,25 @@ class TagSystem(Component):
                 if query(tags, context=resource):
                     yield resource, tags
 
-    def get_all_tags(self, req, query='', realms=[]):
-        """Return all tags, optionally only on resources matching query.
+    def get_all_tags(self, req, realms=[]):
+        """Return all tags for all supported realms or only specified ones.
 
-        Returns a dictionary with tag name as key and tag frequency as value.
+        Returns a Counter object (special dict) with tag name as key and tag
+        frequency as value.
         """
-        all_tags = {}
+        all_tags = Counter()
         all_realms = set([p.get_taggable_realm()
                           for p in self.tag_providers])
         if not realms or set(realms) == all_realms:
             realms = all_realms
-        if not query:
-            for tag, count in tag_frequency(self.env, realms):
-                all_tags[tag] = count
-        else:
-            for resource, tags in self.query(req, query):
-                for tag in tags:
-                    if tag in all_tags:
-                        all_tags[tag] += 1
-                    else:
-                        all_tags[tag] = 1
+        for provider in self.tag_providers:
+            if provider.get_taggable_realm() in realms:
+                try:
+                    all_tags += provider.get_all_tags(req)
+                except AttributeError:
+                    # Fallback for older providers.
+                    for resource, tags in provider.get_tagged_resources(req):
+                        all_tags.update(tags)
         return all_tags
 
     def get_tags(self, req, resource):

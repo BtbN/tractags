@@ -7,7 +7,6 @@
 # you should have received as part of this distribution.
 
 from trac.resource import Resource
-from trac.wiki.web_ui import WikiModule
 from trac.util.compat import groupby, set
 
 
@@ -16,23 +15,18 @@ from trac.util.compat import groupby, set
 
 # Utility functions
 
-def tag_frequency(env, realms, db=None):
+def tag_frequency(env, realm, filter=None, db=None):
     """Return tags and numbers of their occurrence."""
+    if filter:
+        sql = ''.join([" AND %s" % f for f in filter])
     db = _get_db(env, db)
     cursor = db.cursor()
-    filter = ' OR '.join(["tagspace='%s'" % r for r in realms])
-    if 'wiki' in realms and \
-            env.config.getbool('tags', 'query_exclude_wiki_templates'):
-        like_templates = ''.join(
-            ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
-        filter = '(%s) AND (%s)' % (filter,
-                                    ' '.join(['name NOT',
-                                              db.like() % like_templates]))
     cursor.execute("""
         SELECT tag,count(tag)
-          FROM tags%s
+          FROM tags
+         WHERE tagspace=%%s%s
          GROUP BY tag
-    """ % (filter and ' WHERE %s' % filter or ''))
+    """ % (filter and sql or ''), (realm,))
     for row in cursor:
         yield (row[0], row[1])
 
