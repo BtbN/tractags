@@ -24,7 +24,7 @@ from trac.wiki.api import IWikiSyntaxProvider
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import Counter, DefaultTagProvider, TagSystem, _
+from tractags.api import Counter, DefaultTagProvider, TagSystem, _, ngettext
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.query import Query
@@ -118,15 +118,22 @@ class WikiTagInterface(TagTemplateProvider):
                         new_tags = split_into_tags(tags_history[0][3] or '')
                         added = new_tags - old_tags
                         removed = old_tags - new_tags
-                        # TRANSLATOR: Care for valid WikiFormatting.
+                        # TRANSLATOR: Watch out, keep valid WikiFormatting.
+                        added_str = added and \
+                                    ngettext("''%(tags)s'' added",
+                                             "''%(tags)s'' added", len(added),
+                                             tags=', '.join(added)) or ''
+                        # TRANSLATOR: How to delimit added and removed tags.
+                        delim=added and removed and _("; ") or ''
+                        removed_str = removed and \
+                                      ngettext("''%(tags)s'' removed",
+                                               "''%(tags)s'' removed",
+                                               len(removed),
+                                               tags=', '.join(removed)) or ''
+                        # TRANSLATOR: Tags change record composition.
                         comment = _(
                             "'''tags''' %(added)s%(delim)s%(removed)s",
-                            added=added and _("''%(tags)s'' added",
-                                              tags=', '.join(added)) or '',
-                            delim=added and removed and _("; ") or '',
-                            removed=removed and _("''%(tags)s'' removed",
-                                                  tags=', '.join(removed))
-                                    or '')
+                            added=added_str, delim=delim, removed=removed_str)
                         history.append({
                             'version': '*',
                             'url': req.href(resource.realm, resource.id,

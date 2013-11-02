@@ -1,14 +1,14 @@
 # German (Germany) translations for TracTags.
-# Copyright (C) 2010-2012
+# Copyright (C) 2010-2013
 # This file is distributed under the same license as the TracTags
 # project.
-# Steffen Hoffmann <hoff.st@web.de>, 2012.
+# Steffen Hoffmann <hoff.st@web.de>, 2013.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2012-09-30 23:26+0200\n"
+"POT-Creation-Date: 2013-11-02 12:35+0100\n"
 "PO-Revision-Date: 2010-09-11 01:26+0200\n"
 "Last-Translator: Steffen Hoffmann <hoff.st@web.de>\n"
 "Language-Team: German de_DE <trac-dev@googlegroups.com>\n"
@@ -18,36 +18,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.0dev-r482\n"
 
-#: tractags/admin.py:25
+#: tractags/admin.py:27
 msgid "Tag System"
 msgstr "Tag-System"
 
-#: tractags/admin.py:25 tractags/templates/admin_tag_change.html:22
+#: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
 msgstr "Wechsel"
 
-#: tractags/admin.py:37
-msgid ""
-"Selected current tag(s) and either\n"
-"                                  new tag or delete approval are required"
+#: tractags/admin.py:52
+msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr ""
 "Auswahl von aktuellem(n) Tag(s) und entweder ein neues Tag oder die "
 "Löschfreigabe sind erforderlich"
 
-#: tractags/api.py:377
+#: tractags/api.py:525
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
 msgstr "Tags für den Bereich '%s' werden nicht unterstützt"
 
-#: tractags/db.py:62
+#: tractags/db.py:33
 msgid ""
-"A newer plugin version has been installed\n"
-"                              before, but downgrading is unsupported."
+"A newer plugin version has been installed before, but downgrading is "
+"unsupported."
 msgstr ""
 "Es war bereits eine neuere Plugin-Version installiert, aber eine "
 "Rückstufung wird nicht unterstützt."
 
-#: tractags/db.py:97
+#: tractags/db.py:68
 #, python-format
 msgid ""
 "\n"
@@ -121,34 +119,34 @@ msgstr ""
 "    Die Abfrage-Syntax finden Sie in der Beschreibung zu Tags.\n"
 "    "
 
-#: tractags/macros.py:220
+#: tractags/macros.py:219
 msgid "Id"
 msgstr "ID"
 
-#: tractags/macros.py:224
+#: tractags/macros.py:223
 msgid "Realm"
 msgstr "Bereich"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
-#: tractags/macros.py:225 tractags/web_ui.py:68 tractags/web_ui.py:94
-#: tractags/wiki.py:166 tractags/templates/admin_tag_change.html:13
+#: tractags/macros.py:224 tractags/web_ui.py:67 tractags/web_ui.py:101
+#: tractags/wiki.py:240 tractags/templates/admin_tag_change.html:13
 msgid "Tags"
 msgstr "Tags"
 
-#: tractags/macros.py:363
+#: tractags/macros.py:356
 msgid "No tags found"
 msgstr "Keine Tags gefunden"
 
-#: tractags/macros.py:378
+#: tractags/macros.py:371
 #, python-format
 msgid "Page %(num)d"
 msgstr "Seite %(num)d"
 
-#: tractags/macros.py:388
+#: tractags/macros.py:381
 msgid "Next Page"
 msgstr "Nächste Seite"
 
-#: tractags/macros.py:392
+#: tractags/macros.py:385
 msgid "Previous Page"
 msgstr "Vorige Seite"
 
@@ -169,31 +167,57 @@ msgstr "Unerwartetes Zeichenkettenende"
 msgid "Expected terminal, got '%s'"
 msgstr "Abschluss erwartet, '%s' erhalten"
 
-#: tractags/query.py:396
+#: tractags/query.py:427
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "Ungültiges Attribut '%s'"
 
-#: tractags/ticket.py:34
+#: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
 msgstr "Liste von Ticket-Feldern, die als Tags dienen sollen."
 
-#: tractags/ticket.py:37
+#: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
 msgstr "Sammle keine Tags von geschlossenen Tickets."
 
 #. TRANSLATOR: The meta-nav link label.
-#: tractags/web_ui.py:116
+#: tractags/web_ui.py:115
 msgid "Back to Cloud"
 msgstr "Zurück zum Haufen"
 
+#. TRANSLATOR: Watch out, keep valid WikiFormatting.
+#: tractags/wiki.py:125
+#, python-format
+msgid "''%(tags)s'' added"
+msgid_plural "''%(tags)s'' added"
+msgstr[0] "''%(tags)s'' hinzugefügt"
+msgstr[1] "''%(tags)s'' hinzugefügt"
+
+#. TRANSLATOR: How to delimit added and removed tags.
+#: tractags/wiki.py:127
+msgid "; "
+msgstr "; "
+
+#: tractags/wiki.py:132
+#, python-format
+msgid "''%(tags)s'' removed"
+msgid_plural "''%(tags)s'' removed"
+msgstr[0] "''%(tags)s'' entfernt"
+msgstr[1] "''%(tags)s'' entfernt"
+
+#. TRANSLATOR: Tags change record composition.
+#: tractags/wiki.py:134
+#, python-format
+msgid "'''tags''' %(added)s%(delim)s%(removed)s"
+msgstr "'''Tags''' %(added)s%(delim)s%(removed)s"
+
 #. TRANSLATOR: Label text for link to '/tags'.
-#: tractags/wiki.py:181
+#: tractags/wiki.py:255
 msgid "view all tags"
 msgstr "alle Tags ansehen"
 
 #. TRANSLATOR: ... (view all tags)
-#: tractags/wiki.py:183
+#: tractags/wiki.py:257
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
 msgstr "Markiert mit: (%(tags_link)s)"
@@ -202,7 +226,23 @@ msgstr "Markiert mit: (%(tags_link)s)"
 msgid "Manage Tags"
 msgstr "Tags verwalten"
 
-#: tractags/templates/admin_tag_change.html:23
+#: tractags/templates/admin_tag_change.html:19
+msgid "Filters"
+msgstr "Filter"
+
+#: tractags/templates/admin_tag_change.html:20
+msgid "Tag filters"
+msgstr "Tag-Filter"
+
+#: tractags/templates/admin_tag_change.html:21
+msgid "Realms"
+msgstr "Bereiche"
+
+#: tractags/templates/admin_tag_change.html:30
+msgid "Update"
+msgstr "Aktualisieren"
+
+#: tractags/templates/admin_tag_change.html:43
 msgid ""
 "Select an existing tag to replace with another one;\n"
 "          two or more to consolidate into one. The [1:required] new tag\n"
@@ -217,11 +257,11 @@ msgstr ""
 "wird eingefügt, wenn dies vom Tag-Speicher für Dokumente dieses Bereichs "
 "unterstützt wird."
 
-#: tractags/templates/admin_tag_change.html:29
+#: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
 msgstr "Aktuelles Tag:"
 
-#: tractags/templates/admin_tag_change.html:40
+#: tractags/templates/admin_tag_change.html:60
 msgid ""
 "New Tag:[1:]\n"
 "            [2:][3:]or\n"
@@ -229,11 +269,11 @@ msgid ""
 "            allow tag deletion"
 msgstr "Neues Tag:[1:] [2:][3:]oder [4:]Freigabe zur Tag-Löschung"
 
-#: tractags/templates/admin_tag_change.html:47
+#: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
 msgstr "Kommentar (optional):"
 
-#: tractags/templates/admin_tag_change.html:51
+#: tractags/templates/admin_tag_change.html:71
 msgid ""
 "[1:Beware:] Attempting to replace one or more tags will\n"
 "            always add the new tag, but [2:removal could fail]\n"
@@ -245,7 +285,7 @@ msgstr ""
 "einige Tags möglich, weil Tags in Abhängigkeit von Programmeigenschaften "
 "der Tag-Module, von denen sie kommen, unveränderlich sein können."
 
-#: tractags/templates/admin_tag_change.html:57
+#: tractags/templates/admin_tag_change.html:77
 msgid ""
 "You'll need to investigate further on how to change/remove these\n"
 "            remaining tags closer to the tagged resource, i.e. in your\n"
@@ -257,7 +297,7 @@ msgstr ""
 "Ihre [1:trac.ini] die Option [2:ticket_fields], die alle Felder für die "
 "Darstellung der Tags im Ticket-Bereich (realm:ticket) auflistet."
 
-#: tractags/templates/admin_tag_change.html:66
+#: tractags/templates/admin_tag_change.html:89
 msgid "Change"
 msgstr "Ändern"
 
@@ -275,6 +315,7 @@ msgid "Results"
 msgstr "Ergebnisse"
 
 #: tractags/templates/listtagged_results.html:35
+#: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
 msgstr "Keine Dokumente gefunden"
 
@@ -316,7 +357,7 @@ msgstr "Springe zu dieser Wiki-Seite"
 #: tractags/templates/tag_view.html:52
 #, python-format
 msgid ""
-"Showing objects matching\n"
+"Showing objects tagged with\n"
 "            [1:\n"
 "              '%(query)s'\n"
 "            ]"
@@ -324,10 +365,15 @@ msgstr "Anzeige von zu [1:'%(query)s'] passenden Objekten"
 
 #: tractags/templates/tag_view.html:60
 #, python-format
+msgid "Showing objects tagged with '%(query)s'"
+msgstr "Anzeige von Objekten mit Tag '%(query)s'"
+
+#: tractags/templates/tag_view.html:63
+#, python-format
 msgid "Showing objects matching '%(query)s'"
 msgstr "Anzeige von zu '%(query)s' passenden Objekten"
 
-#: tractags/templates/tag_view.html:64
+#: tractags/templates/tag_view.html:67
 msgid ""
 "[1:\n"
 "            Create Wiki page\n"
@@ -335,7 +381,7 @@ msgid ""
 "          for this tag"
 msgstr "[1:Erstelle eine Wiki-Seite] für dieses Tag"
 
-#: tractags/templates/tag_view.html:74
+#: tractags/templates/tag_view.html:77
 #, python-format
 msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"

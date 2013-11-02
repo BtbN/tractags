@@ -30,8 +30,8 @@ class TagSetup(Component):
         if schema_ver == db_default.schema_version:
             return False
         elif schema_ver > db_default.schema_version:
-            raise TracError(_("""A newer plugin version has been installed
-                              before, but downgrading is unsupported."""))
+            raise TracError(_("A newer plugin version has been installed "
+                              "before, but downgrading is unsupported."))
         self.log.info("TracTags database schema version is %d, should be %d"
                       % (schema_ver, db_default.schema_version))
         return True

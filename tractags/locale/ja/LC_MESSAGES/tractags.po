@@ -1,5 +1,5 @@
 # Japanese translations for TracTags.
-# Copyright (C) 2012
+# Copyright (C) 2013
 # This file is distributed under the same license as the TracTags
 # project.
 # Jun Omae <jun66j5@gmail.com>, 2010,2012.
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2012-09-30 23:26+0200\n"
+"POT-Creation-Date: 2013-11-02 12:35+0100\n"
 "PO-Revision-Date: 2010-11-10 22:58+0900\n"
 "Last-Translator: Jun Omae <jun66j5@gmail.com>\n"
 "Language-Team: ja <LL@li.org>\n"
@@ -18,32 +18,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.0dev-r482\n"
 
-#: tractags/admin.py:25
+#: tractags/admin.py:27
 msgid "Tag System"
 msgstr "タグシステム"
 
-#: tractags/admin.py:25 tractags/templates/admin_tag_change.html:22
+#: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
 msgstr "置換"
 
-#: tractags/admin.py:37
-msgid ""
-"Selected current tag(s) and either\n"
-"                                  new tag or delete approval are required"
+#: tractags/admin.py:52
+msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr "選択しているタグと新しいタグないし削除に対する同意が必要です"
 
-#: tractags/api.py:377
+#: tractags/api.py:525
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
 msgstr "'%s' レルムでのタグ付けをサポートしていません"
 
-#: tractags/db.py:62
+#: tractags/db.py:33
 msgid ""
-"A newer plugin version has been installed\n"
-"                              before, but downgrading is unsupported."
+"A newer plugin version has been installed before, but downgrading is "
+"unsupported."
 msgstr ""
 
-#: tractags/db.py:97
+#: tractags/db.py:68
 #, python-format
 msgid ""
 "\n"
@@ -113,34 +111,34 @@ msgstr ""
 "    クエリの構文については tags のドキュメントを参照してください。\n"
 "    "
 
-#: tractags/macros.py:220
+#: tractags/macros.py:219
 msgid "Id"
 msgstr "ID"
 
-#: tractags/macros.py:224
+#: tractags/macros.py:223
 msgid "Realm"
 msgstr "レルム"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
-#: tractags/macros.py:225 tractags/web_ui.py:68 tractags/web_ui.py:94
-#: tractags/wiki.py:166 tractags/templates/admin_tag_change.html:13
+#: tractags/macros.py:224 tractags/web_ui.py:67 tractags/web_ui.py:101
+#: tractags/wiki.py:240 tractags/templates/admin_tag_change.html:13
 msgid "Tags"
 msgstr "タグ"
 
-#: tractags/macros.py:363
+#: tractags/macros.py:356
 msgid "No tags found"
 msgstr "一致するタグが見つかりません"
 
-#: tractags/macros.py:378
+#: tractags/macros.py:371
 #, python-format
 msgid "Page %(num)d"
 msgstr "ページ%(num)d"
 
-#: tractags/macros.py:388
+#: tractags/macros.py:381
 msgid "Next Page"
 msgstr "次のページ"
 
-#: tractags/macros.py:392
+#: tractags/macros.py:385
 msgid "Previous Page"
 msgstr "前のページ"
 
@@ -161,31 +159,55 @@ msgstr "予期しないところで文字列が終わっています"
 msgid "Expected terminal, got '%s'"
 msgstr "終端せずに '%s' が得られました"
 
-#: tractags/query.py:396
+#: tractags/query.py:427
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "不正な属性 '%s'"
 
-#: tractags/ticket.py:34
+#: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
 msgstr "タグとして見せてよいチケットのフィールドをリストします"
 
-#: tractags/ticket.py:37
+#: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
 msgstr "完了済みのチケットからタグを収集しない"
 
 #. TRANSLATOR: The meta-nav link label.
-#: tractags/web_ui.py:116
+#: tractags/web_ui.py:115
 msgid "Back to Cloud"
 msgstr "タグクラウドに戻る"
 
+#. TRANSLATOR: Watch out, keep valid WikiFormatting.
+#: tractags/wiki.py:125
+#, fuzzy, python-format
+msgid "''%(tags)s'' added"
+msgid_plural "''%(tags)s'' added"
+msgstr[0] ""
+
+#. TRANSLATOR: How to delimit added and removed tags.
+#: tractags/wiki.py:127
+msgid "; "
+msgstr ""
+
+#: tractags/wiki.py:132
+#, fuzzy, python-format
+msgid "''%(tags)s'' removed"
+msgid_plural "''%(tags)s'' removed"
+msgstr[0] ""
+
+#. TRANSLATOR: Tags change record composition.
+#: tractags/wiki.py:134
+#, python-format
+msgid "'''tags''' %(added)s%(delim)s%(removed)s"
+msgstr ""
+
 #. TRANSLATOR: Label text for link to '/tags'.
-#: tractags/wiki.py:181
+#: tractags/wiki.py:255
 msgid "view all tags"
 msgstr "すべてのタグを表示する"
 
 #. TRANSLATOR: ... (view all tags)
-#: tractags/wiki.py:183
+#: tractags/wiki.py:257
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
 msgstr "タグ: (%(tags_link)s)"
@@ -194,7 +216,25 @@ msgstr "タグ: (%(tags_link)s)"
 msgid "Manage Tags"
 msgstr "タグの管理"
 
-#: tractags/templates/admin_tag_change.html:23
+#: tractags/templates/admin_tag_change.html:19
+#, fuzzy
+msgid "Filters"
+msgstr "タグを絞り込む"
+
+#: tractags/templates/admin_tag_change.html:20
+msgid "Tag filters"
+msgstr ""
+
+#: tractags/templates/admin_tag_change.html:21
+#, fuzzy
+msgid "Realms"
+msgstr "レルム"
+
+#: tractags/templates/admin_tag_change.html:30
+msgid "Update"
+msgstr ""
+
+#: tractags/templates/admin_tag_change.html:43
 msgid ""
 "Select an existing tag to replace with another one;\n"
 "          two or more to consolidate into one. The [1:required] new tag\n"
@@ -204,11 +244,11 @@ msgid ""
 "realm."
 msgstr "他ので置き換えるタグを選択します。複数のタグを1つに集約することができます。[1:必須]の新しいタグは既存のタグか新規のものにしてください。変更コメントはタグのストレージがサポートしていれば追加が行われます。"
 
-#: tractags/templates/admin_tag_change.html:29
+#: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
 msgstr "現在のタグ:"
 
-#: tractags/templates/admin_tag_change.html:40
+#: tractags/templates/admin_tag_change.html:60
 msgid ""
 "New Tag:[1:]\n"
 "            [2:][3:]or\n"
@@ -219,11 +259,11 @@ msgstr ""
 "[2:][3:] または\n"
 "[4:] タグの削除を許可する"
 
-#: tractags/templates/admin_tag_change.html:47
+#: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
 msgstr "コメント (省略可):"
 
-#: tractags/templates/admin_tag_change.html:51
+#: tractags/templates/admin_tag_change.html:71
 msgid ""
 "[1:Beware:] Attempting to replace one or more tags will\n"
 "            always add the new tag, but [2:removal could fail]\n"
@@ -233,7 +273,7 @@ msgstr ""
 "[1:注意:] "
 "タグの置換は常に新しいタグを追加します。しかし、タグがタグプロバイダ由来の場合、その内部構造により変更できずに[2:削除が失敗]する可能性があります。"
 
-#: tractags/templates/admin_tag_change.html:57
+#: tractags/templates/admin_tag_change.html:77
 msgid ""
 "You'll need to investigate further on how to change/remove these\n"
 "            remaining tags closer to the tagged resource, i.e. in your\n"
@@ -243,7 +283,7 @@ msgstr ""
 "リソースに付けたそれらのタグを変更ないし削除する方法をさらに調査する必要があります。すなわち、realm:ticket "
 "用のタグとして列挙するフィールドを指定する [1:trac.ini] にある [2:ticket_fields] の設定を確認してください。"
 
-#: tractags/templates/admin_tag_change.html:66
+#: tractags/templates/admin_tag_change.html:89
 msgid "Change"
 msgstr "変更"
 
@@ -259,6 +299,7 @@ msgid "Results"
 msgstr "結果"
 
 #: tractags/templates/listtagged_results.html:35
+#: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
 msgstr "一致するものが見つかりませんでした。"
 
@@ -295,20 +336,25 @@ msgid "Go to wiki page"
 msgstr "Wiki ページ]に移動する"
 
 #: tractags/templates/tag_view.html:52
-#, python-format
+#, fuzzy, python-format
 msgid ""
-"Showing objects matching\n"
+"Showing objects tagged with\n"
 "            [1:\n"
 "              '%(query)s'\n"
 "            ]"
 msgstr "[1:'%(query)s'] に該当するものを表示しています"
 
 #: tractags/templates/tag_view.html:60
+#, fuzzy, python-format
+msgid "Showing objects tagged with '%(query)s'"
+msgstr "'%(query)s' に該当するものを表示しています"
+
+#: tractags/templates/tag_view.html:63
 #, python-format
 msgid "Showing objects matching '%(query)s'"
 msgstr "'%(query)s' に該当するものを表示しています"
 
-#: tractags/templates/tag_view.html:64
+#: tractags/templates/tag_view.html:67
 msgid ""
 "[1:\n"
 "            Create Wiki page\n"
@@ -316,7 +362,7 @@ msgid ""
 "          for this tag"
 msgstr "このタグで [1:Wiki ページを作成する]"
 
-#: tractags/templates/tag_view.html:74
+#: tractags/templates/tag_view.html:77
 #, python-format
 msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"
