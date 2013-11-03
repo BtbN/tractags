@@ -65,9 +65,8 @@ class TagSetup(Component):
                                           locals(), [name])
                     script = getattr(upgrades, name)
                 except AttributeError:
-                    raise TracError(_("""
-                        No upgrade module for version %(num)i (%(version)s.py)
-                        """, num=i, version=name))
+                    raise TracError(_("No upgrade module for version %(num)i "
+                                      "(%(version)s.py)", num=i, version=name))
                 script.do_upgrade(self.env, i, cursor)
         cursor.execute("""
             UPDATE system

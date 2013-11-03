@@ -82,9 +82,6 @@ class Counter(dict):
         """
         self.update(iterable, **kwargs)
 
-    def __missing__(self, key):
-        return 0
-
     def most_common(self, n=None):
         """List the n most common elements and their counts from the most
         common to the least.  If n is None, then list all element counts.
@@ -168,8 +165,10 @@ class Counter(dict):
         if not isinstance(other, Counter):
             return NotImplemented
         result = Counter()
+        self_get = self.get
+        other_get = other.get
         for elem in set(self) | set(other):
-            newcount = self[elem] + other[elem]
+            newcount = self_get(elem, 0) + other_get(elem, 0)
             if newcount > 0:
                 result[elem] = newcount
         return result

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2013-11-02 12:35+0100\n"
+"POT-Creation-Date: 2013-11-02 22:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,11 +45,7 @@ msgstr ""
 
 #: tractags/db.py:68
 #, python-format
-msgid ""
-"\n"
-"                        No upgrade module for version %(num)i "
-"(%(version)s.py)\n"
-"                        "
+msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.

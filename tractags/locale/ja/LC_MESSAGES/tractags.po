@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2013-11-02 12:35+0100\n"
+"POT-Creation-Date: 2013-11-02 22:49+0100\n"
 "PO-Revision-Date: 2010-11-10 22:58+0900\n"
 "Last-Translator: Jun Omae <jun66j5@gmail.com>\n"
 "Language-Team: ja <LL@li.org>\n"
@@ -43,11 +43,7 @@ msgstr ""
 
 #: tractags/db.py:68
 #, python-format
-msgid ""
-"\n"
-"                        No upgrade module for version %(num)i "
-"(%(version)s.py)\n"
-"                        "
+msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
@@ -179,7 +175,7 @@ msgstr "タグクラウドに戻る"
 
 #. TRANSLATOR: Watch out, keep valid WikiFormatting.
 #: tractags/wiki.py:125
-#, fuzzy, python-format
+#, python-format
 msgid "''%(tags)s'' added"
 msgid_plural "''%(tags)s'' added"
 msgstr[0] ""
@@ -190,7 +186,7 @@ msgid "; "
 msgstr ""
 
 #: tractags/wiki.py:132
-#, fuzzy, python-format
+#, python-format
 msgid "''%(tags)s'' removed"
 msgid_plural "''%(tags)s'' removed"
 msgstr[0] ""
