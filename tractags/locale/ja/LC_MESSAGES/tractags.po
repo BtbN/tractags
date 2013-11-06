@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.0dev-r482\n"
+"Generated-By: Babel 0.9.6\n"
 
 #: tractags/admin.py:27
 msgid "Tag System"
@@ -39,12 +39,12 @@ msgstr "'%s' レルムでのタグ付けをサポートしていません"
 msgid ""
 "A newer plugin version has been installed before, but downgrading is "
 "unsupported."
-msgstr ""
+msgstr "新しいバージョンのプラグインがインストールされています。また、ダウングレードはサポートしていません。"
 
 #: tractags/db.py:68
 #, python-format
 msgid "No upgrade module for version %(num)i (%(version)s.py)"
-msgstr ""
+msgstr "バージョン%(num)iのアップグレード用モジュールがありません (%(version)s.py)"
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
 #: tractags/macros.py:110
@@ -162,11 +162,11 @@ msgstr "不正な属性 '%s'"
 
 #: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
-msgstr "タグとして見せてよいチケットのフィールドをリストします"
+msgstr "タグとして見せるチケットのフィールドを指定します。"
 
 #: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
-msgstr "完了済みのチケットからタグを収集しない"
+msgstr "完了済みのチケットからタグを収集しない。"
 
 #. TRANSLATOR: The meta-nav link label.
 #: tractags/web_ui.py:115
@@ -178,24 +178,24 @@ msgstr "タグクラウドに戻る"
 #, python-format
 msgid "''%(tags)s'' added"
 msgid_plural "''%(tags)s'' added"
-msgstr[0] ""
+msgstr[0] "''%(tags)s''を追加"
 
 #. TRANSLATOR: How to delimit added and removed tags.
 #: tractags/wiki.py:127
 msgid "; "
-msgstr ""
+msgstr "、"
 
 #: tractags/wiki.py:132
 #, python-format
 msgid "''%(tags)s'' removed"
 msgid_plural "''%(tags)s'' removed"
-msgstr[0] ""
+msgstr[0] "''%(tags)s''を削除"
 
 #. TRANSLATOR: Tags change record composition.
 #: tractags/wiki.py:134
 #, python-format
 msgid "'''tags''' %(added)s%(delim)s%(removed)s"
-msgstr ""
+msgstr "'''タグ''' %(added)s%(delim)s%(removed)s"
 
 #. TRANSLATOR: Label text for link to '/tags'.
 #: tractags/wiki.py:255
@@ -213,22 +213,20 @@ msgid "Manage Tags"
 msgstr "タグの管理"
 
 #: tractags/templates/admin_tag_change.html:19
-#, fuzzy
 msgid "Filters"
-msgstr "タグを絞り込む"
+msgstr "フィルタ"
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
-msgstr ""
+msgstr "タグのフィルタ"
 
 #: tractags/templates/admin_tag_change.html:21
-#, fuzzy
 msgid "Realms"
 msgstr "レルム"
 
 #: tractags/templates/admin_tag_change.html:30
 msgid "Update"
-msgstr ""
+msgstr "変更"
 
 #: tractags/templates/admin_tag_change.html:43
 msgid ""
@@ -332,7 +330,7 @@ msgid "Go to wiki page"
 msgstr "Wiki ページ]に移動する"
 
 #: tractags/templates/tag_view.html:52
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Showing objects tagged with\n"
 "            [1:\n"
@@ -341,7 +339,7 @@ msgid ""
 msgstr "[1:'%(query)s'] に該当するものを表示しています"
 
 #: tractags/templates/tag_view.html:60
-#, fuzzy, python-format
+#, python-format
 msgid "Showing objects tagged with '%(query)s'"
 msgstr "'%(query)s' に該当するものを表示しています"
 
@@ -363,5 +361,5 @@ msgstr "このタグで [1:Wiki ページを作成する]"
 msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"
 "          ([1:view all tags])"
-msgstr "%(mincount)s文字以上のタグだけ表示しています。([1:すべてのタグを見る])"
+msgstr "%(mincount)s文字以上のタグを表示しています ([1:すべてのタグを見る])"
 
