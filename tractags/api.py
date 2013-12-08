@@ -261,7 +261,7 @@ class DefaultTagProvider(Component):
     def get_taggable_realm(self):
         return self.realm
 
-    def get_tagged_resources(self, req, tags, filter=None):
+    def get_tagged_resources(self, req, tags=None, filter=None):
         if not self.check_permission(req.perm, 'view'):
             return
         return tagged_resources(self.env, self.check_permission, req.perm,

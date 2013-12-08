@@ -76,7 +76,7 @@ class TicketTagProvider(DefaultTagProvider):
         return self.check_permission(perm, action) and \
                self.map[action] in perm
 
-    def get_tagged_resources(self, req, tags):
+    def get_tagged_resources(self, req, tags=None):
         if not self._check_permission(req, None, 'view'):
             return
 

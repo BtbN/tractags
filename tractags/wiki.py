@@ -47,7 +47,7 @@ class WikiTagProvider(DefaultTagProvider):
         return super(WikiTagProvider, self).check_permission(perm, action) \
             and map[action] in perm
 
-    def get_tagged_resources(self, req, tags, filter=None):
+    def get_tagged_resources(self, req, tags=None, filter=None):
         if self.exclude_templates:
             db = self.env.get_db_cnx()
             like_templates = ''.join(
