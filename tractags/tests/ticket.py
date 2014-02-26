@@ -41,7 +41,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         self.provider = TicketTagProvider(self.env)
         self.realm = 'ticket'
         self.tag_sys = TagSystem(self.env)
-        self.tags = ['tag1']
+        self.tags = ['tag1', 'tag2']
 
         cursor = self.db.cursor()
         # Populate tables with initial test data.
@@ -96,12 +96,13 @@ class TicketTagProviderTestCase(unittest.TestCase):
             [r for r in
              self.provider.get_tagged_resources(self.req, None)][0][1],
             set(self.tags))
-        # Force fine-grained perm-check.
+        # Force fine-grained perm-check check for all tags, not just the one
+        # from query.
         self.provider.fast_permcheck = False
         self.assertEquals(
             [r for r in
              self.provider.get_tagged_resources(self.req,
-                                                set(self.tags))][0][1],
+                                                set(self.tags[:1]))][0][1],
             set(self.tags))
 
     def test_get_tags(self):
@@ -115,7 +116,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         #ignore_closed_tickets
 
     def test_set_tags(self):
-        tags = ['tag2']
+        tags = ['tag3']
         ticket = Ticket(self.env, 1)
         ticket['keywords'] = tags[0]
         # Tags get updated by TicketChangeListener method.

@@ -47,7 +47,7 @@ class TagChangeAdminPanel(Component):
             # Replace Tag
             allow_delete = req.args.get('allow_delete')
             new_tag = req.args.get('tag_new_name').strip()
-            new_tag =  not new_tag == u'' and new_tag or None
+            new_tag = not new_tag == u'' and new_tag or None
             if not (allow_delete or new_tag):
                 data['error'] = _("Selected current tag(s) and either "
                                   "new tag or delete approval are required")

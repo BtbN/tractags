@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -90,11 +90,12 @@ class TicketTagProvider(DefaultTagProvider):
             db = self.env.get_db_cnx()
             cursor = db.cursor()
             sql = """
-                SELECT name, tag
+                SELECT ts.name, ts.tag
                   FROM tags
-                 WHERE tagspace=%%s
-                   AND tags.tag IN (%s)
-                 ORDER by name
+                  LEFT JOIN tags ts ON (
+                       tags.tagspace=ts.tagspace AND tags.name=ts.name)
+                 WHERE tags.tagspace=%%s AND tags.tag IN (%s)
+                 ORDER by ts.name
             """ % ', '.join(['%s' for t in tags])
             args = [self.realm] + list(tags)
             cursor.execute(sql, args)
