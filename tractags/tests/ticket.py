@@ -81,7 +81,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         tags = {}
         cursor = self.db.cursor()
         cursor.execute("SELECT name,tag FROM tags")
-        for name, tag in cursor.fetchall():
+        for name, tag in cursor:
             if name in tags:
                 tags[name].add(tag)
             else:

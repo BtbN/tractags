@@ -14,8 +14,7 @@ _TAG_SPLIT = re.compile('[,\s]+')
 
 def split_into_tags(text):
     """Split plain text into tags."""
-    return set([tag.strip() for tag in _TAG_SPLIT.split(text)
-               if tag.strip()])
+    return set(filter(None, [tag.strip() for tag in _TAG_SPLIT.split(text)]))
 
 
 def get_db_exc(env):
