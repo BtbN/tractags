@@ -14,6 +14,7 @@ from trac.util.datefmt import utc
 from trac.util.text import to_unicode
 
 from tractags.compat import to_datetime, to_utimestamp
+from tractags.util import split_into_tags
 
 
 # Public functions (not yet)
@@ -175,19 +176,31 @@ def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
         resource = resources[name]
         yield resource, set([tag[1] for tag in tags])
 
-def resource_tags(env, resource, db=None):
+def resource_tags(env, resource, db=None, when=None):
     """Return all tags for a Trac resource by realm and ID."""
     db = _get_db(env, db)
     cursor = db.cursor()
-
-    cursor.execute("""
-        SELECT tag
-          FROM tags
-         WHERE tagspace=%s
-           AND name=%s
-    """, (resource.realm, to_unicode(resource.id)))
-    for row in cursor:
-        yield row[0]
+    id = to_unicode(resource.id)
+    if when is None:
+        cursor.execute("""
+            SELECT tag
+              FROM tags
+             WHERE tagspace=%s
+               AND name=%s
+        """, (resource.realm, id))
+        for row in cursor:
+            yield row[0]
+    else:
+        if isinstance(when, datetime):
+            when = to_utimestamp(when)
+        cursor.execute("SELECT newtags FROM tags_change "
+                       "WHERE tagspace=%s AND name=%s AND time<=%s "
+                       "ORDER BY time DESC LIMIT 1",
+                       (resource.realm, id, when))
+        row = cursor.fetchone()
+        if row and row[0]:
+            for tag in split_into_tags(row[0]):
+                yield tag
 
 # Internal functions
 

@@ -214,7 +214,7 @@ class ITagProvider(Interface):
 
         """
 
-    def get_resource_tags(req, resource):
+    def get_resource_tags(req, resource, when=None):
         """Get tags for a Resource object."""
 
     def set_resource_tags(req, resource, tags, comment=u''):
@@ -281,11 +281,11 @@ class DefaultTagProvider(Component):
             all_tags[tag] = count
         return all_tags
 
-    def get_resource_tags(self, req, resource):
+    def get_resource_tags(self, req, resource, when=None):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'view'):
             return
-        return resource_tags(self.env, resource)
+        return resource_tags(self.env, resource, when=when)
 
     def set_resource_tags(self, req, resource, tags, comment=u''):
         assert resource.realm == self.realm
@@ -390,10 +390,10 @@ class TagSystem(Component):
                         all_tags.update(tags)
         return all_tags
 
-    def get_tags(self, req, resource):
+    def get_tags(self, req, resource, when=None):
         """Get tags for resource."""
         return set(self._get_provider(resource.realm) \
-                   .get_resource_tags(req, resource))
+                   .get_resource_tags(req, resource, when=when))
 
     def set_tags(self, req, resource, tags, comment=u''):
         """Set tags on a resource.

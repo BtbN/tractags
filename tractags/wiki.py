@@ -27,6 +27,7 @@ from trac.wiki.web_ui import WikiModule
 
 from tractags.api import Counter, DefaultTagProvider, TagSystem, _, ngettext, \
                          tag_
+from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.query import Query
@@ -134,11 +135,13 @@ class WikiTagInterface(TagTemplateProvider):
                                                          "%(tags)s removed",
                                                          len(removed)),
                                                 tags=tag.em(', '.join(removed))))
+                        date = tags_history[0][0]
                         history.append({
                             'version': '*',
                             'url': req.href(resource.realm, resource.id,
-                                            version=page_history[i]['version']),
-                            'date': tags_history[0][0],
+                                            version=page_history[i]['version'],
+                                            tags_version=to_utimestamp(date)),
+                            'date': date,
                             'author': tags_history[0][1],
                             'comment': comment,
                             'ipnr': ''
@@ -217,10 +220,15 @@ class WikiTagInterface(TagTemplateProvider):
     # Internal methods
     def _page_tags(self, req):
         pagename = req.args.get('page', 'WikiStart')
+        version = req.args.get('version')
+        tags_version = req.args.get('tags_version')
 
+        page = WikiPage(self.env, pagename, version=version)
+        resource = page.resource
+        if version and not tags_version:
+            tags_version = page.time
         tag_system = TagSystem(self.env)
-        resource = Resource('wiki', pagename)
-        tags = sorted(tag_system.get_tags(req, resource))
+        tags = sorted(tag_system.get_tags(req, resource, when=tags_version))
         return tags
 
     def _wiki_view(self, req, stream):
