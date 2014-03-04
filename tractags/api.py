@@ -9,7 +9,6 @@
 
 import re
 
-from genshi import Markup
 from operator import itemgetter
 from pkg_resources import resource_filename
 
@@ -26,9 +25,9 @@ from trac.wiki.model import WikiPage
 # Fallbacks make Babel still optional and provide for Trac 0.11.
 try:
     from trac.util.translation  import domain_functions
-    add_domain, _, N_, gettext, ngettext, tag_ = \
+    add_domain, _, N_, gettext, ngettext, tag_, tagn_ = \
         domain_functions('tractags', ('add_domain', '_', 'N_', 'gettext',
-                                      'ngettext', 'tag_'))
+                                      'ngettext', 'tag_', 'tagn_'))
     dgettext = None
 except ImportError:
     from trac.util.translation  import gettext
@@ -39,10 +38,14 @@ except ImportError:
     def dgettext(domain, string, **kwargs):
         return safefmt(string, kwargs)
     def ngettext(singular, plural, num, **kwargs):
-        string = num == 1 and singular or plural
+        string = (plural, singular)[num == 1]
         kwargs.setdefault('num', num)
         return safefmt(string, kwargs)
     def tag_(string, **kwargs):
+        return _tag_kwargs(string, kwargs)
+    def tagn_(singular, plural, num, **kwargs):
+        string = (plural, singular)[num == 1]
+        kwargs.setdefault('num', num)
         return _tag_kwargs(string, kwargs)
     def safefmt(string, kwargs):
         if kwargs:
