@@ -13,7 +13,7 @@ from genshi.builder import Fragment, Markup, tag
 from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption
-from trac.core import Component, ExtensionPoint, implements
+from trac.core import Component, implements
 from trac.mimeview.api import Context
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.compat import sorted
@@ -25,12 +25,10 @@ from trac.wiki.formatter import format_to_oneliner
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import Counter, DefaultTagProvider, TagSystem, _, ngettext, \
-                         tag_
+from tractags.api import DefaultTagProvider, TagSystem, _, ngettext, tag_
 from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
-from tractags.query import Query
 from tractags.util import split_into_tags
 
 
@@ -92,70 +90,10 @@ class WikiTagInterface(TagTemplateProvider):
         if req.method == 'GET' and req.path_info.startswith('/wiki/'):
             if req.args.get('action') == 'edit' and \
                     req.args.get('template') and 'tags' not in req.args:
-                # Retrieve template resource to be queried for tags.
-                template_page = WikiPage(self.env,''.join(
-                                         [WikiModule.PAGE_TEMPLATES_PREFIX,
-                                          req.args.get('template')]))
-                if template_page and template_page.exists and \
-                        'TAGS_VIEW' in req.perm(template_page.resource):
-                    ts = TagSystem(self.env)
-                    tags = sorted(ts.get_tags(req, template_page.resource))
-                    # Prepare tags as content for the editor field.
-                    tags_str = ' '.join(tags)
-                    self.env.log.debug("Tags retrieved from template: '%s'" \
-                                       % unicode(tags_str).encode('utf-8'))
-                    # DEVEL: More arguments need to be propagated here?
-                    req.redirect(req.href(req.path_info,
-                                          action='edit', tags=tags_str,
-                                          template=req.args.get('template')))
-            if req.args.get('action') == 'history' and data and \
-                    'history' in data:
-                history = []
-                page_history = data.get('history', [])
-                resource = data['resource']
-                tags_history = tag_changes(self.env, data['resource'])
-                for i in range(len(page_history)):
-                    while tags_history and \
-                            tags_history[0][0] > page_history[i]['date']:
-                        old_tags = split_into_tags(tags_history[0][2] or '')
-                        new_tags = split_into_tags(tags_history[0][3] or '')
-                        added = sorted(new_tags - old_tags)
-                        removed = sorted(old_tags - new_tags)
-                        comment = tag(tag.strong(_("Tags")), ' ')
-                        if added:
-                            comment.append(tag_(ngettext("%(tags)s added",
-                                                         "%(tags)s added",
-                                                         len(added)),
-                                                tags=tag.em(', '.join(added))))
-                        # TRANSLATOR: How to delimit added and removed tags.
-                        if added and removed:
-                            comment.append(_("; "))
-                        if removed:
-                            comment.append(tag_(ngettext("%(tags)s removed",
-                                                         "%(tags)s removed",
-                                                         len(removed)),
-                                                tags=tag.em(', '.join(removed))))
-                        date = tags_history[0][0]
-                        history.append({
-                            'version': '*',
-                            'url': req.href(resource.realm, resource.id,
-                                            version=page_history[i]['version'],
-                                            tags_version=to_utimestamp(date)),
-                            'date': date,
-                            'author': tags_history[0][1],
-                            'comment': comment,
-                            'ipnr': ''
-                        })
-                        tags_history.pop(0)
-                    history.append({
-                        'version': page_history[i]['version'],
-                        'date': page_history[i]['date'],
-                        'author': page_history[i]['author'],
-                        'comment': page_history[i]['comment'],
-                        'ipnr': page_history[i]['ipnr']
-                    })
-                data.update(dict(history=history,
-                                 wiki_to_oneliner=self._wiki_to_oneliner))
+                self._post_process_request_edit(req)
+            if req.args.get('action') == 'history' and \
+                    data and 'history' in data:
+                self._post_process_request_history(req, data)
         return (template, data, content_type)
 
     # ITemplateStreamFilter methods
@@ -231,12 +169,70 @@ class WikiTagInterface(TagTemplateProvider):
         tags = sorted(tag_system.get_tags(req, resource, when=tags_version))
         return tags
 
+    def _post_process_request_edit(self, req):
+        # Retrieve template resource to be queried for tags.
+        template_pagename = ''.join([WikiModule.PAGE_TEMPLATES_PREFIX,
+                                     req.args.get('template')])
+        template_page = WikiPage(self.env, template_pagename)
+        if template_page.exists and \
+                'TAGS_VIEW' in req.perm(template_page.resource):
+            ts = TagSystem(self.env)
+            tags = sorted(ts.get_tags(req, template_page.resource))
+            # Prepare tags as content for the editor field.
+            tags_str = ' '.join(tags)
+            self.env.log.debug("Tags retrieved from template: '%s'" \
+                               % unicode(tags_str).encode('utf-8'))
+            # DEVEL: More arguments need to be propagated here?
+            req.redirect(req.href(req.path_info,
+                                  action='edit', tags=tags_str,
+                                  template=req.args.get('template')))
+
+    def _post_process_request_history(self, req, data):
+        history = []
+        page_histories = data.get('history', [])
+        resource = data['resource']
+        tags_histories = tag_changes(self.env, resource)
+
+        for page_history in page_histories:
+            while tags_histories and \
+                    tags_histories[0][0] > page_history['date']:
+                tags_history = tags_histories.pop(0)
+                date = tags_history[0]
+                author = tags_history[1]
+                old_tags = split_into_tags(tags_history[2] or '')
+                new_tags = split_into_tags(tags_history[3] or '')
+                added = sorted(new_tags - old_tags)
+                removed = sorted(old_tags - new_tags)
+                comment = tag(tag.strong(_("Tags")), ' ')
+                if added:
+                    comment.append(tag_(ngettext("%(tags)s added",
+                                                 "%(tags)s added",
+                                                 len(added)),
+                                        tags=tag.em(', '.join(added))))
+                # TRANSLATOR: How to delimit added and removed tags.
+                if added and removed:
+                    comment.append(_("; "))
+                if removed:
+                    comment.append(tag_(ngettext("%(tags)s removed",
+                                                 "%(tags)s removed",
+                                                 len(removed)),
+                                        tags=tag.em(', '.join(removed))))
+                url = req.href(resource.realm, resource.id,
+                               version=page_history['version'],
+                               tags_version=to_utimestamp(date))
+                history.append({'version': '*', 'url': url, 'date': date,
+                                'author': author, 'comment': comment,
+                                'ipnr': ''})
+            history.append(page_history)
+
+        data.update(dict(history=history,
+                         wiki_to_oneliner=self._wiki_to_oneliner))
+
     def _wiki_view(self, req, stream):
         add_stylesheet(req, 'tags/css/tractags.css')
         tags = self._page_tags(req)
         if not tags:
             return stream
-        tag_system = TagSystem(self.env)
         li = []
         for tag_ in tags:
             resource = Resource('tag', tag_)
@@ -247,7 +243,8 @@ class WikiTagInterface(TagTemplateProvider):
 
         # TRANSLATOR: Header label text for tag list at wiki page bottom.
         insert = tag.ul(class_='tags')(tag.li(_("Tags"), class_='header'), li)
-        return stream | Transformer('//div[contains(@class,"wikipage")]').after(insert)
+        return stream | (Transformer('//div[contains(@class,"wikipage")]')
+                         .after(insert))
 
     def _update_tags(self, req, page):
         tag_system = TagSystem(self.env)
@@ -292,14 +289,15 @@ class TagWikiSyntaxProvider(Component):
 
     # IWikiSyntaxProvider methods
     def get_wiki_syntax(self):
-        yield (r'''\[tag(?:ged)?:(?P<tlpexpr>'.*'|".*"|\S+)\s*(?P<tlptitle>[^\]]+)?\]''',
+        yield (r'''\[tag(?:ged)?:'''
+               r'''(?P<tlpexpr>'.*'|".*"|\S+)\s*(?P<tlptitle>[^\]]+)?\]''',
                lambda f, n, m: self._format_tagged(f,
                                     m.group('tlpexpr'),
                                     m.group('tlptitle')))
         yield (r'''(?P<tagsyn>tag(?:ged)?):(?P<texpr>(?:'.*?'|".*?"|\S)+)''',
-               lambda f, n, m: self._format_tagged(f,
-                                    m.group('texpr'),
-                                    '%s:%s' % (m.group('tagsyn'), m.group('texpr'))))
+               lambda f, n, m: self._format_tagged(
+                   f, m.group('texpr'),
+                   '%s:%s' % (m.group('tagsyn'), m.group('texpr'))))
 
     def get_link_resolvers(self):
         return []
