@@ -8,6 +8,11 @@
 #
 
 import re
+try:
+    import threading
+except ImportError:
+    import dummy_threading as threading
+    threading._get_ident = lambda: 0
 
 from operator import itemgetter
 from pkg_resources import resource_filename
@@ -220,7 +225,7 @@ class ITagProvider(Interface):
     def get_resource_tags(req, resource, when=None):
         """Get tags for a Resource object."""
 
-    def set_resource_tags(req, resource, tags, comment=u''):
+    def set_resource_tags(req, resource, tags, comment=u'', when=None):
         """Set tags for a resource."""
 
     def reparent_resource_tags(req, resource, old_id, comment=u''):
@@ -290,12 +295,12 @@ class DefaultTagProvider(Component):
             return
         return resource_tags(self.env, resource, when=when)
 
-    def set_resource_tags(self, req, resource, tags, comment=u''):
+    def set_resource_tags(self, req, resource, tags, comment=u'', when=None):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
         tag_resource(self.env, resource, author=req.authname, tags=tags,
-                     log=self.revisable)
+                     log=self.revisable, when=when)
 
     def reparent_resource_tags(self, req, resource, old_id, comment=u''):
         assert resource.realm == self.realm
@@ -398,14 +403,14 @@ class TagSystem(Component):
         return set(self._get_provider(resource.realm) \
                    .get_resource_tags(req, resource, when=when))
 
-    def set_tags(self, req, resource, tags, comment=u''):
+    def set_tags(self, req, resource, tags, comment=u'', when=None):
         """Set tags on a resource.
 
         Existing tags are replaced.
         """
         try:
             return self._get_provider(resource.realm) \
-                   .set_resource_tags(req, resource, set(tags), comment)
+                   .set_resource_tags(req, resource, set(tags), comment, when)
         except TypeError:
             # Handle old style tag providers gracefully.
             return self._get_provider(resource.realm) \
@@ -534,3 +539,24 @@ class TagSystem(Component):
         except KeyError:
             raise InvalidTagRealm(_("Tags are not supported on the '%s' realm")
                                   % realm)
+
+
+class RequestsProxy(object):
+
+    def __init__(self):
+        self.current = threading.local()
+
+    def get(self):
+        try:
+            return self.current.req
+        except:
+            return None
+
+    def set(self, req):
+        self.current.req = req
+
+    def reset(self):
+        self.current.req = None
+
+
+requests = RequestsProxy()

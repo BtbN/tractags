@@ -25,7 +25,7 @@ from trac.wiki.formatter import format_to_oneliner
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import DefaultTagProvider, TagSystem, _, tagn_
+from tractags.api import DefaultTagProvider, TagSystem, _, requests, tagn_
 from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
@@ -94,6 +94,9 @@ class WikiTagInterface(TagTemplateProvider):
             if req.args.get('action') == 'history' and \
                     data and 'history' in data:
                 self._post_process_request_history(req, data)
+        if req.method == 'POST' and req.path_info.startswith('/wiki/') and \
+                'save' in req.args:
+            requests.reset()
         return (template, data, content_type)
 
     # ITemplateStreamFilter methods
@@ -120,9 +123,9 @@ class WikiTagInterface(TagTemplateProvider):
                 and req.path_info.startswith('/wiki') and 'save' in req.args:
             page_modified = req.args.get('text') != page.old_text or \
                     page.readonly != int('readonly' in req.args)
-            # Always save tags if the page has been otherwise modified.
             if page_modified:
-                self._update_tags(req, page)
+                requests.set(req)
+                req.add_redirect_listener(self._redirect_listener)
             elif page.version > 0:
                 # If the page hasn't been otherwise modified, save tags and
                 # redirect to avoid the "page has not been modified" warning.
@@ -133,10 +136,14 @@ class WikiTagInterface(TagTemplateProvider):
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):
-        pass
+        req = requests.get()
+        if req:
+            self._update_tags(req, page, page.time)
 
     def wiki_page_changed(self, page, version, t, comment, author, ipnr):
-        pass
+        req = requests.get()
+        if req:
+            self._update_tags(req, page, page.time)
 
     def wiki_page_renamed(self, page, old_name):
         """Called when a page has been renamed (since Trac 0.12)."""
@@ -169,6 +176,9 @@ class WikiTagInterface(TagTemplateProvider):
         tags = sorted(tag_system.get_tags(req, resource, when=tags_version))
         return tags
 
+    def _redirect_listener(self, req, url, permanent):
+        requests.reset()
+
     def _post_process_request_edit(self, req):
         # Retrieve template resource to be queried for tags.
         template_pagename = ''.join([WikiModule.PAGE_TEMPLATES_PREFIX,
@@ -195,7 +205,7 @@ class WikiTagInterface(TagTemplateProvider):
 
         for page_history in page_histories:
             while tags_histories and \
-                    tags_histories[0][0] > page_history['date']:
+                    tags_histories[0][0] >= page_history['date']:
                 tags_history = tags_histories.pop(0)
                 date = tags_history[0]
                 author = tags_history[1]
@@ -242,13 +252,13 @@ class WikiTagInterface(TagTemplateProvider):
         return stream | (Transformer('//div[contains(@class,"wikipage")]')
                          .after(insert))
 
-    def _update_tags(self, req, page):
+    def _update_tags(self, req, page, when=None):
         tag_system = TagSystem(self.env)
         newtags = split_into_tags(req.args.get('tags', ''))
         oldtags = tag_system.get_tags(req, page.resource)
 
         if oldtags != newtags:
-            tag_system.set_tags(req, page.resource, newtags)
+            tag_system.set_tags(req, page.resource, newtags, when=when)
             return True
         return False
 

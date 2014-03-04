@@ -77,7 +77,7 @@ def tag_frequency(env, realm, filter=None, db=None):
         yield (row[0], row[1])
 
 def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
-                 log=False):
+                 log=False, when=None):
     """Save tags and tag changes for a Trac resource.
 
     This function combines delete, reparent and set actions now, but it could
@@ -85,6 +85,10 @@ def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
     """
     db = _get_db(env)
     cursor = db.cursor()
+    if when is None:
+        when = datetime.now(utc)
+    if isinstance(when, datetime):
+        when = to_utimestamp(when)
 
     if old_id:
         cursor.execute("""
@@ -123,8 +127,7 @@ def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
                 INSERT INTO tags_change
                        (tagspace, name, time, author, oldtags, newtags)
                 VALUES (%s,%s,%s,%s,%s,%s)
-            """, (resource.realm, to_unicode(resource.id),
-                  to_utimestamp(datetime.now(utc)), author,
+            """, (resource.realm, to_unicode(resource.id), when, author,
                   u' '.join(sorted(map(to_unicode, old_tags))),
                   u' '.join(sorted(map(to_unicode, tags))),))
     db.commit()
