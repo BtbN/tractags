@@ -31,7 +31,6 @@ try:
                                       'ngettext', 'tag_'))
     dgettext = None
 except ImportError:
-    from genshi.builder  import tag as tag_
     from trac.util.translation  import gettext
     _ = gettext
     N_ = lambda text: text
@@ -43,6 +42,8 @@ except ImportError:
         string = num == 1 and singular or plural
         kwargs.setdefault('num', num)
         return safefmt(string, kwargs)
+    def tag_(string, **kwargs):
+        return _tag_kwargs(string, kwargs)
     def safefmt(string, kwargs):
         if kwargs:
             try:
@@ -50,6 +51,13 @@ except ImportError:
             except KeyError:
                 pass
         return string
+    _param_re = re.compile(r"%\((\w+)\)(?:s|[\d]*d|\d*.?\d*[fg])")
+    def _tag_kwargs(trans, kwargs):
+        from genshi.builder import tag
+        trans_elts = _param_re.split(trans)
+        for i in xrange(1, len(trans_elts), 2):
+            trans_elts[i] = kwargs.get(trans_elts[i], '???')
+        return tag(*trans_elts)
 
 from tractags.model import resource_tags, tag_frequency, tag_resource
 from tractags.model import tagged_resources

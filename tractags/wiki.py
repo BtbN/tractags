@@ -9,7 +9,7 @@
 
 import re
 
-from genshi.builder import Markup, tag
+from genshi.builder import Fragment, Markup, tag
 from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption
@@ -21,10 +21,12 @@ from trac.web.api import IRequestFilter, ITemplateStreamFilter
 from trac.web.chrome import add_stylesheet
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
 from trac.wiki.api import IWikiSyntaxProvider
+from trac.wiki.formatter import format_to_oneliner
 from trac.wiki.model import WikiPage
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import Counter, DefaultTagProvider, TagSystem, _, ngettext
+from tractags.api import Counter, DefaultTagProvider, TagSystem, _, ngettext, \
+                         tag_
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.query import Query
@@ -116,24 +118,22 @@ class WikiTagInterface(TagTemplateProvider):
                             tags_history[0][0] > page_history[i]['date']:
                         old_tags = split_into_tags(tags_history[0][2] or '')
                         new_tags = split_into_tags(tags_history[0][3] or '')
-                        added = new_tags - old_tags
-                        removed = old_tags - new_tags
-                        # TRANSLATOR: Watch out, keep valid WikiFormatting.
-                        added_str = added and \
-                                    ngettext("''%(tags)s'' added",
-                                             "''%(tags)s'' added", len(added),
-                                             tags=', '.join(added)) or ''
+                        added = sorted(new_tags - old_tags)
+                        removed = sorted(old_tags - new_tags)
+                        comment = tag(tag.strong(_("Tags")), ' ')
+                        if added:
+                            comment.append(tag_(ngettext("%(tags)s added",
+                                                         "%(tags)s added",
+                                                         len(added)),
+                                                tags=tag.em(', '.join(added))))
                         # TRANSLATOR: How to delimit added and removed tags.
-                        delim=added and removed and _("; ") or ''
-                        removed_str = removed and \
-                                      ngettext("''%(tags)s'' removed",
-                                               "''%(tags)s'' removed",
-                                               len(removed),
-                                               tags=', '.join(removed)) or ''
-                        # TRANSLATOR: Tags change record composition.
-                        comment = _(
-                            "'''tags''' %(added)s%(delim)s%(removed)s",
-                            added=added_str, delim=delim, removed=removed_str)
+                        if added and removed:
+                            comment.append(_("; "))
+                        if removed:
+                            comment.append(tag_(ngettext("%(tags)s removed",
+                                                         "%(tags)s removed",
+                                                         len(removed)),
+                                                tags=tag.em(', '.join(removed))))
                         history.append({
                             'version': '*',
                             'url': req.href(resource.realm, resource.id,
@@ -151,7 +151,8 @@ class WikiTagInterface(TagTemplateProvider):
                         'comment': page_history[i]['comment'],
                         'ipnr': page_history[i]['ipnr']
                     })
-                data.update(dict(history=history))
+                data.update(dict(history=history,
+                                 wiki_to_oneliner=self._wiki_to_oneliner))
         return (template, data, content_type)
 
     # ITemplateStreamFilter methods
@@ -269,6 +270,11 @@ class WikiTagInterface(TagTemplateProvider):
         # Remove invalid links to wiki page revisions (fix for Trac < 0.12).
         xpath = '//a[contains(@href,"%2A")]'
         return stream | Transformer(xpath).remove()
+
+    def _wiki_to_oneliner(self, context, wiki, shorten=None):
+        if isinstance(wiki, Fragment):
+            return wiki
+        return format_to_oneliner(self.env, context, wiki, shorten=shorten)
 
 
 class TagWikiSyntaxProvider(Component):
