@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
+# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -23,6 +24,7 @@ from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
 from trac.wiki.api import IWikiSyntaxProvider
 from trac.wiki.formatter import format_to_oneliner
 from trac.wiki.model import WikiPage
+from trac.wiki.parser import WikiParser
 from trac.wiki.web_ui import WikiModule
 
 from tractags.api import DefaultTagProvider, TagSystem, _, requests, tagn_
@@ -149,11 +151,11 @@ class WikiTagInterface(TagTemplateProvider):
         """Called when a page has been renamed (since Trac 0.12)."""
         self.log.debug("Moving wiki page tags from %s to %s",
                        old_name, page.name)
-        tag_system = TagSystem(self.env)
+        tag_sys = TagSystem(self.env)
         # XXX Ugh. Hopefully this will be sufficient to fool any endpoints.
         from trac.test import Mock, MockPerm
         req = Mock(authname='anonymous', perm=MockPerm())
-        tag_system.reparent_tags(req, Resource('wiki', page.name), old_name)
+        tag_sys.reparent_tags(req, Resource('wiki', page.name), old_name)
 
     def wiki_page_deleted(self, page):
         # Page gone, so remove all records on it.
@@ -172,8 +174,8 @@ class WikiTagInterface(TagTemplateProvider):
         resource = page.resource
         if version and not tags_version:
             tags_version = page.time
-        tag_system = TagSystem(self.env)
-        tags = sorted(tag_system.get_tags(req, resource, when=tags_version))
+        tag_sys = TagSystem(self.env)
+        tags = sorted(tag_sys.get_tags(req, resource, when=tags_version))
         return tags
 
     def _redirect_listener(self, req, url, permanent):
@@ -186,8 +188,8 @@ class WikiTagInterface(TagTemplateProvider):
         template_page = WikiPage(self.env, template_pagename)
         if template_page.exists and \
                 'TAGS_VIEW' in req.perm(template_page.resource):
-            ts = TagSystem(self.env)
-            tags = sorted(ts.get_tags(req, template_page.resource))
+            tag_sys = TagSystem(self.env)
+            tags = sorted(tag_sys.get_tags(req, template_page.resource))
             # Prepare tags as content for the editor field.
             tags_str = ' '.join(tags)
             self.env.log.debug("Tags retrieved from template: '%s'" \
@@ -253,12 +255,12 @@ class WikiTagInterface(TagTemplateProvider):
                          .after(insert))
 
     def _update_tags(self, req, page, when=None):
-        tag_system = TagSystem(self.env)
+        tag_sys = TagSystem(self.env)
         newtags = split_into_tags(req.args.get('tags', ''))
-        oldtags = tag_system.get_tags(req, page.resource)
+        oldtags = tag_sys.get_tags(req, page.resource)
 
         if oldtags != newtags:
-            tag_system.set_tags(req, page.resource, newtags, when=when)
+            tag_sys.set_tags(req, page.resource, newtags, when=when)
             return True
         return False
 
@@ -289,41 +291,62 @@ class WikiTagInterface(TagTemplateProvider):
 
 
 class TagWikiSyntaxProvider(Component):
-    """Provide tag:<expr> links."""
+    """Provide tag:<expr> links as WikiFormatting extension."""
 
     implements(IWikiSyntaxProvider)
 
     # IWikiSyntaxProvider methods
     def get_wiki_syntax(self):
+        """Additional syntax for quoted tags or tag expression."""
+        tag_expr = (
+            r"(%s)" % (WikiParser.QUOTED_STRING)
+            )
+
+        # Simple (tag|tagged):link syntax
+        yield (r'''(?P<qualifier>tag(?:ged)?):(?P<tag_expr>%s)''' % tag_expr,
+               lambda f, ns, match: self._format_tagged(
+                   f, match.group('qualifier'), match.group('tag_expr'),
+                   '%s:%s' % (match.group('qualifier'),
+                              match.group('tag_expr'))))
+
+        # [(tag|tagged):link with label]
         yield (r'''\[tag(?:ged)?:'''
-               r'''(?P<tlpexpr>'.*'|".*"|\S+)\s*(?P<tlptitle>[^\]]+)?\]''',
-               lambda f, n, m: self._format_tagged(f,
-                                    m.group('tlpexpr'),
-                                    m.group('tlptitle')))
-        yield (r'''(?P<tagsyn>tag(?:ged)?):(?P<texpr>(?:'.*?'|".*?"|\S)+)''',
-               lambda f, n, m: self._format_tagged(
-                   f, m.group('texpr'),
-                   '%s:%s' % (m.group('tagsyn'), m.group('texpr'))))
+               r'''(?P<ltag_expr>%s)\s*(?P<tag_title>[^\]]+)?\]''' % tag_expr,
+               lambda f, ns, match: self._format_tagged(f, 'tag',
+                                    match.group('ltag_expr'),
+                                    match.group('tag_title')))
 
     def get_link_resolvers(self):
-        return []
+        return [('tag', self._format_tagged),
+                ('tagged', self._format_tagged)]
 
-    def _format_tagged(self, formatter, target, label):
-        RE = re.compile(r'^(\\[\'"]*\'|\\[\'"]*\"|"|\')(.*)(\1)')
-        iter_max = 5
-        iter_run = 0
-        for iter_run in range(0, iter_max):
-            # Reduce outer quotations.
-            ctarget = RE.sub(r'\2', target)
-            iter_run += 1
-            if ctarget == target or iter_run > iter_max:
-                self.env.log.debug(' ,'.join([target, ctarget, str(iter_run)]))
-                break
-            target = ctarget
-        if label:
-            href = formatter.context.href
-            url = get_resource_url(self.env, Resource('tag', target), href)
-            return tag.a(label, href=url)
-        return render_resource_link(self.env, formatter.context,
-                                    Resource('tag', target))
+    def _format_tagged(self, formatter, ns, target, label, fullmatch=None):
+        """Tag and tag query expression link formatter."""
 
+        def unquote(text):
+            """Strip all matching pairs of outer quotes from string."""
+            while re.match(WikiParser.QUOTED_STRING, text):
+                # Remove outer whitespace after stripped quotation too.
+                text = text[1:-1].strip()
+            return text
+ 
+        label = label and unquote(label.strip()) or ''
+        target = unquote(target.strip())
+        tag_res = Resource('tag', target)
+        if 'TAGS_VIEW' in formatter.perm(tag_res):
+            context = formatter.context
+            href = get_resource_url(self.env, tag_res, context.href)
+            tag_sys = TagSystem(self.env)
+            # Tag exists or tags query yields at least one match.
+            if target in tag_sys.get_all_tags(formatter.req) or \
+                    [(res, tags) for res, tags in
+                     tag_sys.query(formatter.req, target)]:
+                if label:
+                    return tag.a(label, href=href)
+                return render_resource_link(self.env, context, tag_res)
+            else:
+                return tag.a(label+'?', href=href, class_='missing tags',
+                             rel='nofollow')
+        else:
+            return tag.span(label, class_='forbidden tags',
+                            title=_("no permission to view tags"))

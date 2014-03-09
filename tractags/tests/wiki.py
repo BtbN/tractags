@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -35,43 +35,42 @@ from tractags.tests import formatter
 from tractags.wiki import WikiTagProvider
 
 
+TEST_NOPERM = u"""
+============================== link rendering without view permission
+tag:onetag
+------------------------------
+<p>
+<a href="/tags/onetag">tag:onetag</a>
+</p>
+------------------------------
+"""
+
 TEST_CASES = u"""
 ============================== tag: link resolver for single tag
 tag:onetag
 tag:2ndtag n' more
-tag:a.really_&nbsp;\wild-thing!
+tag:a.really?_\wild-thing!
 # regression test for ticket `#9057`
 tag:single'quote
 ------------------------------
 <p>
 <a href="/tags/onetag">tag:onetag</a>
 <a href="/tags/2ndtag">tag:2ndtag</a> n' more
-<a href="/tags/a.really_%26nbsp%3B%5Cwild-thing!">tag:a.really_&amp;nbsp;\\wild-thing!</a>
+<a href="/tags/a.really%3F_%5Cwild-thing">tag:a.really?_\wild-thing</a>!
 # regression test for ticket <tt>#9057</tt>
 <a href="/tags/single\'quote">tag:single\'quote</a>
 </p>
 ------------------------------
 ============================== tagged: alternative link markup
 tagged:onetag
-tagged:'onetag 2ndtag'
+tagged:tagged:
 ------------------------------
 <p>
 <a href="/tags/onetag">tagged:onetag</a>
-<a href="/tags/onetag%202ndtag">tagged:\'onetag 2ndtag\'</a>
+<a href="/tags/tagged">tagged:tagged</a>:
 </p>
 ------------------------------
-============================== query expression in tag: link resolver
-tag:'onetag 2ndtag'
-tag:"onetag 2ndtag"
-tag:'"heavily quoted"'
-------------------------------
-<p>
-<a href="/tags/onetag%202ndtag">tag:\'onetag 2ndtag\'</a>
-<a href="/tags/onetag%202ndtag">tag:\"onetag 2ndtag\"</a>
-<a href="/tags/heavily%20quoted">tag:\'"heavily quoted"\'</a>
-</p>
-------------------------------
-============================== tag cleanup and quoting in tag: link resolver
+============================== tag extraction from tag links
 # Trailing non-letter character must be ignored.
 tag:onetag,
 tag:onetag.
@@ -95,15 +94,68 @@ tag:onetag...
 <a href="/tags/onetag">tag:onetag</a>..
 <a href="/tags/onetag">tag:onetag</a>...
 </p>
-============================== tag: as bracketed TracWiki link
-[tag:onetag]
+------------------------------
+============================== bracketed TracWiki tag links
+[tagged:onetag]
 [tag:onetag label]
-[tagged:onetag multi-word tag: label]
+[tag:onetag multi-word tag: label]
+[tag:onetag   surrounding  whitespace stripped ]
+[tag:' onetag  '  " 'surrounding  whitespace stripped '"]
+# Trailing non-letter character
+moved to [tag:'onetag'. label] too, if quoted
+![tag:disabled link]
 ------------------------------
 <p>
 <a href="/tags/onetag">onetag</a>
 <a href="/tags/onetag">label</a>
 <a href="/tags/onetag">multi-word tag: label</a>
+<a href="/tags/onetag">surrounding  whitespace stripped</a>
+<a href="/tags/onetag">surrounding  whitespace stripped</a>
+# Trailing non-letter character
+moved to <a href="/tags/onetag">. label</a> too, if quoted
+[tag:disabled link]
+</p>
+------------------------------
+============================== link to non-existent tag
+tag:missing
+[tag:missing]
+[tag:missing wanted tag]
+------------------------------
+<p>
+<a class="missing tags" href="/tags/missing" rel="nofollow">tag:missing?</a>
+<a class="missing tags" href="/tags/missing" rel="nofollow">missing?</a>
+<a class="missing tags" href="/tags/missing" rel="nofollow">wanted tag?</a>
+</p>
+------------------------------
+============================== quoting in tag link resolver
+tagged:'onetag'
+tag:'"heavily-quoted"'
+------------------------------
+<p>
+<a href="/tags/onetag">tagged:'onetag'</a>
+<a href="/tags/heavily-quoted">tag:'"heavily-quoted"'</a>
+</p>
+------------------------------
+============================== query expression in tag: link resolver
+tag:'onetag 2ndtag'
+tag:"onetag 2ndtag"
+------------------------------
+<p>
+<a href="/tags/onetag%202ndtag">tag:\'onetag 2ndtag\'</a>
+<a href="/tags/onetag%202ndtag">tag:\"onetag 2ndtag\"</a>
+</p>
+------------------------------
+============================== tag links in complex wiki markup
+Linking to a list of resources [tagged with onetag] requires valid syntax
+to get [tagged:onetag rendered].
+Some [tag:"onetag or single'quote "wir]edly"'
+[labeled tag] wiki link is still allowed.
+------------------------------
+<p>
+Linking to a list of resources [tagged with onetag] requires valid syntax
+to get <a href="/tags/onetag">rendered</a>.
+Some <a href="/tags/onetag%20or%20single'quote">wir</a>edly"'
+[labeled tag] wiki link is still allowed.
 </p>
 ------------------------------
 """
@@ -225,6 +277,20 @@ def wiki_setup(tc):
     wiki.text = '--'
     wiki.save('joe', 'TagsPluginTestPage', '::1', now)
 
+    cursor = tc.db.cursor()
+    # Populate table with initial test data.
+    cursor.executemany("""
+        INSERT INTO tags
+               (tagspace, name, tag)
+        VALUES (%s,%s,%s)
+    """, [('wiki', 'TestPage', '2ndtag'),
+          ('wiki', 'TestPage', 'a.really?_\wild-thing'),
+          ('wiki', 'TestPage', 'heavily-quoted'),
+          ('wiki', 'TestPage', 'onetag'),
+          ('wiki', 'TestPage', 'tagged'),
+          ('wiki', 'TestPage', "single'quote"),
+         ])
+
     req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
                authname='anonymous', perm=MockPerm(), tz=utc, args={},
                locale=locale_en)
@@ -234,6 +300,13 @@ def wiki_setup(tc):
     # Enable big diff output.
     tc.maxDiff = None
 
+def wiki_setup_no_perm(tc):
+    wiki_setup(tc)
+    tc.db = tc.env.get_db_cnx()
+
+    cursor = tc.db.cursor()
+    cursor.execute("DELETE FROM permission WHERE action %s"
+                   % tc.db.like(), ('TAGS_%',))
 
 def wiki_teardown(tc):
     tc.env.reset_db()
@@ -245,10 +318,13 @@ def wiki_teardown(tc):
 
 def test_suite():
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(WikiTagProviderTestCase, 'test'))
     suite.addTest(formatter.suite(TEST_CASES, wiki_setup, __file__,
                                   wiki_teardown))
-    suite.addTest(unittest.makeSuite(WikiTagProviderTestCase, 'test'))
+    suite.addTest(formatter.suite(TEST_NOPERM, wiki_setup_no_perm, __file__,
+                                  wiki_teardown))
     return suite
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
+TEST_NOPERM
