@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
 # Copyright (C) 2011 Itamar Ostricher <itamarost@gmail.com>
-# Copyright (C) 2011,2012 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -26,6 +26,7 @@ from trac.util.text import shorten_line, to_unicode
 from trac.web.chrome import Chrome, ITemplateProvider, \
                             add_link, add_stylesheet
 from trac.wiki.api import IWikiMacroProvider, parse_args
+from trac.wiki.formatter import format_to_oneliner
 
 from tractags.api import TagSystem, _
 
@@ -170,7 +171,7 @@ class TagWikiMacros(TagTemplateProvider):
                 data = {'warning': 'obsolete_args'}
             else:
                 data = {'warning': None}
-            context=formatter.context
+            context = formatter.context
             # Use TagsQuery arguments (most likely wiki macro calls).
             cols = 'cols' in kw and kw['cols'] or self.default_cols
             format = 'format' in kw and kw['format'] or self.default_format
@@ -233,17 +234,19 @@ class TagWikiMacros(TagTemplateProvider):
             rows = []
             for resource, tags in results:
                 desc = tag_system.describe_tagged_resource(req, resource)
+                # Fallback to resource provider method.
+                desc = desc or get_resource_description(env, resource,
+                                                        context=context)
                 tags = sorted(tags)
+                wiki_desc = format_to_oneliner(env, context, desc)
                 if tags:
                     rendered_tags = [_link(Resource('tag', tag))
                                      for tag in tags]
                     if 'oldlist' == format:
                         resource_link = _link(resource)
                     else:
-                        desc = desc or \
-                               get_resource_description(env, resource,
-                                                        context=context)
-                        resource_link = builder.a(desc, href=get_resource_url(
+                        resource_link = builder.a(wiki_desc,
+                                                  href=get_resource_url(
                                                   env, resource, context.href))
                         if 'table' == format:
                             cells = []
@@ -252,7 +255,7 @@ class TagWikiMacros(TagTemplateProvider):
                                     cells.append(_link(resource))
                                 # Don't duplicate links to resource in both.
                                 elif col == 'description' and 'id' in cols:
-                                    cells.append(desc)
+                                    cells.append(wiki_desc)
                                 elif col == 'description':
                                     cells.append(resource_link)
                                 elif col == 'realm':
@@ -263,7 +266,7 @@ class TagWikiMacros(TagTemplateProvider):
                                                  for tag in rendered_tags]))
                             rows.append({'cells': cells})
                             continue
-                rows.append({'desc': desc,
+                rows.append({'desc': wiki_desc,
                              'rendered_tags': None,
                              'resource_link': _link(resource)})
             data.update({'format': format,

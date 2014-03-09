@@ -76,6 +76,7 @@ tractags-0.7 (not yet released)
  * #9194: Add unittest and functional test infrastructure
  * #9636: Exclude PageTemplates from tag-extraction
    by adding an optional filter argument to ITagProvider.get_tagged_resources
+ * #11274: Summaries on Tags page should be wiki formatted to html
  * render_cloud() now passes a percent to renderers instead of font pixel size
  * add `ignore_closed_tickets` option: skip closed tickets when collecting tags
  * remove redundant JavaScript files
