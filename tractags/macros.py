@@ -157,13 +157,11 @@ class TagWikiMacros(TagTemplateProvider):
         tag_system = TagSystem(env)
         all_realms = [p.get_taggable_realm()
                       for p in tag_system.tag_providers]
-        self.all_realms = all_realms
-        self.realms = realms
 
         if name == 'TagCloud':
             all_tags = tag_system.get_all_tags(req, realms=realms)
             mincount = 'mincount' in kw and kw['mincount'] or None
-            return self.render_cloud(req, all_tags,
+            return self.render_cloud(req, all_tags, realms,
                                      caseless_sort=self.caseless_sort,
                                      mincount=mincount)
         elif name == 'ListTagged':
@@ -186,12 +184,9 @@ class TagWikiMacros(TagTemplateProvider):
                 realms = list(set(all_realms)-set(self.exclude_realms))
             if not realms:
                 return ''
-            else:
-                self.query = query
-                self.realms = realms
             query = '(%s) (%s)' % (query or '', ' or '.join(['realm:%s' % (r)
                                                              for r in realms]))
-            env.log.debug('LISTTAGGED_QUERY: ' + query)
+            env.log.debug('LISTTAGGED_QUERY: %s', query)
             query_result = tag_system.query(req, query)
             if not query_result:
                 return ''
@@ -200,7 +195,8 @@ class TagWikiMacros(TagTemplateProvider):
                 if resource.realm == 'tag':
                     # Keep realm selection in tag links.
                     return builder.a(resource.id,
-                                     href=self.get_href(req, tag=resource))
+                                     href=self.get_href(req, realms,
+                                                        tag=resource))
                 elif resource.realm == 'ticket':
                     # Return resource link including ticket status dependend
                     #   class to allow for common Trac ticket link style.
@@ -230,7 +226,7 @@ class TagWikiMacros(TagTemplateProvider):
 
             results = sorted(query_result, key=lambda r: \
                              embedded_numbers(to_unicode(r[0].id)))
-            results = self._paginate(req, results)
+            results = self._paginate(req, results, realms)
             rows = []
             for resource, tags in results:
                 desc = tag_system.describe_tagged_resource(req, resource)
@@ -281,16 +277,16 @@ class TagWikiMacros(TagTemplateProvider):
             return Chrome(env).render_template(
                 req, 'listtagged_results.html', data, 'text/html', True)
 
-    def get_href(self, req, per_page=None, page=None, tag=None, **kwargs):
+    def get_href(self, req, realms, query=None, per_page=None, page=None,
+                 tag=None, **kwargs):
         """Prepare href objects for tag links and pager navigation.
 
         Generate form-related arguments, strip arguments with default values.
         """
         form_realms = {}
         # Prepare realm arguments to keep form data consistent.
-        for realm in self.realms:
+        for realm in realms:
             form_realms[realm] = 'on'
-        realms = self.realms
         if not page and not per_page:
             # We're not serving pager navigation here.
             return get_resource_url(self.env, tag, req.href,
@@ -299,12 +295,12 @@ class TagWikiMacros(TagTemplateProvider):
             page = None
         if per_page == self.items_per_page:
             per_page = None
-        return req.href(req.path_info, form_realms, q=self.query,
+        return req.href(req.path_info, form_realms, q=query,
                         realms=realms, listtagged_per_page=per_page,
                         listtagged_page=page, **kwargs)
 
-    def render_cloud(self, req, cloud, renderer=None, caseless_sort=False,
-                     mincount=None):
+    def render_cloud(self, req, cloud, realms, renderer=None,
+                     caseless_sort=False, mincount=None):
         """Render a tag cloud.
 
         :cloud: Dictionary of {object: count} representing the cloud.
@@ -320,7 +316,7 @@ class TagWikiMacros(TagTemplateProvider):
 
         if renderer is None:
             def default_renderer(tag, count, percent):
-                href = self.get_href(req, tag=Resource('tag', tag))
+                href = self.get_href(req, realms, tag=Resource('tag', tag))
                 return builder.a(tag, rel='tag', title='%i' % count,
                                  href=href, style='font-size: %ipx'
                                  % int(min_px + percent * (max_px - min_px)))
@@ -358,8 +354,8 @@ class TagWikiMacros(TagTemplateProvider):
             ul('\n', li, '\n')
         return ul and ul or _("No tags found")
 
-    def _paginate(self, req, results):
-        self.query = req.args.get('q', None)
+    def _paginate(self, req, results, realms):
+        query = req.args.get('q', None)
         current_page = as_int(req.args.get('listtagged_page'), 1)
         items_per_page = as_int(req.args.get('listtagged_per_page'), None)
         if items_per_page is None:
@@ -369,7 +365,7 @@ class TagWikiMacros(TagTemplateProvider):
         pagedata = []
         shown_pages = result.get_shown_pages(21)
         for page in shown_pages:
-            page_href = self.get_href(req, items_per_page, page)
+            page_href = self.get_href(req, realms, query, items_per_page, page)
             pagedata.append([page_href, None, str(page),
                              _("Page %(num)d", num=page)])
 
@@ -380,10 +376,12 @@ class TagWikiMacros(TagTemplateProvider):
                                'string': str(result.page + 1), 'title': None}
 
         if result.has_next_page:
-            next_href = self.get_href(req, items_per_page, current_page + 1)
+            next_href = self.get_href(req, realms, query, items_per_page,
+                                      current_page + 1)
             add_link(req, 'next', next_href, _('Next Page'))
 
         if result.has_previous_page:
-            prev_href = self.get_href(req, items_per_page, current_page - 1)
+            prev_href = self.get_href(req, realms, query, items_per_page,
+                                      current_page - 1)
             add_link(req, 'prev', prev_href, _('Previous Page'))
         return result

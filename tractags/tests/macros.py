@@ -11,8 +11,7 @@ import shutil
 import tempfile
 import unittest
 
-from trac.test import EnvironmentStub, Mock
-from trac.perm import PermissionCache, PermissionSystem
+from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.web.href import Href
 
 from tractags.db import TagSetup
@@ -43,6 +42,11 @@ class ListTaggedMacroTestCase(unittest.TestCase):
         self.env = EnvironmentStub(
                 enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
+        self.req = Mock(path_info='/wiki/ListTaggedPage',
+                        args={}, authname='user', perm=MockPerm(),
+                        href=Href('/'),
+                        abs_href=Href('http://example.org/trac/'),
+                        chrome={}, session={}, locale='', tz='')
 
         self.db = self.env.get_db_cnx()
         cursor = self.db.cursor()
@@ -60,19 +64,8 @@ class ListTaggedMacroTestCase(unittest.TestCase):
         shutil.rmtree(self.env.path)
 
     def test_empty_content(self):
-        req = Mock(path_info='/wiki/ListTaggedPage',
-                   args={},
-                   authname='user',
-                   perm=PermissionCache(self.env, 'user'),
-                   href=Href('/'),
-                   abs_href='http://example.org/trac/',
-                   chrome={},
-                   session={},
-                   locale='',
-                   tz=''
-            )
-        context = Mock(env=self.env, href=Href('/'), req=req)
-        formatter = Mock(context=context, req=req)
+        context = Mock(env=self.env, href=Href('/'), req=self.req)
+        formatter = Mock(context=context, req=self.req)
         self.assertTrue('No resources found' in
                         str(self.tag_twm.expand_macro(formatter,
                                                       'ListTagged', '')))
@@ -84,15 +77,87 @@ class TagCloudMacroTestCase(unittest.TestCase):
         self.env = EnvironmentStub(
                 enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
+        self.req = Mock(path_info='/wiki/TagCloudPage',
+                        args={}, authname='user', perm=MockPerm(),
+                        href=Href('/'),
+                        abs_href='http://example.org/trac/',
+                        chrome={}, session={}, locale='', tz='')
+        self.context = Mock(env=self.env, href=self.req.href, req=self.req)
+        self.formatter = Mock(context=self.context, req=self.req)
+
+        self.db = self.env.get_db_cnx()
+        cursor = self.db.cursor()
+        cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
+        cursor.execute("DELETE FROM system WHERE name='tags_version'")
+        cursor.execute("DELETE FROM permission WHERE action %s"
+                       % self.db.like(), ('TAGS_%',))
+
+        setup = TagSetup(self.env)
+        setup.upgrade_environment(self.db)
 
         self.tag_twm = TagWikiMacros(self.env)
 
     def tearDown(self):
         shutil.rmtree(self.env.path)
 
-    def test_init(self):
-        # Empty test just to confirm that setUp and tearDown works
-        pass
+    def _insert_tags(self, tagspace, name, tags):
+        cursor = self.db.cursor()
+        args = [(tagspace, name, tag) for tag in tags]
+        cursor.executemany("INSERT INTO tags (tagspace,name,tag) "
+                           "VALUES (%s,%s,%s)", args)
+
+    def _expand_macro(self, content):
+        return self.tag_twm.expand_macro(self.formatter, 'TagCloud', content)
+
+    def test_normal(self):
+        self._insert_tags('wiki',   'CamelCase',     ('blah', 'foo', 'bar'))
+        self._insert_tags('wiki',   'InterMapTxt',   ('blah', 'foo', 'bar'))
+        self._insert_tags('wiki',   'InterTrac',     ('blah',))
+        self._insert_tags('wiki',   'InterWiki',     ('blah',))
+        self._insert_tags('wiki',   'PageTemplates', ('blah',))
+        self._insert_tags('wiki',   'RecentChanges', ('blah', 'foo'))
+        self._insert_tags('wiki',   'SandBox',       ('blah', 'foo'))
+        self._insert_tags('ticket', '1',             ('blah',))
+        self._insert_tags('ticket', '2',             ('blah', 'bar'))
+        self._insert_tags('ticket', '3',             ('blah', 'bar'))
+        self._insert_tags('ticket', '4',             ('blah', 'bar'))
+
+        result = unicode(self._expand_macro(''))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertTrue('">foo</a>' in result, repr(result))
+        self.assertTrue('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('mincount=5'))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertFalse('">foo</a>' in result, repr(result))
+        self.assertTrue('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('mincount=6'))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertFalse('">foo</a>' in result, repr(result))
+        self.assertFalse('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('realm=ticket|wiki'))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertTrue('">foo</a>' in result, repr(result))
+        self.assertTrue('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('realm=ticket'))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertFalse('">foo</a>' in result, repr(result))
+        self.assertTrue('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('realm=ticket,mincount=4'))
+        self.assertTrue('">blah</a>' in result, repr(result))
+        self.assertFalse('">foo</a>' in result, repr(result))
+        self.assertFalse('">bar</a>' in result, repr(result))
+
+        result = unicode(self._expand_macro('realm=unknown'))
+        self.assertEquals('No tags found', result)
+
+        result = unicode(self._expand_macro('mincount=100'))
+        self.assertEquals('No tags found', result)
 
 
 def test_suite():
