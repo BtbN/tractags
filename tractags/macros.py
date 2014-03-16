@@ -10,7 +10,7 @@
 
 import re
 
-from genshi.builder import Markup, tag as builder
+from genshi.builder import tag as builder
 from pkg_resources import resource_filename
 
 from trac.config import BoolOption, ListOption, Option
@@ -28,7 +28,7 @@ from trac.web.chrome import Chrome, ITemplateProvider, \
 from trac.wiki.api import IWikiMacroProvider, parse_args
 from trac.wiki.formatter import format_to_oneliner
 
-from tractags.api import TagSystem, _
+from tractags.api import TagSystem, N_, _, gettext
 
 try:
     from trac.util  import as_int
@@ -108,7 +108,7 @@ class TagWikiMacros(TagTemplateProvider):
 
     def __init__(self):
         # TRANSLATOR: Keep macro doc style formatting here, please.
-        self.doc_cloud = _("""Display a tag cloud.
+        self.doc_cloud = N_("""Display a tag cloud.
 
     Show a tag cloud for all tags on resources matching query.
 
@@ -124,7 +124,7 @@ class TagWikiMacros(TagTemplateProvider):
 
     See tags documentation for the query syntax.
     """)
-        self.doc_listtagged = _("""List tagged resources.
+        self.doc_listtagged = N_("""List tagged resources.
 
     Usage:
 
@@ -143,9 +143,9 @@ class TagWikiMacros(TagTemplateProvider):
 
     def get_macro_description(self, name):
         if name == 'ListTagged':
-            return self.doc_listtagged
-        elif name == 'TagCloud':
-            return self.doc_cloud
+            return gettext(self.doc_listtagged)
+        if name == 'TagCloud':
+            return gettext(self.doc_cloud)
 
     def expand_macro(self, formatter, name, content):
         env = self.env
