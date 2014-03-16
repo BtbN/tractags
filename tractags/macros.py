@@ -283,10 +283,8 @@ class TagWikiMacros(TagTemplateProvider):
 
         Generate form-related arguments, strip arguments with default values.
         """
-        form_realms = {}
         # Prepare realm arguments to keep form data consistent.
-        for realm in realms:
-            form_realms[realm] = 'on'
+        form_realms = dict((realm, 'on') for realm in realms)
         if not page and not per_page:
             # We're not serving pager navigation here.
             return get_resource_url(self.env, tag, req.href,
