@@ -169,9 +169,7 @@ class TagWikiMacros(TagTemplateProvider):
             realms = 'realm' in kw and kw['realm'].split('|') or []
         if query:
             # Add realms from query expression.
-            for realm in all_realms:
-                if re.search('(^|\W)realm:%s(\W|$)' % (realm), query):
-                    realms = realms and realms.append(realm) or [realm]
+            realms.extend(query_realms(query, all_realms))
             # Remove redundant realm selection for performance.
             if set(realms) == set(all_realms):
                 query = re.sub('(^|\W)realm:\S+(\W|$)', ' ', query).strip()
@@ -397,3 +395,11 @@ class TagWikiMacros(TagTemplateProvider):
                                       current_page - 1)
             add_link(req, 'prev', prev_href, _('Previous Page'))
         return result
+
+
+def query_realms(query, all_realms):
+    realms = []
+    for realm in all_realms:
+        if re.search('(^|\W)realm:%s(\W|$)' % realm, query):
+            realms.append(realm)
+    return realms

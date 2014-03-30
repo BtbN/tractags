@@ -19,13 +19,14 @@ from trac.resource import Resource
 from trac.util import to_unicode
 from trac.util.text import CRLF
 from trac.web.api import IRequestHandler
-from trac.web.chrome import INavigationContributor, \
-                            add_stylesheet, add_ctxtnav
+from trac.web.chrome import INavigationContributor
+from trac.web.chrome import add_stylesheet, add_ctxtnav
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
 from tractags.api import TagSystem, ITagProvider, _, tag_
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
+from tractags.macros import query_realms
 from tractags.query import InvalidQuery
 
 
@@ -79,6 +80,7 @@ class TagRequestHandler(TagTemplateProvider):
         tag_id = match.group(1) and match.group(1) or None
         query = req.args.get('q', '')
 
+        # Consider only providers, that are permitted for display.
         realms = [p.get_taggable_realm() for p in self.tag_providers
                   if (not hasattr(p, 'check_permission') or \
                       p.check_permission(req.perm, 'view'))]
@@ -87,15 +89,19 @@ class TagRequestHandler(TagTemplateProvider):
                 if not realm in self.exclude_realms:
                     req.args[realm] = 'on'
         checked_realms = [r for r in realms if r in req.args]
+        if query:
+            # Add permitted realms from query expression.
+            checked_realms.extend(query_realms(query, realms))
         realm_args = dict(zip([r for r in checked_realms],
                               ['on' for r in checked_realms]))
+        # Switch between single tag and tag query expression mode.
         if tag_id and not re.match(r"""(['"]?)(\S+)\1$""", tag_id, re.UNICODE):
-            # Convert complex, invalid tag ID's to query expression.
+            # Convert complex, invalid tag ID's --> query expression.
             req.redirect(req.href.tags(realm_args, q=tag_id))
         elif query:
             single_page = re.match(r"""(['"]?)(\S+)\1$""", query, re.UNICODE)
             if single_page:
-                # Convert simple query for single tag ID.
+                # Convert simple query --> single tag.
                 req.redirect(req.href.tags(single_page.group(2), realm_args))
 
         data = dict(page_title=_("Tags"), checked_realms=checked_realms)

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -15,7 +16,7 @@ from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.web.href import Href
 
 from tractags.db import TagSetup
-from tractags.macros import TagTemplateProvider, TagWikiMacros
+from tractags.macros import query_realms, TagTemplateProvider, TagWikiMacros
 
 
 class TagTemplateProviderTestCase(unittest.TestCase):
@@ -160,11 +161,29 @@ class TagCloudMacroTestCase(unittest.TestCase):
         self.assertEquals('No tags found', result)
 
 
+class QueryRealmsTestCase(unittest.TestCase):
+    def test_query_realms(self):
+        all_realms = ['ticket', 'wiki']
+        # No tag providers detected.
+        self.assertFalse('ticket' in query_realms('', []))
+        # No tags query statement used.
+        self.assertFalse('ticket' in query_realms('', all_realms))
+        self.assertFalse('ticket' in query_realms('ticket', all_realms))
+        self.assertFalse('ticket' in query_realms('realm:ticket', ['wiki']))
+        self.assertTrue('ticket' in query_realms('realm:ticket', all_realms))
+        self.assertFalse('wiki' in query_realms('realm:ticket', all_realms))
+        self.assertTrue('wiki' in
+                        query_realms('onetag realm:wiki 2ndtag', all_realms))
+        self.assertFalse('wiki' in
+                         query_realms('onetag realm=wiki 2ndtag', all_realms))
+
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase, 'test'))
     suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase, 'test'))
     suite.addTest(unittest.makeSuite(TagCloudMacroTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(QueryRealmsTestCase, 'test'))
     return suite
 
 if __name__ == '__main__':
