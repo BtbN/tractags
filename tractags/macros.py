@@ -28,7 +28,7 @@ from trac.web.chrome import Chrome, ITemplateProvider, \
 from trac.wiki.api import IWikiMacroProvider, parse_args
 from trac.wiki.formatter import format_to_oneliner
 
-from tractags.api import TagSystem, N_, _, gettext
+from tractags.api import Counter, TagSystem, N_, _, gettext
 
 try:
     from trac.util  import as_int
@@ -156,8 +156,8 @@ class TagWikiMacros(TagTemplateProvider):
         req = formatter.req
         tag_system = TagSystem(env)
 
-        all_realms = [p.get_taggable_realm()
-                      for p in tag_system.tag_providers]
+        all_realms = set([p.get_taggable_realm()
+                         for p in tag_system.tag_providers])
         if not all_realms:
             # Tag providers are required, no result without at least one.
             return ''
@@ -171,13 +171,20 @@ class TagWikiMacros(TagTemplateProvider):
             # Add realms from query expression.
             realms.extend(query_realms(query, all_realms))
             # Remove redundant realm selection for performance.
-            if set(realms) == set(all_realms):
+            if set(realms) == all_realms:
                 query = re.sub('(^|\W)realm:\S+(\W|$)', ' ', query).strip()
         if name == 'TagCloud':
             # Set implicit 'all tagged realms' as default.
             if not realms:
                 realms = all_realms
-            all_tags = tag_system.get_all_tags(req, realms=realms)
+            if query:
+                all_tags = Counter()
+                # Require per resource query including view permission checks.
+                for resource, tags in tag_system.query(req, query):
+                    all_tags.update(tags)
+            else:
+                # Allow faster per tag query, side steps permission checks.
+                all_tags = tag_system.get_all_tags(req, realms=realms)
             mincount = 'mincount' in kw and kw['mincount'] or None
             return self.render_cloud(req, all_tags, realms,
                                      caseless_sort=self.caseless_sort,
