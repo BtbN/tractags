@@ -147,18 +147,38 @@ class TagWikiMacros(TagTemplateProvider):
         if name == 'TagCloud':
             return gettext(self.doc_cloud)
 
-    def expand_macro(self, formatter, name, content):
+    def expand_macro(self, formatter, name, content, realms=[]):
+        """Evaluate macro call and render results.
+
+        Calls from web-UI come with pre-processed realm selection.
+        """
         env = self.env
         req = formatter.req
-        args, kw = parse_args(content)
-
-        # Use macro arguments (most likely wiki macro calls).
-        realms = 'realm' in kw and kw['realm'].split('|') or []
         tag_system = TagSystem(env)
+
         all_realms = [p.get_taggable_realm()
                       for p in tag_system.tag_providers]
+        if not all_realms:
+            # Tag providers are required, no result without at least one.
+            return ''
+        args, kw = parse_args(content)
 
+        query = args and args[0].strip() or None
+        if not realms:
+            # Check macro arguments for realms (typical wiki macro call).
+            realms = 'realm' in kw and kw['realm'].split('|') or []
+        if query:
+            # Add realms from query expression.
+            for realm in all_realms:
+                if re.search('(^|\W)realm:%s(\W|$)' % (realm), query):
+                    realms = realms and realms.append(realm) or [realm]
+            # Remove redundant realm selection for performance.
+            if set(realms) == set(all_realms):
+                query = re.sub('(^|\W)realm:\S+(\W|$)', ' ', query).strip()
         if name == 'TagCloud':
+            # Set implicit 'all tagged realms' as default.
+            if not realms:
+                realms = all_realms
             all_tags = tag_system.get_all_tags(req, realms=realms)
             mincount = 'mincount' in kw and kw['mincount'] or None
             return self.render_cloud(req, all_tags, realms,
@@ -173,17 +193,11 @@ class TagWikiMacros(TagTemplateProvider):
             # Use TagsQuery arguments (most likely wiki macro calls).
             cols = 'cols' in kw and kw['cols'] or self.default_cols
             format = 'format' in kw and kw['format'] or self.default_format
-            query = args and args[0].strip() or None
-            if query and not realms:
-                # First read query arguments (most likely a web-UI call).
-                for realm in all_realms:
-                    if re.search('(^|\W)realm:%s(\W|$)' % (realm), query):
-                        realms = realms and realms.append(realm) or [realm]
             if not realms:
                 # Apply ListTagged defaults to macro call w/o realm.
                 realms = list(set(all_realms)-set(self.exclude_realms))
-            if not realms:
-                return ''
+                if not realms:
+                    return ''
             query = '(%s) (%s)' % (query or '', ' or '.join(['realm:%s' % (r)
                                                              for r in realms]))
             env.log.debug('LISTTAGGED_QUERY: %s', query)

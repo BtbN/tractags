@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
 # Copyright (C) 2011 Itamar Ostricher <itamarost@gmail.com>
+# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -114,24 +114,25 @@ class TagRequestHandler(TagTemplateProvider):
             # TRANSLATOR: The meta-nav link label.
             add_ctxtnav(req, _("Back to Cloud"), req.href.tags())
             macro = 'ListTagged'
-            args = '%s,format=%s,cols=%s,realm=%s' \
-                   % (tag_id and tag_id or query, self.default_format,
-                      self.default_cols, '|'.join(checked_realms))
+            args = "%s,format=%s,cols=%s" % \
+                   (tag_id and tag_id or query, self.default_format,
+                    self.default_cols)
             data['mincount'] = None
         else:
             macro = 'TagCloud'
             mincount = as_int(req.args.get('mincount', None),
                               self.cloud_mincount)
-            args = 'mincount=%s,realm=%s' % (mincount,
-                                             '|'.join(checked_realms))
+            args = mincount and "mincount=%s" % mincount or None
             data['mincount'] = mincount
         formatter = Formatter(self.env, Context.from_request(req,
                                                              Resource('tag')))
-        self.env.log.debug('Tag macro arguments: %s', args)
+        self.env.log.debug(
+            "Tag macro arguments: %s", args and args or '(none)')
         try:
             # Query string without realm throws 'NotImplementedError'.
-            data['tag_body'] = len(checked_realms) > 0 and \
-                               macros.expand_macro(formatter, macro, args) \
+            data['tag_body'] = checked_realms and \
+                               macros.expand_macro(formatter, macro, args,
+                                                   realms=checked_realms) \
                                or ''
         except InvalidQuery, e:
             data['tag_query_error'] = to_unicode(e)
