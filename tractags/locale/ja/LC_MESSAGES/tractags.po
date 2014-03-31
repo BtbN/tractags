@@ -1,14 +1,14 @@
 # Japanese translations for TracTags.
-# Copyright (C) 2013
+# Copyright (C) 2010-2014
 # This file is distributed under the same license as the TracTags
 # project.
-# Jun Omae <jun66j5@gmail.com>, 2010,2012.
+# Jun Omae <jun66j5@gmail.com>, 2010-2014.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2013-11-02 22:49+0100\n"
+"POT-Creation-Date: 2014-03-30 13:34+0200\n"
 "PO-Revision-Date: 2010-11-10 22:58+0900\n"
 "Last-Translator: Jun Omae <jun66j5@gmail.com>\n"
 "Language-Team: ja <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr "置換"
 msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr "選択しているタグと新しいタグないし削除に対する同意が必要です"
 
-#: tractags/api.py:525
+#: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
 msgstr "'%s' レルムでのタグ付けをサポートしていません"
@@ -47,7 +47,7 @@ msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr "バージョン%(num)iのアップグレード用モジュールがありません (%(version)s.py)"
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
-#: tractags/macros.py:110
+#: tractags/macros.py:111
 msgid ""
 "Display a tag cloud.\n"
 "\n"
@@ -83,7 +83,7 @@ msgstr ""
 "    クエリの構文については tags のドキュメントを参照してください。\n"
 "    "
 
-#: tractags/macros.py:126
+#: tractags/macros.py:127
 msgid ""
 "List tagged resources.\n"
 "\n"
@@ -107,34 +107,35 @@ msgstr ""
 "    クエリの構文については tags のドキュメントを参照してください。\n"
 "    "
 
-#: tractags/macros.py:219
+#: tractags/macros.py:235
 msgid "Id"
 msgstr "ID"
 
-#: tractags/macros.py:223
+#: tractags/macros.py:239
 msgid "Realm"
 msgstr "レルム"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
-#: tractags/macros.py:224 tractags/web_ui.py:67 tractags/web_ui.py:101
-#: tractags/wiki.py:240 tractags/templates/admin_tag_change.html:13
+#: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
+#: tractags/wiki.py:227 tractags/wiki.py:254
+#: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
 msgstr "タグ"
 
-#: tractags/macros.py:356
+#: tractags/macros.py:372
 msgid "No tags found"
 msgstr "一致するタグが見つかりません"
 
-#: tractags/macros.py:371
+#: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
 msgstr "ページ%(num)d"
 
-#: tractags/macros.py:381
+#: tractags/macros.py:398
 msgid "Next Page"
 msgstr "次のページ"
 
-#: tractags/macros.py:385
+#: tractags/macros.py:403
 msgid "Previous Page"
 msgstr "前のページ"
 
@@ -169,44 +170,41 @@ msgid "Do not collect tags from closed tickets."
 msgstr "完了済みのチケットからタグを収集しない。"
 
 #. TRANSLATOR: The meta-nav link label.
-#: tractags/web_ui.py:115
+#: tractags/web_ui.py:121
 msgid "Back to Cloud"
 msgstr "タグクラウドに戻る"
 
-#. TRANSLATOR: Watch out, keep valid WikiFormatting.
-#: tractags/wiki.py:125
+#: tractags/wiki.py:220
 #, python-format
-msgid "''%(tags)s'' added"
-msgid_plural "''%(tags)s'' added"
-msgstr[0] "''%(tags)s''を追加"
+msgid "%(tags)s added"
+msgid_plural "%(tags)s added"
+msgstr[0] "%(tags)s を追加"
+
+#: tractags/wiki.py:224
+#, python-format
+msgid "%(tags)s removed"
+msgid_plural "%(tags)s removed"
+msgstr[0] "%(tags)s を削除"
 
 #. TRANSLATOR: How to delimit added and removed tags.
-#: tractags/wiki.py:127
+#: tractags/wiki.py:226
 msgid "; "
 msgstr "、"
 
-#: tractags/wiki.py:132
-#, python-format
-msgid "''%(tags)s'' removed"
-msgid_plural "''%(tags)s'' removed"
-msgstr[0] "''%(tags)s''を削除"
-
-#. TRANSLATOR: Tags change record composition.
-#: tractags/wiki.py:134
-#, python-format
-msgid "'''tags''' %(added)s%(delim)s%(removed)s"
-msgstr "'''タグ''' %(added)s%(delim)s%(removed)s"
-
 #. TRANSLATOR: Label text for link to '/tags'.
-#: tractags/wiki.py:255
+#: tractags/wiki.py:270
 msgid "view all tags"
 msgstr "すべてのタグを表示する"
 
 #. TRANSLATOR: ... (view all tags)
-#: tractags/wiki.py:257
+#: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
 msgstr "タグ: (%(tags_link)s)"
+
+#: tractags/wiki.py:353
+msgid "no permission to view tags"
+msgstr "タグを表示する権限がありません"
 
 #: tractags/templates/admin_tag_change.html:16
 msgid "Manage Tags"
