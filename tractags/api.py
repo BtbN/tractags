@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
 # Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
-# Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -395,8 +395,13 @@ class TagSystem(Component):
                     all_tags += provider.get_all_tags(req)
                 except AttributeError:
                     # Fallback for older providers.
-                    for resource, tags in provider.get_tagged_resources(req):
-                        all_tags.update(tags)
+                    try:
+                        for resource, tags in \
+                            provider.get_tagged_resources(req):
+                                all_tags.update(tags)
+                    except TypeError:
+                        self.env.log.debug('Skip erroneous ITagProvider %s' %
+                                           repr(provider)
         return all_tags
 
     def get_tags(self, req, resource, when=None):
