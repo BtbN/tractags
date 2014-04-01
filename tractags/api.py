@@ -401,7 +401,7 @@ class TagSystem(Component):
                                 all_tags.update(tags)
                     except TypeError:
                         self.env.log.debug('Skip erroneous ITagProvider %s' %
-                                           repr(provider)
+                                           repr(provider))
         return all_tags
 
     def get_tags(self, req, resource, when=None):
