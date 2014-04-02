@@ -400,8 +400,11 @@ class TagSystem(Component):
                             provider.get_tagged_resources(req):
                                 all_tags.update(tags)
                     except TypeError:
-                        self.env.log.debug('Skip erroneous ITagProvider %s' %
-                                           repr(provider))
+                        # Defense against loose ITagProvider implementations,
+                        # that might become obsolete in the future.
+                        self.env.log.warning('ITagProvider %r has outdated'
+                                             'get_tagged_resources() method' %
+                                             provider)
         return all_tags
 
     def get_tags(self, req, resource, when=None):
