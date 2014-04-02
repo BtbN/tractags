@@ -186,9 +186,9 @@ class TagWikiMacros(TagTemplateProvider):
                 # Allow faster per tag query, side steps permission checks.
                 all_tags = tag_system.get_all_tags(req, realms=realms)
             mincount = 'mincount' in kw and kw['mincount'] or None
-            return self.render_cloud(req, all_tags, realms,
+            return self.render_cloud(req, all_tags,
                                      caseless_sort=self.caseless_sort,
-                                     mincount=mincount)
+                                     mincount=mincount, realms=realms)
         elif name == 'ListTagged':
             if content and _OBSOLETE_ARGS_RE.search(content):
                 data = {'warning': 'obsolete_args'}
@@ -316,8 +316,8 @@ class TagWikiMacros(TagTemplateProvider):
                         realms=realms, listtagged_per_page=per_page,
                         listtagged_page=page, **kwargs)
 
-    def render_cloud(self, req, cloud, realms, renderer=None,
-                     caseless_sort=False, mincount=None):
+    def render_cloud(self, req, cloud, renderer=None, caseless_sort=False,
+                     mincount=None, realms=()):
         """Render a tag cloud.
 
         :cloud: Dictionary of {object: count} representing the cloud.
