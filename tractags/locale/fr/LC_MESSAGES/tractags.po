@@ -1,20 +1,21 @@
-# Italian translations for TracTags.
+# French translations for TracTags.
 # Copyright (C) 2014
 # This file is distributed under the same license as the TracTags
 # project.
 #
 # Translators:
-# Roberto Longobardi <seccanj@gmail.com>, 2011
+# mliberado <michel.liberado@gmail.com>, 2013-2014
+# SaintGermain <saintger@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
 "POT-Creation-Date: 2014-03-30 13:34+0200\n"
-"PO-Revision-Date: 2014-03-30 12:17+0000\n"
-"Last-Translator: Roberto Longobardi <seccanj@gmail.com>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/Trac_Plugin-"
-"L10N/language/it/)\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"PO-Revision-Date: 2014-04-01 19:53+0000\n"
+"Last-Translator: mliberado <michel.liberado@gmail.com>\n"
+"Language-Team: French (http://www.transifex.com/projects/p/Trac_Plugin-"
+"L10N/language/fr/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,31 +23,37 @@ msgstr ""
 
 #: tractags/admin.py:27
 msgid "Tag System"
-msgstr ""
+msgstr "Système d'étiquette"
 
 #: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
-msgstr ""
+msgstr "Remplacer"
 
 #: tractags/admin.py:52
 msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr ""
+"Le étiquette(s) courante sélectionnées et, au choix ou bien la nouvelle "
+"étiquette ou bien l'acceptation de la suppression sont requis"
 
 #: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
-msgstr "I tag non sono supportati sul reame '%s'"
+msgstr "Les étiquettes ne sont pas supportées sur le domaine '%s'"
 
 #: tractags/db.py:33
 msgid ""
 "A newer plugin version has been installed before, but downgrading is "
 "unsupported."
 msgstr ""
+"Une version plus récente du plugin a été installé auparavant, le "
+"downgrade n'est pas supporté."
 
 #: tractags/db.py:68
 #, python-format
 msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
+"Pas de mis à jour du module pour la version %(num)i (%(version)s.py)\n"
+"                        "
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
 #: tractags/macros.py:111
@@ -68,6 +75,23 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
+"Afficher un nuage d'étiquette.\n"
+"\n"
+"Montrer un nuage d'étiquette pour toutes les étiquettes sur les "
+"ressources correspondant à la requête.\n"
+"\n"
+"Utilisation :\n"
+"\n"
+"{{{\n"
+"[[TagCloud(query,caseless_sort=<bool>,mincount=<n>)]]\n"
+"}}}\n"
+"caseless_sort::\n"
+"Selon sur le nuage d'étiquette doit être sensible à la casse.\n"
+"mincount::\n"
+"Seuil d'affichage pour les étiquettes avec un faible nombre d'occurences."
+"\n"
+"\n"
+"Voir la documentation sur les étiquettes pour la syntaxe de requête."
 
 #: tractags/macros.py:127
 msgid ""
@@ -82,137 +106,137 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
-"Lista delle risorse taggate.\n"
+"Lister les ressources étiquetées.\n"
 "\n"
-"    Uso: \n"
+"    Usage:\n"
 "\n"
 "    {{{\n"
 "    [[ListTagged(query)]]\n"
 "    }}}\n"
 "\n"
-"    Consultare la documentazione sui tag per la sintassi delle query."
+"    Voir la documentation sur les étiquettes pour la syntaxe de requête.\n"
+"    "
 
 #: tractags/macros.py:235
 msgid "Id"
-msgstr ""
+msgstr "I"
 
 #: tractags/macros.py:239
 msgid "Realm"
-msgstr ""
+msgstr "Domaine"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
 #: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
 #: tractags/wiki.py:227 tractags/wiki.py:254
 #: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
-msgstr "Tag"
+msgstr "Étiquettes"
 
 #: tractags/macros.py:372
 msgid "No tags found"
-msgstr ""
+msgstr "Aucune étiquette trouvée"
 
 #: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
-msgstr ""
+msgstr "Page %(num)d"
 
 #: tractags/macros.py:398
 msgid "Next Page"
-msgstr ""
+msgstr "Page Suivante"
 
 #: tractags/macros.py:403
 msgid "Previous Page"
-msgstr ""
+msgstr "Page Précédente"
 
 #: tractags/query.py:191
 msgid "Attribute must be a word"
-msgstr "L'attributo deve essere una parola"
+msgstr "L'attribut doit être un mot"
 
 #: tractags/query.py:216
 msgid "Expected ) at end of sub-expression"
-msgstr "Previsto ) alla fine del sotto-espressione"
+msgstr ") attendu à la fin de la sous-expression"
 
 #: tractags/query.py:233
 msgid "Unexpected end of string"
-msgstr "Inaspettata fine della stringa"
+msgstr "Fin de chaîne inopinée"
 
 #: tractags/query.py:239
 #, python-format
 msgid "Expected terminal, got '%s'"
-msgstr "Carattere terminale previsto, trovato '%s'"
+msgstr "Terminateur attendu, reçu '%s'"
 
 #: tractags/query.py:427
 #, python-format
 msgid "Invalid attribute '%s'"
-msgstr "Attributo non valido '%s'"
+msgstr "Attribut invalide '%s'"
 
 #: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
-msgstr "Elenco dei campi della segnalazione da esporre come tag."
+msgstr "Liste des champs de tickets à exposer en tant qu'étiquettes."
 
 #: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
-msgstr "Non collezionare i tag da segnalazioni chiuse."
+msgstr "Ne pas collecter les étiquettes des tickets clos."
 
 #. TRANSLATOR: The meta-nav link label.
 #: tractags/web_ui.py:121
 msgid "Back to Cloud"
-msgstr ""
+msgstr "Retourner au Cloud"
 
 #: tractags/wiki.py:220
 #, python-format
 msgid "%(tags)s added"
 msgid_plural "%(tags)s added"
-msgstr[0] "%(tags)s aggiunto"
-msgstr[1] "%(tags)s aggiunti"
+msgstr[0] ""
+msgstr[1] ""
 
 #: tractags/wiki.py:224
 #, python-format
 msgid "%(tags)s removed"
 msgid_plural "%(tags)s removed"
-msgstr[0] "%(tags)s eliminato"
-msgstr[1] "%(tags)s eliminati"
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATOR: How to delimit added and removed tags.
 #: tractags/wiki.py:226
 msgid "; "
-msgstr ""
+msgstr ";"
 
 #. TRANSLATOR: Label text for link to '/tags'.
 #: tractags/wiki.py:270
 msgid "view all tags"
-msgstr "vedi tutti i Tag"
+msgstr "voir toutes les étiquettes"
 
 #. TRANSLATOR: ... (view all tags)
 #: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
-msgstr "Tagga con: (%(tags_link)s)"
+msgstr "Étiquettes sous : (%(tags_link)s)"
 
 #: tractags/wiki.py:353
 msgid "no permission to view tags"
-msgstr ""
+msgstr "pas d'autorisation pour voir les tags"
 
 #: tractags/templates/admin_tag_change.html:16
 msgid "Manage Tags"
-msgstr ""
+msgstr "Gérer les étiquettes"
 
 #: tractags/templates/admin_tag_change.html:19
-#
 msgid "Filters"
-msgstr "Filtri"
+msgstr "Filtres"
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
-msgstr "Filtra i Tag"
+msgstr "Filtres de tags"
 
 #: tractags/templates/admin_tag_change.html:21
 msgid "Realms"
-msgstr ""
+msgstr "Domaines"
 
 #: tractags/templates/admin_tag_change.html:30
 msgid "Update"
-msgstr "Aggiorna"
+msgstr "Mise à jour"
 
 #: tractags/templates/admin_tag_change.html:43
 msgid ""
@@ -223,10 +247,15 @@ msgid ""
 "          be added if supported by the tag storage for the resource's "
 "realm."
 msgstr ""
+"Sélectionner une étiquette existante pour remplacer avec une autre, deux "
+"ou plus  pour les consolider dans une seule. La nouvelle étiquette "
+"[1:exigée] peut en fait être une étiquette existante ou bien une "
+"nouvelle. Un commentaire de changement sera ajouté si supporté par "
+"l'entrepôt d'étiquettes pour le domaine de la ressource."
 
 #: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
-msgstr ""
+msgstr "Étiquette courante :"
 
 #: tractags/templates/admin_tag_change.html:60
 msgid ""
@@ -235,10 +264,14 @@ msgid ""
 "            [4:]\n"
 "            allow tag deletion"
 msgstr ""
+"Nouvelle étiquette :[1:]\n"
+"            [2:][3:]ou\n"
+"            [4:]\n"
+"            permettre la suppression d'étiquette"
 
 #: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
-msgstr ""
+msgstr "Commentaire (facultatif) :"
 
 #: tractags/templates/admin_tag_change.html:71
 msgid ""
@@ -247,6 +280,11 @@ msgid ""
 "            for some tags, because tags might be immutable depending\n"
 "            on internals of the tag provider they've been derived from."
 msgstr ""
+"[1:Attention :] les tentatives de remplacer une ou plusieurs étiquettes "
+"vont toujours ajouter la nouvelle étiquette, mais [2:la suppression peut "
+"échouer] pour certaines étiquettes, car les étiquettes peuvent être "
+"immutables en fonction des fonctionnalités internes du fournisseur "
+"d'étiquettes dont elles sont dérivées."
 
 #: tractags/templates/admin_tag_change.html:77
 msgid ""
@@ -255,10 +293,15 @@ msgid ""
 "            [1:trac.ini] see [2:ticket_fields] option\n"
 "            that lists fields to expose as tags for tag realm:ticket."
 msgstr ""
+"Vous aurez à investiguer davantage sur comment changer/supprimer ces "
+"étiquettes restantes plus proches de la ressources étiquetée, i.e. dans "
+"votre [1:trac.ini] voir les options [2:de champs de ticket] qui listent "
+"les champs à exposer en tant qu'étiquettes pour les étiquette "
+"domaine: ticket."
 
 #: tractags/templates/admin_tag_change.html:89
 msgid "Change"
-msgstr ""
+msgstr "Changement"
 
 #: tractags/templates/listtagged_results.html:12
 msgid ""
@@ -266,27 +309,29 @@ msgid ""
 "      [1:new syntax] in your\n"
 "      [2:ListTagged] macro."
 msgstr ""
+"Vous semblez utiliser une ancienne requête d'étiquette. Essayer "
+"d'utiliser la [1:nouvelle syntaxe] dans votre macro [2:ListTagged]."
 
 #: tractags/templates/listtagged_results.html:18
 msgid "Results"
-msgstr ""
+msgstr "Résultats"
 
 #: tractags/templates/listtagged_results.html:35
 #: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
-msgstr ""
+msgstr "Aucune ressource trouvée"
 
 #: tractags/templates/tag_view.html:25
 msgid "Filter Tags"
-msgstr "Filtra i Tag"
+msgstr "Filtrer les étiquettes"
 
 #: tractags/templates/tag_view.html:35
 msgid "Error:"
-msgstr "Errore:"
+msgstr "Erreur :"
 
 #: tractags/templates/tag_view.html:38
 msgid "Query syntax:"
-msgstr "Sintassi della query:"
+msgstr "Syntaxe de requête :"
 
 #: tractags/templates/tag_view.html:39
 msgid ""
@@ -297,18 +342,20 @@ msgid ""
 "            [11:Quote strings to include special characters.]\n"
 "            [12:Restrict search to a specific realm with [13:realm:wiki].]"
 msgstr ""
-"[1:Usa [2:tag1 tag2] per verificare [3:tutti] i tag.]\n"
-"            [4:[5:tag1 o tag2] corrisponderà a [6:ogni] tag.]\n"
-"            [7:Nega un tag con [8:-tag1].]\n"
-"            [9:Raggruppa sotto-query con [10:(tag1 o tag2)].]\n"
-"            [11:Racchiudi le stringhe tra virgolette per includere "
-"caratteri speciali]\n"
-"            [12:Restringi la ricerca ad un ambito specifico con "
+"[1:Utiliser [2:tag1 tag2] pour faire correspondre [3:toutes les] "
+"étiquettes.]\n"
+"            [4:[5:tag1 or tag2] va faire correspondre [6:n'importe "
+"quelle] étiquette.]\n"
+"            [7:Inverser une étiquette avec [8:-tag1].]\n"
+"            [9:Grouper les sous-requête avec [10:(tag1 or tag2)].]\n"
+"            [11:Mettre les chaînes entres guillemets pour inclure les "
+"caractères spéciaux.]\n"
+"            [12:Restreindre la recherche à un domaine avec "
 "[13:realm:wiki].]"
 
 #: tractags/templates/tag_view.html:56
 msgid "Go to wiki page"
-msgstr ""
+msgstr "Aller à la page de wiki"
 
 #: tractags/templates/tag_view.html:52
 #, python-format
@@ -327,7 +374,7 @@ msgstr ""
 #: tractags/templates/tag_view.html:63
 #, python-format
 msgid "Showing objects matching '%(query)s'"
-msgstr ""
+msgstr "Montrer les objets correspondant à '%(query)s'"
 
 #: tractags/templates/tag_view.html:67
 msgid ""
@@ -336,6 +383,10 @@ msgid ""
 "          ]\n"
 "          for this tag"
 msgstr ""
+"[1:\n"
+"            Créer une page Wiki\n"
+"          ]\n"
+"          pour cette étiquette"
 
 #: tractags/templates/tag_view.html:77
 #, python-format
@@ -343,4 +394,6 @@ msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"
 "          ([1:view all tags])"
 msgstr ""
+"Montrer seulement les étiquettes avec %(mincount)s ou plus d'occurrences\n"
+"          ([1:voir toutes les étiquettes])"
 

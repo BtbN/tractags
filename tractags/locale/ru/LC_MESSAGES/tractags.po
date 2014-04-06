@@ -1,41 +1,43 @@
 # Russian translations for TracTags.
-# Copyright (C) 2013
+# Copyright (C) 2014
 # This file is distributed under the same license as the TracTags
 # project.
 #
 # Translators:
-# <4glitch@gmail.com>, 2012.
+# Dmitri Bogomolov <4glitch@gmail.com>, 2012
+# Dmitri Bogomolov <4glitch@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2013-11-02 22:49+0100\n"
-"PO-Revision-Date: 2012-09-30 21:33+0000\n"
-"Last-Translator: <4glitch@gmail.com>\n"
-"Language-Team: Russian <trac-dev@googlegroups.com>\n"
+"POT-Creation-Date: 2014-03-30 13:34+0200\n"
+"PO-Revision-Date: 2014-03-30 12:17+0000\n"
+"Last-Translator: Dmitri Bogomolov <4glitch@gmail.com>\n"
+"Language-Team: Russian (http://www.transifex.com/projects/p/Trac_Plugin-"
+"L10N/language/ru/)\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.0dev-r482\n"
+"Generated-By: Babel 1.3\n"
 
 #: tractags/admin.py:27
 msgid "Tag System"
-msgstr ""
+msgstr "Метки"
 
 #: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
-msgstr ""
+msgstr "Замена"
 
 #: tractags/admin.py:52
 msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr ""
 
-#: tractags/api.py:525
+#: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
-msgstr ""
+msgstr "Метки не поддерживаются в области  '%s'"
 
 #: tractags/db.py:33
 msgid ""
@@ -49,7 +51,7 @@ msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
-#: tractags/macros.py:110
+#: tractags/macros.py:111
 msgid ""
 "Display a tag cloud.\n"
 "\n"
@@ -69,7 +71,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: tractags/macros.py:126
+#: tractags/macros.py:127
 msgid ""
 "List tagged resources.\n"
 "\n"
@@ -83,36 +85,37 @@ msgid ""
 "    "
 msgstr ""
 
-#: tractags/macros.py:219
+#: tractags/macros.py:235
 msgid "Id"
 msgstr ""
 
-#: tractags/macros.py:223
+#: tractags/macros.py:239
 msgid "Realm"
-msgstr ""
+msgstr "Область"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
-#: tractags/macros.py:224 tractags/web_ui.py:67 tractags/web_ui.py:101
-#: tractags/wiki.py:240 tractags/templates/admin_tag_change.html:13
+#: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
+#: tractags/wiki.py:227 tractags/wiki.py:254
+#: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
 msgstr "Метки"
 
-#: tractags/macros.py:356
+#: tractags/macros.py:372
 msgid "No tags found"
-msgstr ""
+msgstr "Метки не найдены"
 
-#: tractags/macros.py:371
+#: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
-msgstr ""
+msgstr "Страница %(num)d"
 
-#: tractags/macros.py:381
+#: tractags/macros.py:398
 msgid "Next Page"
-msgstr ""
+msgstr "Следующая страница"
 
-#: tractags/macros.py:385
+#: tractags/macros.py:403
 msgid "Previous Page"
-msgstr ""
+msgstr "Предыдущая страница"
 
 #: tractags/query.py:191
 msgid "Attribute must be a word"
@@ -120,7 +123,7 @@ msgstr "Атрибут должен быть словом"
 
 #: tractags/query.py:216
 msgid "Expected ) at end of sub-expression"
-msgstr ""
+msgstr "ожидается ) в конце подвыражения"
 
 #: tractags/query.py:233
 msgid "Unexpected end of string"
@@ -145,57 +148,53 @@ msgid "Do not collect tags from closed tickets."
 msgstr "Не извлекать метки из закрытых билетов."
 
 #. TRANSLATOR: The meta-nav link label.
-#: tractags/web_ui.py:115
+#: tractags/web_ui.py:121
 msgid "Back to Cloud"
-msgstr ""
+msgstr "Вернуться к облаку"
 
-#. TRANSLATOR: Watch out, keep valid WikiFormatting.
-#: tractags/wiki.py:125
+#: tractags/wiki.py:220
 #, python-format
-msgid "''%(tags)s'' added"
-msgid_plural "''%(tags)s'' added"
+msgid "%(tags)s added"
+msgid_plural "%(tags)s added"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: tractags/wiki.py:224
+#, python-format
+msgid "%(tags)s removed"
+msgid_plural "%(tags)s removed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #. TRANSLATOR: How to delimit added and removed tags.
-#: tractags/wiki.py:127
+#: tractags/wiki.py:226
 msgid "; "
 msgstr ""
 
-#: tractags/wiki.py:132
-#, python-format
-msgid "''%(tags)s'' removed"
-msgid_plural "''%(tags)s'' removed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-
-#. TRANSLATOR: Tags change record composition.
-#: tractags/wiki.py:134
-#, python-format
-msgid "'''tags''' %(added)s%(delim)s%(removed)s"
-msgstr ""
-
 #. TRANSLATOR: Label text for link to '/tags'.
-#: tractags/wiki.py:255
+#: tractags/wiki.py:270
 msgid "view all tags"
 msgstr "смотреть все метки"
 
 #. TRANSLATOR: ... (view all tags)
-#: tractags/wiki.py:257
+#: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
 msgstr ""
 
-#: tractags/templates/admin_tag_change.html:16
-msgid "Manage Tags"
+#: tractags/wiki.py:353
+msgid "no permission to view tags"
 msgstr ""
 
+#: tractags/templates/admin_tag_change.html:16
+msgid "Manage Tags"
+msgstr "Управление метками"
+
 #: tractags/templates/admin_tag_change.html:19
-#, fuzzy
 msgid "Filters"
-msgstr "Фильтровать"
+msgstr ""
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
@@ -218,10 +217,14 @@ msgid ""
 "          be added if supported by the tag storage for the resource's "
 "realm."
 msgstr ""
+"Выберите существующую метку для замены на другую; две или более — для "
+"слияния в одну. В [1:обязательном] поле \"имя метки\" можно указать имя "
+"существующей или новой метки. Комментарий к изменению будет сохранен, "
+"если хранилище меток поддерживает комментарии."
 
 #: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
-msgstr ""
+msgstr "Текущая метка:"
 
 #: tractags/templates/admin_tag_change.html:60
 msgid ""
@@ -230,10 +233,14 @@ msgid ""
 "            [4:]\n"
 "            allow tag deletion"
 msgstr ""
+"Имя метки:[1:]⏎\n"
+"[2:][3:]или⏎\n"
+"[4:]⏎\n"
+"включить удаление меток"
 
 #: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
-msgstr ""
+msgstr "Комментарий (не обязательно):"
 
 #: tractags/templates/admin_tag_change.html:71
 msgid ""
@@ -242,6 +249,10 @@ msgid ""
 "            for some tags, because tags might be immutable depending\n"
 "            on internals of the tag provider they've been derived from."
 msgstr ""
+"[1:Осторожно:] попытка замены одной или нескольких меток всегда⏎\n"
+"приводит к созданию новой метки, но [2:удаление может провалиться]⏎\n"
+"для некоторых меток, потому что метки могут быть неизменяемыми,⏎\n"
+"это зависит от источника, из которого они получены."
 
 #: tractags/templates/admin_tag_change.html:77
 msgid ""
@@ -253,7 +264,7 @@ msgstr ""
 
 #: tractags/templates/admin_tag_change.html:89
 msgid "Change"
-msgstr ""
+msgstr "Изменить"
 
 #: tractags/templates/listtagged_results.html:12
 msgid ""
@@ -264,12 +275,12 @@ msgstr ""
 
 #: tractags/templates/listtagged_results.html:18
 msgid "Results"
-msgstr ""
+msgstr "Результаты"
 
 #: tractags/templates/listtagged_results.html:35
 #: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
-msgstr ""
+msgstr "Метки не найдены"
 
 #: tractags/templates/tag_view.html:25
 msgid "Filter Tags"
@@ -292,10 +303,16 @@ msgid ""
 "            [11:Quote strings to include special characters.]\n"
 "            [12:Restrict search to a specific realm with [13:realm:wiki].]"
 msgstr ""
+"[1:Используйте [2:метка1 метка2] для поиска [3:всех] меток.]⏎\n"
+"[4:[5:метка1 or метка2] для поиска [6:любой из] меток.]⏎\n"
+"[7:Исключить метку: [8:-метка1].]⏎\n"
+"[9:Вложенные запросы в скобках: [10:(метка1 or метка2)].]⏎\n"
+"[11:Заключайте строку в кавычки для включения специальных символов.]⏎\n"
+"[12:Ограничить поиск конкретной областью: [13:realm:wiki].]"
 
 #: tractags/templates/tag_view.html:56
 msgid "Go to wiki page"
-msgstr ""
+msgstr "Перейти к странице wiki"
 
 #: tractags/templates/tag_view.html:52
 #, python-format
@@ -314,7 +331,7 @@ msgstr ""
 #: tractags/templates/tag_view.html:63
 #, python-format
 msgid "Showing objects matching '%(query)s'"
-msgstr ""
+msgstr "Объекты, содержащие '%(query)s'"
 
 #: tractags/templates/tag_view.html:67
 msgid ""
@@ -323,6 +340,10 @@ msgid ""
 "          ]\n"
 "          for this tag"
 msgstr ""
+"[1:⏎\n"
+"Создать страницу wiki⏎\n"
+"]⏎\n"
+"для этой метки"
 
 #: tractags/templates/tag_view.html:77
 #, python-format

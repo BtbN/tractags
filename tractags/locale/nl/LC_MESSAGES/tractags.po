@@ -1,23 +1,23 @@
 # Dutch translations for TracTags.
-# Copyright (C) 2013
+# Copyright (C) 2014
 # This file is distributed under the same license as the TracTags
 # project.
 #
 # Translators:
-# Pander <pander@users.sourceforge.net>, 2011.
+# Pander <pander@users.sourceforge.net>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
-"POT-Creation-Date: 2013-11-02 22:49+0100\n"
-"PO-Revision-Date: 2012-09-30 21:33+0000\n"
+"POT-Creation-Date: 2014-03-30 13:34+0200\n"
+"PO-Revision-Date: 2014-03-30 12:17+0000\n"
 "Last-Translator: Pander <pander@users.sourceforge.net>\n"
 "Language-Team: Dutch <trac-dev@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.0dev-r482\n"
+"Generated-By: Babel 1.3\n"
 
 #: tractags/admin.py:27
 msgid "Tag System"
@@ -31,7 +31,7 @@ msgstr ""
 msgid "Selected current tag(s) and either new tag or delete approval are required"
 msgstr ""
 
-#: tractags/api.py:525
+#: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
 msgstr "Sleutelwoorden worden niet ondersteund in het '%s'-domein"
@@ -48,7 +48,7 @@ msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
-#: tractags/macros.py:110
+#: tractags/macros.py:111
 msgid ""
 "Display a tag cloud.\n"
 "\n"
@@ -68,7 +68,7 @@ msgid ""
 "    "
 msgstr ""
 
-#: tractags/macros.py:126
+#: tractags/macros.py:127
 msgid ""
 "List tagged resources.\n"
 "\n"
@@ -92,34 +92,35 @@ msgstr ""
 "    Zie documentatie over sleutelwoorden voor de querysyntax.\n"
 "    "
 
-#: tractags/macros.py:219
+#: tractags/macros.py:235
 msgid "Id"
 msgstr ""
 
-#: tractags/macros.py:223
+#: tractags/macros.py:239
 msgid "Realm"
 msgstr ""
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
-#: tractags/macros.py:224 tractags/web_ui.py:67 tractags/web_ui.py:101
-#: tractags/wiki.py:240 tractags/templates/admin_tag_change.html:13
+#: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
+#: tractags/wiki.py:227 tractags/wiki.py:254
+#: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
 msgstr "Sleutelwoorden"
 
-#: tractags/macros.py:356
+#: tractags/macros.py:372
 msgid "No tags found"
 msgstr ""
 
-#: tractags/macros.py:371
+#: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
 msgstr ""
 
-#: tractags/macros.py:381
+#: tractags/macros.py:398
 msgid "Next Page"
 msgstr ""
 
-#: tractags/macros.py:385
+#: tractags/macros.py:403
 msgid "Previous Page"
 msgstr ""
 
@@ -154,59 +155,56 @@ msgid "Do not collect tags from closed tickets."
 msgstr "Verzamel geen sleutelwoorden van afgesloten tickets."
 
 #. TRANSLATOR: The meta-nav link label.
-#: tractags/web_ui.py:115
+#: tractags/web_ui.py:121
 msgid "Back to Cloud"
 msgstr ""
 
-#. TRANSLATOR: Watch out, keep valid WikiFormatting.
-#: tractags/wiki.py:125
+#: tractags/wiki.py:220
 #, python-format
-msgid "''%(tags)s'' added"
-msgid_plural "''%(tags)s'' added"
+msgid "%(tags)s added"
+msgid_plural "%(tags)s added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: tractags/wiki.py:224
+#, python-format
+msgid "%(tags)s removed"
+msgid_plural "%(tags)s removed"
 msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATOR: How to delimit added and removed tags.
-#: tractags/wiki.py:127
+#: tractags/wiki.py:226
 msgid "; "
 msgstr ""
 
-#: tractags/wiki.py:132
-#, python-format
-msgid "''%(tags)s'' removed"
-msgid_plural "''%(tags)s'' removed"
-msgstr[0] ""
-msgstr[1] ""
-
-#. TRANSLATOR: Tags change record composition.
-#: tractags/wiki.py:134
-#, python-format
-msgid "'''tags''' %(added)s%(delim)s%(removed)s"
-msgstr ""
-
 #. TRANSLATOR: Label text for link to '/tags'.
-#: tractags/wiki.py:255
+#: tractags/wiki.py:270
 msgid "view all tags"
 msgstr "bekijk alle sleutelwoorden"
 
 #. TRANSLATOR: ... (view all tags)
-#: tractags/wiki.py:257
+#: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
 msgstr "Voeg sleutelwoord toe: (%(tags_link)s)"
+
+#: tractags/wiki.py:353
+msgid "no permission to view tags"
+msgstr ""
 
 #: tractags/templates/admin_tag_change.html:16
 msgid "Manage Tags"
 msgstr ""
 
 #: tractags/templates/admin_tag_change.html:19
-#, fuzzy
+#
 msgid "Filters"
-msgstr "Sleutelwoordenfilter"
+msgstr "Filters"
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
-msgstr ""
+msgstr "Sleutelwoordenfilter"
 
 #: tractags/templates/admin_tag_change.html:21
 msgid "Realms"

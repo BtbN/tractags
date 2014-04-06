@@ -1,20 +1,20 @@
-# Italian translations for TracTags.
+# Korean translations for TracTags.
 # Copyright (C) 2014
 # This file is distributed under the same license as the TracTags
 # project.
 #
 # Translators:
-# Roberto Longobardi <seccanj@gmail.com>, 2011
+# YT H <dev@theYT.net>, 2013-2014
 msgid ""
 msgstr ""
-"Project-Id-Version: TracTags 0.7\n"
+"Project-Id-Version: Trac Plugin L10N\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
 "POT-Creation-Date: 2014-03-30 13:34+0200\n"
-"PO-Revision-Date: 2014-03-30 12:17+0000\n"
-"Last-Translator: Roberto Longobardi <seccanj@gmail.com>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/Trac_Plugin-"
-"L10N/language/it/)\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"PO-Revision-Date: 2014-03-31 01:07+0000\n"
+"Last-Translator: YT H <dev@theYT.net>\n"
+"Language-Team: Korean (http://www.transifex.com/projects/p/Trac_Plugin-"
+"L10N/language/ko/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,31 +22,33 @@ msgstr ""
 
 #: tractags/admin.py:27
 msgid "Tag System"
-msgstr ""
+msgstr "태그 체계"
 
 #: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
-msgstr ""
+msgstr "바꾸기"
 
 #: tractags/admin.py:52
 msgid "Selected current tag(s) and either new tag or delete approval are required"
-msgstr ""
+msgstr "현재 태그를 선택한 다음, 새 태그를 입력하거나 삭제를 허용해야 합니다."
 
 #: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
-msgstr "I tag non sono supportati sul reame '%s'"
+msgstr "'%s' 영역에서는 태그가 지원되지 않습니다."
 
 #: tractags/db.py:33
 msgid ""
 "A newer plugin version has been installed before, but downgrading is "
 "unsupported."
-msgstr ""
+msgstr "새 버전의 플러그인이 설치된 적이 있으며, 다운그레이드는 지원하지 않습니다."
 
 #: tractags/db.py:68
 #, python-format
 msgid "No upgrade module for version %(num)i (%(version)s.py)"
 msgstr ""
+"버전 %(num)i에 대한 업그레이드 모듈이 없습니다. (%(version)s.py)\n"
+" "
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
 #: tractags/macros.py:111
@@ -68,6 +70,22 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
+"태그 구름을 보여줍니다.\n"
+"\n"
+"    질의와 일치하는 리소스에 있는 모든 태그에 대한 태그 구름을 표시합니다.\n"
+"\n"
+"    사용법:\n"
+"\n"
+"    {{{\n"
+"    [[TagCloud(query,caseless_sort=<bool>,mincount=<n>)]]\n"
+"    }}}\n"
+"    caseless_sort::\n"
+"      대소문자 구분 없이 태그를 정렬하는 지 여부입니다.\n"
+"    mincount::\n"
+"      제한값 보다 적은 수 만큼 등장한 태그를 숨깁니다.\n"
+"\n"
+"    질의 문법에 대해서는 태그 문서를 참조하십시오.\n"
+"    "
 
 #: tractags/macros.py:127
 msgid ""
@@ -82,137 +100,135 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
-"Lista delle risorse taggate.\n"
+"태그된 리소스를 보여줍니다.\n"
 "\n"
-"    Uso: \n"
+"    사용법:\n"
 "\n"
 "    {{{\n"
 "    [[ListTagged(query)]]\n"
 "    }}}\n"
 "\n"
-"    Consultare la documentazione sui tag per la sintassi delle query."
+"    질의 문법에 대해서는 태그 문서를 참고하십시오.\n"
+"    "
 
 #: tractags/macros.py:235
 msgid "Id"
-msgstr ""
+msgstr "고유번호"
 
 #: tractags/macros.py:239
 msgid "Realm"
-msgstr ""
+msgstr "영역"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
 #: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
 #: tractags/wiki.py:227 tractags/wiki.py:254
 #: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
-msgstr "Tag"
+msgstr "태그"
 
 #: tractags/macros.py:372
 msgid "No tags found"
-msgstr ""
+msgstr "일치하는 태그가 없습니다."
 
 #: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
-msgstr ""
+msgstr "%(num)d 페이지"
 
 #: tractags/macros.py:398
 msgid "Next Page"
-msgstr ""
+msgstr "다음 페이지"
 
 #: tractags/macros.py:403
 msgid "Previous Page"
-msgstr ""
+msgstr "이전 페이지"
 
 #: tractags/query.py:191
 msgid "Attribute must be a word"
-msgstr "L'attributo deve essere una parola"
+msgstr "속성 값은 단어여야 합니다."
 
 #: tractags/query.py:216
 msgid "Expected ) at end of sub-expression"
-msgstr "Previsto ) alla fine del sotto-espressione"
+msgstr "하위 표현식의 끝에 닫는 괄호가 필요합니다."
 
 #: tractags/query.py:233
 msgid "Unexpected end of string"
-msgstr "Inaspettata fine della stringa"
+msgstr "문자열이 갑자기 종료되었습니다."
 
 #: tractags/query.py:239
 #, python-format
 msgid "Expected terminal, got '%s'"
-msgstr "Carattere terminale previsto, trovato '%s'"
+msgstr "단어를 기대했지만, '%s'을(를) 받았습니다."
 
 #: tractags/query.py:427
 #, python-format
 msgid "Invalid attribute '%s'"
-msgstr "Attributo non valido '%s'"
+msgstr "속성 '%s'이(가) 유효하지 않습니다."
 
 #: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
-msgstr "Elenco dei campi della segnalazione da esporre come tag."
+msgstr "태그로 노출될 티켓 필드의 목록입니다."
 
 #: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
-msgstr "Non collezionare i tag da segnalazioni chiuse."
+msgstr "닫힌 티켓에서 태그를 수집하지 않습니다."
 
 #. TRANSLATOR: The meta-nav link label.
 #: tractags/web_ui.py:121
 msgid "Back to Cloud"
-msgstr ""
+msgstr "태그 구름으로 돌아가기"
 
 #: tractags/wiki.py:220
 #, python-format
 msgid "%(tags)s added"
 msgid_plural "%(tags)s added"
-msgstr[0] "%(tags)s aggiunto"
-msgstr[1] "%(tags)s aggiunti"
+msgstr[0] "%(tags)s 추가됨"
 
 #: tractags/wiki.py:224
 #, python-format
 msgid "%(tags)s removed"
 msgid_plural "%(tags)s removed"
-msgstr[0] "%(tags)s eliminato"
-msgstr[1] "%(tags)s eliminati"
+msgstr[0] "%(tags)s 제거됨"
 
 #. TRANSLATOR: How to delimit added and removed tags.
 #: tractags/wiki.py:226
 msgid "; "
-msgstr ""
+msgstr ","
 
 #. TRANSLATOR: Label text for link to '/tags'.
 #: tractags/wiki.py:270
 msgid "view all tags"
-msgstr "vedi tutti i Tag"
+msgstr "모든 태그 보기"
 
 #. TRANSLATOR: ... (view all tags)
 #: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
-msgstr "Tagga con: (%(tags_link)s)"
+msgstr "다음으로 태그: (%(tags_link)s)"
 
 #: tractags/wiki.py:353
 msgid "no permission to view tags"
-msgstr ""
+msgstr "태그를 볼 수 있는 권한이 없습니다."
 
 #: tractags/templates/admin_tag_change.html:16
 msgid "Manage Tags"
-msgstr ""
+msgstr "태그 관리"
 
 #: tractags/templates/admin_tag_change.html:19
-#
 msgid "Filters"
-msgstr "Filtri"
+msgstr "필터"
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
-msgstr "Filtra i Tag"
+msgstr "태그 필터"
 
 #: tractags/templates/admin_tag_change.html:21
 msgid "Realms"
-msgstr ""
+msgstr "영역"
 
 #: tractags/templates/admin_tag_change.html:30
 msgid "Update"
-msgstr "Aggiorna"
+msgstr "업데이트"
 
 #: tractags/templates/admin_tag_change.html:43
 msgid ""
@@ -223,10 +239,13 @@ msgid ""
 "          be added if supported by the tag storage for the resource's "
 "realm."
 msgstr ""
+"다른 것으로 변경할 태그를 선택하십시오. 둘 이상을 선택하면 하나로 합쳐집니다.\n"
+"새 태그에는 이미 존재하는 태그나 새로운 태그를 입력합니다.\n"
+"리소스 영역의 태그 저장소에서 지원한다면, 변경 설명이 추가될 것입니다."
 
 #: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
-msgstr ""
+msgstr "현재 태그:"
 
 #: tractags/templates/admin_tag_change.html:60
 msgid ""
@@ -235,10 +254,13 @@ msgid ""
 "            [4:]\n"
 "            allow tag deletion"
 msgstr ""
+"새 태그:[1:]\n"
+"            [2:][3:]\n"
+"            또는 [4:] 태그 삭제 허용"
 
 #: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
-msgstr ""
+msgstr "설명 (선택 사항):"
 
 #: tractags/templates/admin_tag_change.html:71
 msgid ""
@@ -247,6 +269,8 @@ msgid ""
 "            for some tags, because tags might be immutable depending\n"
 "            on internals of the tag provider they've been derived from."
 msgstr ""
+"[1:주의:] 태그를 변경하려고 시도할 때, 새 태그는 항상 추가되지만 [2:삭제는 실패할 수 있습니다]. 태그 공급자의 내부 "
+"구조에 따라, 태그가 변경 불가능한 것일 수 있기 때문입니다."
 
 #: tractags/templates/admin_tag_change.html:77
 msgid ""
@@ -255,38 +279,41 @@ msgid ""
 "            [1:trac.ini] see [2:ticket_fields] option\n"
 "            that lists fields to expose as tags for tag realm:ticket."
 msgstr ""
+"태그된 리소스에 남아 있는 태그를 변경 또는 삭제하는 방법에 대해서는 좀 더 확인이 필요합니다.\n"
+"예를 들어, [1:trac.ini] 파일의 [2:ticket_fields] 설정 항목에서는 티켓 영역에서 태그로 노출되는 필드 "
+"목록을 확인할 수 있습니다."
 
 #: tractags/templates/admin_tag_change.html:89
 msgid "Change"
-msgstr ""
+msgstr "변경하기"
 
 #: tractags/templates/listtagged_results.html:12
 msgid ""
 "You seem to be using an old Tag query. Try using the\n"
 "      [1:new syntax] in your\n"
 "      [2:ListTagged] macro."
-msgstr ""
+msgstr "이전 태그 질의문을 사용하고 있는 것 같습니다. [2:ListTagged] 매크로에 [1:새 문법]을 사용해 보십시오."
 
 #: tractags/templates/listtagged_results.html:18
 msgid "Results"
-msgstr ""
+msgstr "결과"
 
 #: tractags/templates/listtagged_results.html:35
 #: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
-msgstr ""
+msgstr "일치하는 리소스가 없습니다."
 
 #: tractags/templates/tag_view.html:25
 msgid "Filter Tags"
-msgstr "Filtra i Tag"
+msgstr "태그 필터하기"
 
 #: tractags/templates/tag_view.html:35
 msgid "Error:"
-msgstr "Errore:"
+msgstr "오류:"
 
 #: tractags/templates/tag_view.html:38
 msgid "Query syntax:"
-msgstr "Sintassi della query:"
+msgstr "질의 문법:"
 
 #: tractags/templates/tag_view.html:39
 msgid ""
@@ -297,18 +324,16 @@ msgid ""
 "            [11:Quote strings to include special characters.]\n"
 "            [12:Restrict search to a specific realm with [13:realm:wiki].]"
 msgstr ""
-"[1:Usa [2:tag1 tag2] per verificare [3:tutti] i tag.]\n"
-"            [4:[5:tag1 o tag2] corrisponderà a [6:ogni] tag.]\n"
-"            [7:Nega un tag con [8:-tag1].]\n"
-"            [9:Raggruppa sotto-query con [10:(tag1 o tag2)].]\n"
-"            [11:Racchiudi le stringhe tra virgolette per includere "
-"caratteri speciali]\n"
-"            [12:Restringi la ricerca ad un ambito specifico con "
-"[13:realm:wiki].]"
+"[1:[3:모든] 태그와 일치시키려면 [2:태그1 태그2]와 같이 사용합니다.]\n"
+"[4:[6:아무] 태그나 일치시키려면 [5:태그1 or 태그2]와 같이 사용합니다.]\n"
+"[7:태그를 제외하려면 [8:-태그1]과 같이 사용합니다.]\n"
+"[9:하위 질의를 묶으려면 [10:(태그1 or 태그2)]과 같이 사용합니다.]\n"
+"[11:특수 문자를 포함하려면 문자열을 따옴표로 묶으십시오.]\n"
+"[12:특정 영역으로 검색을 제한하려면 [13:realm:wiki]와 같이 사용합니다.]"
 
 #: tractags/templates/tag_view.html:56
 msgid "Go to wiki page"
-msgstr ""
+msgstr "위키 페이지로 이동"
 
 #: tractags/templates/tag_view.html:52
 #, python-format
@@ -317,17 +342,17 @@ msgid ""
 "            [1:\n"
 "              '%(query)s'\n"
 "            ]"
-msgstr ""
+msgstr "[1:'%(query)s'](으)로 태그 된 대상 표시"
 
 #: tractags/templates/tag_view.html:60
 #, python-format
 msgid "Showing objects tagged with '%(query)s'"
-msgstr ""
+msgstr "'%(query)s'(으)로 태그 된 대상 표시"
 
 #: tractags/templates/tag_view.html:63
 #, python-format
 msgid "Showing objects matching '%(query)s'"
-msgstr ""
+msgstr "'%(query)s'와(과) 일치하는 대상 표시"
 
 #: tractags/templates/tag_view.html:67
 msgid ""
@@ -335,7 +360,7 @@ msgid ""
 "            Create Wiki page\n"
 "          ]\n"
 "          for this tag"
-msgstr ""
+msgstr "이 태그에 대한 [1:위키 페이지 만들기]"
 
 #: tractags/templates/tag_view.html:77
 #, python-format
@@ -343,4 +368,6 @@ msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"
 "          ([1:view all tags])"
 msgstr ""
+"%(mincount)s 번 이상 나타난 태그만 표시\n"
+"          ([1:모든 태그 보기])"
 

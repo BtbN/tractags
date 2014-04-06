@@ -1,20 +1,20 @@
-# Italian translations for TracTags.
-# Copyright (C) 2014
+# Chinese (Simplified, China) translations for TracTags.
+# Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the TracTags
 # project.
 #
 # Translators:
-# Roberto Longobardi <seccanj@gmail.com>, 2011
+# cauly <cauliflower.kan@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: TracTags 0.7\n"
 "Report-Msgid-Bugs-To: hoff.st@shaas.net\n"
 "POT-Creation-Date: 2014-03-30 13:34+0200\n"
-"PO-Revision-Date: 2014-03-30 12:17+0000\n"
-"Last-Translator: Roberto Longobardi <seccanj@gmail.com>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/Trac_Plugin-"
-"L10N/language/it/)\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"PO-Revision-Date: 2014-04-04 00:48+0000\n"
+"Last-Translator: cauly <cauliflower.kan@gmail.com>\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/projects/p"
+"/Trac_Plugin-L10N/language/zh_CN/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,31 +22,31 @@ msgstr ""
 
 #: tractags/admin.py:27
 msgid "Tag System"
-msgstr ""
+msgstr "标签系统"
 
 #: tractags/admin.py:27 tractags/templates/admin_tag_change.html:42
 msgid "Replace"
-msgstr ""
+msgstr "替换"
 
 #: tractags/admin.py:52
 msgid "Selected current tag(s) and either new tag or delete approval are required"
-msgstr ""
+msgstr "请删除标签或创建新标签。"
 
 #: tractags/api.py:541
 #, python-format
 msgid "Tags are not supported on the '%s' realm"
-msgstr "I tag non sono supportati sul reame '%s'"
+msgstr "'%s'类型无法支持标签。"
 
 #: tractags/db.py:33
 msgid ""
 "A newer plugin version has been installed before, but downgrading is "
 "unsupported."
-msgstr ""
+msgstr "之前已安装过新版本的插件，无法向下兼容。"
 
 #: tractags/db.py:68
 #, python-format
 msgid "No upgrade module for version %(num)i (%(version)s.py)"
-msgstr ""
+msgstr "(%(version)s.py) v%(num)i中不存在升级模块。"
 
 #. TRANSLATOR: Keep macro doc style formatting here, please.
 #: tractags/macros.py:111
@@ -68,6 +68,19 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
+"显示一个标签云。\n"
+"为所有匹配查询的标签显示一个标签云。\n"
+"\n"
+"用法：\n"
+"{{{\n"
+"[[TagCloud(query,caseless_sort=<bool>,mincount=<n>)]]\n"
+"}}}\n"
+"caseless_sort::\n"
+"标签云是否区分大小写排序。\n"
+"mincount::\n"
+"隐藏数量少于mincount的标签。\n"
+"\n"
+"查询语法请查看Tags插件文档。"
 
 #: tractags/macros.py:127
 msgid ""
@@ -82,137 +95,131 @@ msgid ""
 "    See tags documentation for the query syntax.\n"
 "    "
 msgstr ""
-"Lista delle risorse taggate.\n"
-"\n"
-"    Uso: \n"
-"\n"
-"    {{{\n"
-"    [[ListTagged(query)]]\n"
-"    }}}\n"
-"\n"
-"    Consultare la documentazione sui tag per la sintassi delle query."
+"列出标签资源。\n"
+"用法：\n"
+"{{{\n"
+"[[ListTagged(query)]]\n"
+"}}}\n"
+"查询语法请参考Tags插件文档。"
 
 #: tractags/macros.py:235
 msgid "Id"
-msgstr ""
+msgstr "Id"
 
 #: tractags/macros.py:239
 msgid "Realm"
-msgstr ""
+msgstr "类别"
 
 #. TRANSLATOR: Header label text for tag list at wiki page bottom.
 #: tractags/macros.py:240 tractags/web_ui.py:68 tractags/web_ui.py:107
 #: tractags/wiki.py:227 tractags/wiki.py:254
 #: tractags/templates/admin_tag_change.html:13
 msgid "Tags"
-msgstr "Tag"
+msgstr "标签"
 
 #: tractags/macros.py:372
 msgid "No tags found"
-msgstr ""
+msgstr "没有找到标签"
 
 #: tractags/macros.py:387
 #, python-format
 msgid "Page %(num)d"
-msgstr ""
+msgstr "第%(num)d页"
 
 #: tractags/macros.py:398
 msgid "Next Page"
-msgstr ""
+msgstr "下一页"
 
 #: tractags/macros.py:403
 msgid "Previous Page"
-msgstr ""
+msgstr "上一页"
 
 #: tractags/query.py:191
 msgid "Attribute must be a word"
-msgstr "L'attributo deve essere una parola"
+msgstr "属性必须为一个单词"
 
 #: tractags/query.py:216
 msgid "Expected ) at end of sub-expression"
-msgstr "Previsto ) alla fine del sotto-espressione"
+msgstr "缺少)"
 
 #: tractags/query.py:233
 msgid "Unexpected end of string"
-msgstr "Inaspettata fine della stringa"
+msgstr "不正确的字符串结尾"
 
 #: tractags/query.py:239
 #, python-format
 msgid "Expected terminal, got '%s'"
-msgstr "Carattere terminale previsto, trovato '%s'"
+msgstr "'%s'出现在了不正确的位置"
 
 #: tractags/query.py:427
 #, python-format
 msgid "Invalid attribute '%s'"
-msgstr "Attributo non valido '%s'"
+msgstr "不正确的属性'%s'"
 
 #: tractags/ticket.py:44
 msgid "List of ticket fields to expose as tags."
-msgstr "Elenco dei campi della segnalazione da esporre come tag."
+msgstr "需要作为标签处理的任务单属性"
 
 #: tractags/ticket.py:47
 msgid "Do not collect tags from closed tickets."
-msgstr "Non collezionare i tag da segnalazioni chiuse."
+msgstr "不要从已关闭的任务单中生成标签"
 
 #. TRANSLATOR: The meta-nav link label.
 #: tractags/web_ui.py:121
 msgid "Back to Cloud"
-msgstr ""
+msgstr "返回标签云"
 
 #: tractags/wiki.py:220
 #, python-format
 msgid "%(tags)s added"
 msgid_plural "%(tags)s added"
-msgstr[0] "%(tags)s aggiunto"
-msgstr[1] "%(tags)s aggiunti"
+msgstr[0] "添加了%(tags)s"
 
 #: tractags/wiki.py:224
 #, python-format
 msgid "%(tags)s removed"
 msgid_plural "%(tags)s removed"
-msgstr[0] "%(tags)s eliminato"
-msgstr[1] "%(tags)s eliminati"
+msgstr[0] "删除了%(tags)s "
 
 #. TRANSLATOR: How to delimit added and removed tags.
 #: tractags/wiki.py:226
 msgid "; "
-msgstr ""
+msgstr "；"
 
 #. TRANSLATOR: Label text for link to '/tags'.
 #: tractags/wiki.py:270
 msgid "view all tags"
-msgstr "vedi tutti i Tag"
+msgstr "查看所有标签"
 
 #. TRANSLATOR: ... (view all tags)
 #: tractags/wiki.py:272
 #, python-format
 msgid "Tag under: (%(tags_link)s)"
-msgstr "Tagga con: (%(tags_link)s)"
+msgstr "标签：(%(tags_link)s)"
 
 #: tractags/wiki.py:353
 msgid "no permission to view tags"
-msgstr ""
+msgstr "没有查看标签的权限。"
 
 #: tractags/templates/admin_tag_change.html:16
 msgid "Manage Tags"
-msgstr ""
+msgstr "管理标签"
 
 #: tractags/templates/admin_tag_change.html:19
-#
 msgid "Filters"
-msgstr "Filtri"
+msgstr "过滤"
 
 #: tractags/templates/admin_tag_change.html:20
 msgid "Tag filters"
-msgstr "Filtra i Tag"
+msgstr "标签过滤"
 
 #: tractags/templates/admin_tag_change.html:21
 msgid "Realms"
-msgstr ""
+msgstr "类别"
 
 #: tractags/templates/admin_tag_change.html:30
 msgid "Update"
-msgstr "Aggiorna"
+msgstr "更新"
 
 #: tractags/templates/admin_tag_change.html:43
 msgid ""
@@ -223,10 +230,14 @@ msgid ""
 "          be added if supported by the tag storage for the resource's "
 "realm."
 msgstr ""
+"选择一个标签并替换。\n"
+"多个标签将合并为一个。\n"
+"[1:替换的]标签可以为新建的，也可以是之前存在的。\n"
+"如果该类别的标签储存支持，那么一条变更记录将会添加。"
 
 #: tractags/templates/admin_tag_change.html:49
 msgid "Current Tag:"
-msgstr ""
+msgstr "当前标签："
 
 #: tractags/templates/admin_tag_change.html:60
 msgid ""
@@ -235,10 +246,14 @@ msgid ""
 "            [4:]\n"
 "            allow tag deletion"
 msgstr ""
+"新标签：[1:]\n"
+"[2:][3:]或\n"
+"[4:]\n"
+"支持标签删除"
 
 #: tractags/templates/admin_tag_change.html:67
 msgid "Comment (optional):"
-msgstr ""
+msgstr "评论（可选）："
 
 #: tractags/templates/admin_tag_change.html:71
 msgid ""
@@ -247,6 +262,8 @@ msgid ""
 "            for some tags, because tags might be immutable depending\n"
 "            on internals of the tag provider they've been derived from."
 msgstr ""
+"[1:注意:] 替换一个或更多标签将总是增加新标签，但某些标签[2:删除可能失败]，\n"
+"因为根据标签的处理机制有些标签是无法删除的。"
 
 #: tractags/templates/admin_tag_change.html:77
 msgid ""
@@ -255,38 +272,40 @@ msgid ""
 "            [1:trac.ini] see [2:ticket_fields] option\n"
 "            that lists fields to expose as tags for tag realm:ticket."
 msgstr ""
+"如果你希望你的标签基于任务单的其他字段，请在[1:trac.ini]的[2:ticket_fields]字段\n"
+"为realm:ticket类型的标签增加需要添加的字段列表。"
 
 #: tractags/templates/admin_tag_change.html:89
 msgid "Change"
-msgstr ""
+msgstr "变更"
 
 #: tractags/templates/listtagged_results.html:12
 msgid ""
 "You seem to be using an old Tag query. Try using the\n"
 "      [1:new syntax] in your\n"
 "      [2:ListTagged] macro."
-msgstr ""
+msgstr "你似乎在使用旧的标签查询语句。试着在[2:ListTagged]宏中使用[1:新查询语法]。"
 
 #: tractags/templates/listtagged_results.html:18
 msgid "Results"
-msgstr ""
+msgstr "结果"
 
 #: tractags/templates/listtagged_results.html:35
 #: tractags/templates/listtagged_results.html:48
 msgid "No resources found"
-msgstr ""
+msgstr "没有找到资源"
 
 #: tractags/templates/tag_view.html:25
 msgid "Filter Tags"
-msgstr "Filtra i Tag"
+msgstr "过滤标签"
 
 #: tractags/templates/tag_view.html:35
 msgid "Error:"
-msgstr "Errore:"
+msgstr "错误："
 
 #: tractags/templates/tag_view.html:38
 msgid "Query syntax:"
-msgstr "Sintassi della query:"
+msgstr "查询语法："
 
 #: tractags/templates/tag_view.html:39
 msgid ""
@@ -297,18 +316,16 @@ msgid ""
 "            [11:Quote strings to include special characters.]\n"
 "            [12:Restrict search to a specific realm with [13:realm:wiki].]"
 msgstr ""
-"[1:Usa [2:tag1 tag2] per verificare [3:tutti] i tag.]\n"
-"            [4:[5:tag1 o tag2] corrisponderà a [6:ogni] tag.]\n"
-"            [7:Nega un tag con [8:-tag1].]\n"
-"            [9:Raggruppa sotto-query con [10:(tag1 o tag2)].]\n"
-"            [11:Racchiudi le stringhe tra virgolette per includere "
-"caratteri speciali]\n"
-"            [12:Restringi la ricerca ad un ambito specifico con "
-"[13:realm:wiki].]"
+"[1:使用[2:tag1 tag2]匹配[3:tag1与tag2]的标签.]\n"
+"[4:[5:tag1 or tag2]将匹配[6:tag1或tag2]的标签.]\n"
+"[7:使用[8:-tag1]匹配不包含tag1的标签.]\n"
+"[9:使用[10:(tag1 or tag2)]组合子查询.]\n"
+"[11:使用引号以查找特殊字符串.]\n"
+"[12:在指定分类中查询可以使用[13:realm:wiki].]"
 
 #: tractags/templates/tag_view.html:56
 msgid "Go to wiki page"
-msgstr ""
+msgstr "查看wiki"
 
 #: tractags/templates/tag_view.html:52
 #, python-format
@@ -318,16 +335,20 @@ msgid ""
 "              '%(query)s'\n"
 "            ]"
 msgstr ""
+"查看标签为\n"
+"[1:\n"
+"'%(query)s'\n"
+"]的条目"
 
 #: tractags/templates/tag_view.html:60
 #, python-format
 msgid "Showing objects tagged with '%(query)s'"
-msgstr ""
+msgstr "显示标签为'%(query)s'的条目"
 
 #: tractags/templates/tag_view.html:63
 #, python-format
 msgid "Showing objects matching '%(query)s'"
-msgstr ""
+msgstr "显示查询'%(query)s'"
 
 #: tractags/templates/tag_view.html:67
 msgid ""
@@ -336,11 +357,15 @@ msgid ""
 "          ]\n"
 "          for this tag"
 msgstr ""
+"为此标签\n"
+"[1:\n"
+"创建新Wiki页\n"
+"]"
 
 #: tractags/templates/tag_view.html:77
 #, python-format
 msgid ""
 "Showing only tags with %(mincount)s or more occurrences\n"
 "          ([1:view all tags])"
-msgstr ""
+msgstr "只显示出现了%(mincount)s次或以上的标签。([1:view all tags])"
 
