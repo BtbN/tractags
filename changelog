@@ -2,7 +2,10 @@ Originally created by Muness Alrubaie, totally rewritten by
 Author: Alec Thomas <alec@swapoff.org>
 Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
-tractags-0.7 (not yet released)
+tractags-0.8 (not yet released)
+
+
+tractags-0.7 (06-Apr-2014)
  resolved issues
  * #1960: Tags from Tickets / Milestones split into multiple tags
  * #2424: Lost wiki change when commiting tag changes
