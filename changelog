@@ -15,6 +15,8 @@ tractags-0.7 (not yet released)
  * #3145: Create New Wiki Page with a Tag
  * #3206: Edit wiki page content and tag
  * #3359: Tickets tags don't work when using MySQL 4.x
+ * #3624: invalid link when using more than one tag in tagged
+ * #3677: Database operations fail with PostgreSQL 8.3
  * #3753: Carry over tags from PageTemplates/ (was: TagIt macro)
  * #3864: Unchecked permissions/restrictions for list of available tag realms
  * #3983: ListTagged broken for tags starting with 'or'
@@ -44,8 +46,10 @@ tractags-0.7 (not yet released)
  * #9210: /tags page should not have a contextual navigation link 'Cloud'
  * #9521: New install impossible on Trac 0.13dev
    by adding generic db schema upgrade support
+ * #9630: Non-functional bracketed tags: TracLinks
  * #10636: TagWikiMacros is NOT thread safe
  * #11096: Avoid an `OperationalError: too many SQL variables
+ * #11147: IntegrityError: dup key value violates unique constraint "tags_pk"
  * #11152: Tags are not supported on the 'wiki' realm
  * #11226: Replacing a tag removes unrelated tags
  * #11302: AttributeError: 'unicode' object has no attribute 'id'
@@ -63,11 +67,13 @@ tractags-0.7 (not yet released)
  * do TagSystem class API cleanup by moving db access to model layer
 
  new features
+ * #2429: TagsPlugin should handle versioning of wiki tags
  * #2509: Create wiki page from /tags/<tag> page
  * #2708: Add rel-tag microformat to tags list
  * #3610: ListTagged macro should have distinct formatting of closed tickets
  * #3754: Tag redirects to existing wiki page instead of listing tagged pages
  * #3851: TAGS_VIEW not showing page tags along for anonymous
+ * #3947: ListTagged: use first headline instead of pagename + first headline
  * #4799: TagCloud should optionally be case-insensitive
    by adding a new option `cloud_caseless_sort`
  * #7787: Add i18n support
