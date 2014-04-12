@@ -18,7 +18,7 @@ except ImportError:
 from operator import itemgetter
 from pkg_resources import resource_filename
 
-from trac.config import BoolOption, ListOption
+from trac.config import BoolOption, ListOption, Option
 from trac.core import Component, ExtensionPoint, Interface, TracError, \
                       implements
 from trac.perm import IPermissionRequestor, PermissionError
@@ -332,6 +332,8 @@ class TagSystem(Component):
         doc="Comma-separated list of realms requiring tag change history.")
     wiki_page_link = BoolOption('tags', 'wiki_page_link', True,
         doc="Link a tag to the wiki page with same name, if it exists.")
+    wiki_page_prefix = Option('tags', 'wiki_page_prefix', '',
+        doc="Prefix for tag wiki page names.")
 
     # Internal variables
     _realm = re.compile('realm:(\w+)', re.U | re.I)
@@ -514,7 +516,7 @@ class TagSystem(Component):
 
     def get_resource_url(self, resource, href, form_realms=None, **kwargs):
         if self.wiki_page_link:
-            page = WikiPage(self.env, resource.id)
+            page = WikiPage(self.env, self.wiki_page_prefix + resource.id)
             if page.exists:
                 return get_resource_url(self.env, page.resource, href,
                                         **kwargs)
@@ -523,7 +525,7 @@ class TagSystem(Component):
     def get_resource_description(self, resource, format='default',
                                  context=None, **kwargs):
         if self.wiki_page_link:
-            page = WikiPage(self.env, resource.id)
+            page = WikiPage(self.env, self.wiki_page_prefix + resource.id)
             if page.exists:
                 return get_resource_description(self.env, page.resource,
                                                 format, **kwargs)

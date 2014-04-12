@@ -205,7 +205,6 @@ class TagWikiMacros(TagTemplateProvider):
                     return ''
             query = '(%s) (%s)' % (query or '', ' or '.join(['realm:%s' % (r)
                                                              for r in realms]))
-            env.log.debug('LISTTAGGED_QUERY: %s', query)
             query_result = tag_system.query(req, query)
             if not query_result:
                 return ''

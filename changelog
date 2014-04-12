@@ -3,6 +3,8 @@ Author: Alec Thomas <alec@swapoff.org>
 Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
 tractags-0.8 (not yet released)
+ new features
+ * #9797: Add configurable prefix for linking tags to wiki pages
 
 
 tractags-0.7 (06-Apr-2014)

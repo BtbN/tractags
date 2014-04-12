@@ -111,15 +111,13 @@ class TagRequestHandler(TagTemplateProvider):
                                        checked=realm in checked_realms)
                                   for realm in realms)
         if tag_id:
-            page_name = tag_id
-            page = WikiPage(self.env, page_name)
-            data['tag_page'] = page
-
-        macros = TagWikiMacros(self.env)
+            data['tag_page'] = WikiPage(self.env,
+                                        TagSystem(self.env).wiki_page_prefix \
+                                        + tag_id)
         if query or tag_id:
+            macro = 'ListTagged'
             # TRANSLATOR: The meta-nav link label.
             add_ctxtnav(req, _("Back to Cloud"), req.href.tags())
-            macro = 'ListTagged'
             args = "%s,format=%s,cols=%s" % \
                    (tag_id and tag_id or query, self.default_format,
                     self.default_cols)
@@ -133,7 +131,8 @@ class TagRequestHandler(TagTemplateProvider):
         formatter = Formatter(self.env, Context.from_request(req,
                                                              Resource('tag')))
         self.env.log.debug(
-            "Tag macro arguments: %s", args and args or '(none)')
+            "%s macro arguments: %s" % (macro, args and args or '(none)'))
+        macros = TagWikiMacros(self.env)
         try:
             # Query string without realm throws 'NotImplementedError'.
             data['tag_body'] = checked_realms and \
