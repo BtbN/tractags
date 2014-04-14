@@ -21,7 +21,8 @@ from pkg_resources import resource_filename
 from trac.config import BoolOption, ListOption, Option
 from trac.core import Component, ExtensionPoint, Interface, TracError, \
                       implements
-from trac.perm import IPermissionRequestor, PermissionError
+from trac.perm import IPermissionPolicy, IPermissionRequestor
+from trac.perm import PermissionError, PermissionSystem
 from trac.resource import IResourceManager, get_resource_url, \
                           get_resource_description
 from trac.util.text import to_unicode
@@ -226,6 +227,9 @@ class ITagProvider(Interface):
     def get_resource_tags(req, resource, when=None):
         """Get tags for a Resource object."""
 
+    def resource_tags(resource):
+        """Get tags for a Resource object skipping permission checks."""
+
     def set_resource_tags(req, resource, tags, comment=u'', when=None):
         """Set tags for a resource."""
 
@@ -296,6 +300,10 @@ class DefaultTagProvider(Component):
             return
         return resource_tags(self.env, resource, when=when)
 
+    def resource_tags(self, resource):
+        assert resource.realm == self.realm
+        return resource_tags(self.env, resource)
+
     def set_resource_tags(self, req, resource, tags, comment=u'', when=None):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
@@ -319,6 +327,37 @@ class DefaultTagProvider(Component):
 
     def describe_tagged_resource(self, req, resource):
         return ''
+
+
+class TagPolicy(Component):
+    """Security policy based on tags."""
+
+    implements(IPermissionPolicy)
+
+    def check_permission(self, action, username, resource, perm):
+        if resource is None or action.split('_')[0] != resource.realm.upper():
+            return None
+
+        from tractags.api import TagSystem
+
+        class FakeRequest(object):
+            def __init__(self, perm):
+                self.perm = perm
+
+        permission = action.lower().split('_')[1]
+        req = FakeRequest(perm)
+        tags = TagSystem(self.env).get_tags(None, resource)
+
+        # Explicitly denied?
+        if ':-'.join((username, permission)) in tags:
+            return False
+
+        # Find all granted permissions for the requesting user from
+        # tagged permissions by expanding any meta action as well.
+        if action in set(PermissionSystem(self.env).expand_actions(
+                         ['_'.join([resource.realm, t.split(':')[1]]).upper()
+                          for t in tags if t.split(':')[0] == username])):
+            return True
 
 
 class TagSystem(Component):
@@ -411,6 +450,11 @@ class TagSystem(Component):
 
     def get_tags(self, req, resource, when=None):
         """Get tags for resource."""
+        if not req:
+            # Bypass permission checks as required i. e. for TagsPolicy,
+            # an IPermissionProvider.
+            return set(self._get_provider(resource.realm) \
+                       .resource_tags(resource))
         return set(self._get_provider(resource.realm) \
                    .get_resource_tags(req, resource, when=when))
 

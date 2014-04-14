@@ -4,7 +4,9 @@ Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
 tractags-0.8 (not yet released)
  new features
+ * #3891: TagSystem.get_tags(req, resource) should not need a full req object
  * #9797: Add configurable prefix for linking tags to wiki pages
+ add optional fine-grained permissions based on resource tags
 
 
 tractags-0.7 (06-Apr-2014)

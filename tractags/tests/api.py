@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -24,7 +24,7 @@ from tractags.ticket import TicketTagProvider
 from tractags.wiki import WikiTagProvider
 
 
-class TagSystemTestCase(unittest.TestCase):
+class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         self.env = EnvironmentStub(default_data=True,
@@ -57,6 +57,51 @@ class TagSystemTestCase(unittest.TestCase):
         cursor.execute("DELETE FROM system WHERE name='tags_version'")
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
+
+
+class TagPolicyTestCase(_BaseTestCase):
+
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+        cursor = self.db.cursor()
+        # Populate table with initial test data.
+        cursor.executemany("""
+            INSERT INTO tags
+                   (tagspace, name, tag)
+            VALUES (%s,%s,%s)
+        """, [('wiki', 'PublicPage', 'anonymous:modify'),
+              ('wiki', 'RestrictedPage', 'anonymous:-view'),
+              ('wiki', 'RestrictedPage', 'classified'),
+              ('wiki', 'UserPage', 'private'),
+              ('wiki', 'UserPage', 'user:admin'),
+             ])
+        self.check = tractags.api.TagPolicy(self.env).check_permission
+        self.env.config.set('trac', 'permission_policies',
+                            'TagPolicy, DefaultPermissionPolicy')
+
+    # Tests
+
+    def test_action_granted(self):
+        resource = Resource('wiki', 'PublicPage')
+        self.assertEquals(self.check('WIKI_MODIFY', 'anonymous', resource,
+                                     PermissionCache(self.env)), True)
+
+    def test_action_revoked(self):
+        resource = Resource('wiki', 'RestrictedPage')
+        self.assertEquals(self.check('WIKI_VIEW', 'anonymous', resource,
+                                     PermissionCache(self.env)), False)
+
+    def test_meta_action_granted(self):
+        resource = Resource('wiki', 'UserPage')
+        self.assertEquals(self.check('WIKI_DELETE', 'user', resource,
+                                     PermissionCache(self.env,
+                                                     username='user')), True)
+        self.assertEquals(self.check('WIKI_DELETE', 'other', resource,
+                                     PermissionCache(self.env,
+                                                     username='other')), None)
+
+
+class TagSystemTestCase(_BaseTestCase):
 
     # Tests
 
@@ -103,6 +148,7 @@ class TagSystemTestCase(unittest.TestCase):
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(doctest.DocTestSuite(module=tractags.api))
+    suite.addTest(unittest.makeSuite(TagPolicyTestCase, 'test'))
     suite.addTest(unittest.makeSuite(TagSystemTestCase, 'test'))
     return suite
 
