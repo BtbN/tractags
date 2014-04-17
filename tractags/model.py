@@ -48,18 +48,29 @@ def delete_tags(env, resource, tags=None, db=None):
         """, (resource.realm, to_unicode(resource.id)))
         db.commit()
 
-def tag_changes(env, resource):
-    """Return tag history for a Trac resource."""
+def tag_changes(env, resource, start=None, stop=None):
+    """Return tag history for one or all tagged Trac resources."""
     db = _get_db(env)
     cursor = db.cursor()
+    if resource:
+        # Resource changelog events query.
+        cursor.execute("""
+            SELECT time,author,oldtags,newtags
+              FROM tags_change
+             WHERE tagspace=%s
+               AND name=%s
+             ORDER BY time DESC
+        """, (resource.realm, to_unicode(resource.id)))
+        return [(to_datetime(row[0]), row[1], row[2], row[3])
+                for row in cursor]
+    # Timeline events query.
     cursor.execute("""
-        SELECT time,author,oldtags,newtags
+        SELECT time,author,tagspace,name,oldtags,newtags
           FROM tags_change
-         WHERE tagspace=%s
-           AND name=%s
-         ORDER BY time DESC
-    """, (resource.realm, to_unicode(resource.id)))
-    return [(to_datetime(row[0]), row[1], row[2], row[3])
+         WHERE time>%s
+           AND time<%s
+    """, (to_utimestamp(start), to_utimestamp(stop)))
+    return [(to_datetime(row[0]), row[1], row[2], row[3], row[4], row[5])
             for row in cursor]
 
 def tag_frequency(env, realm, filter=None, db=None):

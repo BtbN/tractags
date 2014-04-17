@@ -27,11 +27,11 @@ from trac.wiki.model import WikiPage
 from trac.wiki.parser import WikiParser
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import Counter, DefaultTagProvider, TagSystem, _, requests, \
-                         tagn_
+from tractags.api import Counter, DefaultTagProvider, TagSystem, _, requests
 from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
+from tractags.web_ui import render_tag_changes
 from tractags.util import split_into_tags
 
 
@@ -212,20 +212,7 @@ class WikiTagInterface(TagTemplateProvider):
                 tags_history = tags_histories.pop(0)
                 date = tags_history[0]
                 author = tags_history[1]
-                old_tags = split_into_tags(tags_history[2] or '')
-                new_tags = split_into_tags(tags_history[3] or '')
-                added = sorted(new_tags - old_tags)
-                added = added and \
-                        tagn_("%(tags)s added", "%(tags)s added",
-                              len(added), tags=tag.em(', '.join(added)))
-                removed = sorted(old_tags - new_tags)
-                removed = removed and \
-                          tagn_("%(tags)s removed", "%(tags)s removed",
-                                len(removed), tags=tag.em(', '.join(removed)))
-                # TRANSLATOR: How to delimit added and removed tags.
-                delim = added and removed and _("; ")
-                comment = tag(tag.strong(_("Tags")), ' ', added, delim,
-                              removed)
+                comment = render_tag_changes(tags_history[2], tags_history[3])
                 url = req.href(resource.realm, resource.id,
                                version=page_history['version'],
                                tags_version=to_utimestamp(date))

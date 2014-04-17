@@ -12,10 +12,12 @@ import re
 import math
 
 from genshi.builder import tag as builder
+
 from trac.config import ListOption, Option
 from trac.core import ExtensionPoint, implements
 from trac.mimeview import Context
-from trac.resource import Resource
+from trac.resource import Resource, get_resource_name, get_resource_url
+from trac.timeline.api import ITimelineEventProvider
 from trac.util import to_unicode
 from trac.util.text import CRLF
 from trac.web.api import IRequestHandler
@@ -24,10 +26,12 @@ from trac.web.chrome import add_stylesheet, add_ctxtnav
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
-from tractags.api import TagSystem, ITagProvider, _, tag_
+from tractags.api import TagSystem, ITagProvider, _, tag_, tagn_
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
+from tractags.model import tag_changes
 from tractags.query import InvalidQuery
+from tractags.util import split_into_tags
 
 
 class TagRequestHandler(TagTemplateProvider):
@@ -144,3 +148,56 @@ class TagRequestHandler(TagTemplateProvider):
             data['tag_body'] = macros.expand_macro(formatter, 'TagCloud', '')
         add_stylesheet(req, 'tags/css/tractags.css')
         return 'tag_view.html', data, None
+
+
+class TagTimelineEventProvider(TagTemplateProvider):
+    """Delivers recorded tag change events to the timeline."""
+
+    implements(ITimelineEventProvider)
+
+    # ITimelineEventProvider methods
+
+    def get_timeline_filters(self, req):
+        if 'TAGS_VIEW' in req.perm('tags'):
+            yield ('tags', _("Tag changes"))
+
+    def get_timeline_events(self, req, start, stop, filters):
+        if 'tags' in filters:
+            tags_realm = Resource('tags')
+            if not 'TAGS_VIEW' in req.perm(tags_realm):
+                return
+            add_stylesheet(req, 'tags/css/tractags.css')
+            for time, author, tagspace, name, old_tags, new_tags in \
+                    tag_changes(self.env, None, start, stop):
+                tagged_resource = Resource(tagspace, name)
+                if 'TAGS_VIEW' in req.perm(tagged_resource):
+                    yield ('tags', time, author,
+                           (tagged_resource, old_tags, new_tags), self) 
+
+    def render_timeline_event(self, context, field, event):
+        resource = event[3][0]
+        if field == 'url':
+            return get_resource_url(self.env, resource, context.href)
+        elif field == 'title':
+            name = builder.em(get_resource_name(self.env, resource))
+            return tag_("Tag change on %(resource)s", resource=name)
+        elif field == 'description':
+            return render_tag_changes(event[3][1], event[3][2])
+
+
+def render_tag_changes(old_tags, new_tags):
+        old_tags = split_into_tags(old_tags or '')
+        new_tags = split_into_tags(new_tags or '')
+        added = sorted(new_tags - old_tags)
+        added = added and \
+                tagn_("%(tags)s added", "%(tags)s added",
+                      len(added), tags=builder.em(', '.join(added)))
+        removed = sorted(old_tags - new_tags)
+        removed = removed and \
+                  tagn_("%(tags)s removed", "%(tags)s removed",
+                        len(removed), tags=builder.em(', '.join(removed)))
+        # TRANSLATOR: How to delimit added and removed tags.
+        delim = added and removed and _("; ")
+        return builder(builder.strong(_("Tags")), ' ', added,
+                       delim, removed)
+
