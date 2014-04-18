@@ -40,6 +40,9 @@ def test_suite():
     import tractags.tests.wiki
     suite.addTest(tractags.tests.wiki.test_suite())
 
+    import tractags.tests.xmlrpc
+    suite.addTest(tractags.tests.xmlrpc.test_suite())
+
     return suite
 
 
