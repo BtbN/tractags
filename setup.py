@@ -35,7 +35,6 @@ setup(
     url='http://trac-hacks.org/wiki/TagsPlugin',
     description='Tags plugin for Trac',
     dependency_links=['http://svn.edgewall.org/repos/genshi/trunk#egg=Genshi-dev'],
-    install_requires=['Genshi >= 0.5', 'Trac >= 0.11'],
     extras_require={
         'babel': 'Babel>= 0.9.5',
         'tracrpc': 'TracXMLRPC >= 1.1.0'},
