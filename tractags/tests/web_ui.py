@@ -12,7 +12,7 @@ import shutil
 import tempfile
 import unittest
 
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.perm import PermissionSystem, PermissionCache, PermissionError
 from trac.web.href import Href
 from trac.web.session import DetachedSession
@@ -22,15 +22,57 @@ from tractags.db import TagSetup
 from tractags.web_ui import TagInputAutoComplete, TagRequestHandler
 
 
-class TagInputAutoCompleteTestCase(unittest.TestCase):
+class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(enable=['trac.*', 'keywordsuggest.*'])
-        self.tac = TagInputAutoComplete(self.env)
-        self.req = Mock()
+        self.env = EnvironmentStub(
+                enable=['trac.*', 'tractags.*'])
+        self.env.path = tempfile.mkdtemp()
+        self.db = self.env.get_db_cnx()
+        setup = TagSetup(self.env)
+        # Current tractags schema is setup with enabled component anyway.
+        #   Revert these changes for getting a clean setup.
+        self._revert_tractags_schema_init()
+        setup.upgrade_environment(self.db)
+
+        self.tag_s = TagSystem(self.env)
+        self.tag_rh = TagRequestHandler(self.env)
+
+        perms = PermissionSystem(self.env)
+        # Revoke default permissions, because more diversity is required here.
+        perms.revoke_permission('anonymous', 'TAGS_VIEW')
+        perms.revoke_permission('authenticated', 'TAGS_MODIFY')
+        perms.grant_permission('reader', 'TAGS_VIEW')
+        perms.grant_permission('writer', 'TAGS_MODIFY')
+        perms.grant_permission('admin', 'TAGS_ADMIN')
+
+        self.href = Href('/trac')
+        self.abs_href = Href('http://example.org/trac')
 
     def tearDown(self):
-        pass
+        self.db.close()
+        # Really close db connections.
+        self.env.shutdown()
+        shutil.rmtree(self.env.path)
+
+    # Helpers
+
+    def _revert_tractags_schema_init(self):
+        cursor = self.db.cursor()
+        cursor.execute("DROP TABLE IF EXISTS tags")
+        cursor.execute("DROP TABLE IF EXISTS tags_change")
+        cursor.execute("DELETE FROM system WHERE name='tags_version'")
+        cursor.execute("DELETE FROM permission WHERE action %s"
+                       % self.db.like(), ('TAGS_%',))
+
+
+class TagInputAutoCompleteTestCase(_BaseTestCase):
+
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+        self.req = Mock()
+        self.req.perm = MockPerm()
+        self.tac = TagInputAutoComplete(self.env)
 
     # Tests
 
@@ -89,52 +131,14 @@ class TagInputAutoCompleteTestCase(unittest.TestCase):
         self.assertTrue(self.tac in Chrome(self.env).stream_filters)
 
 
-class TagRequestHandlerTestCase(unittest.TestCase):
+class TagRequestHandlerTestCase(_BaseTestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
-        self.env.path = tempfile.mkdtemp()
-        self.db = self.env.get_db_cnx()
-        setup = TagSetup(self.env)
-        # Current tractags schema is setup with enabled component anyway.
-        #   Revert these changes for getting a clean setup.
-        self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
-
-        self.tag_s = TagSystem(self.env)
-        self.tag_rh = TagRequestHandler(self.env)
-
-        perms = PermissionSystem(self.env)
-        # Revoke default permissions, because more diversity is required here.
-        perms.revoke_permission('anonymous', 'TAGS_VIEW')
-        perms.revoke_permission('authenticated', 'TAGS_MODIFY')
-        perms.grant_permission('reader', 'TAGS_VIEW')
-        perms.grant_permission('writer', 'TAGS_MODIFY')
-        perms.grant_permission('admin', 'TAGS_ADMIN')
+        _BaseTestCase.setUp(self)
         self.anonymous = PermissionCache(self.env)
         self.reader = PermissionCache(self.env, 'reader')
         self.writer = PermissionCache(self.env, 'writer')
         self.admin = PermissionCache(self.env, 'admin')
-
-        self.href = Href('/trac')
-        self.abs_href = Href('http://example.org/trac')
-
-    def tearDown(self):
-        self.db.close()
-        # Really close db connections.
-        self.env.shutdown()
-        shutil.rmtree(self.env.path)
-
-    # Helpers
-
-    def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
 
     # Tests
 
