@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012 Ryan J Ollos <ryan.j.ollos@gmail.com>
+# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -18,7 +19,74 @@ from trac.web.session import DetachedSession
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup
-from tractags.web_ui import TagRequestHandler
+from tractags.web_ui import TagInputAutoComplete, TagRequestHandler
+
+
+class TagInputAutoCompleteTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.env = EnvironmentStub(enable=['trac.*', 'keywordsuggest.*'])
+        self.tac = TagInputAutoComplete(self.env)
+        self.req = Mock()
+
+    def tearDown(self):
+        pass
+
+    # Tests
+
+    def test_multiplesepartor_is_default(self):
+        self.assertEqual(' ', self.tac.multiple_separator)
+
+    def test_multipleseparator_is_empty_quotes(self):
+        self.env.config.set('tags', 'multipleseparator', "''")
+        self.assertEqual(' ', self.tac.multiple_separator)
+
+    def test_multipleseparator_is_comma(self):
+        self.env.config.set('tags', 'multipleseparator', ',')
+        self.assertEqual(',', self.tac.multiple_separator)
+
+    def test_multipleseparator_is_quoted_strip_quotes(self):
+        self.env.config.set('tags', 'multipleseparator', "','")
+        self.assertEqual(',', self.tac.multiple_separator)
+
+    def test_multipleseparator_is_quoted_whitespace_strip_quotes(self):
+        self.env.config.set('tags', 'multipleseparator', "' '")
+        self.assertEqual(' ', self.tac.multiple_separator)
+
+    def test_get_keywords_no_keywords(self): 
+        self.assertEqual('', self.tac._get_keywords_string(self.req))
+
+    def test_get_keywords_define_in_config(self):
+        self.env.config.set('tags', 'sticky_tags', 'tag1, tag2, tag3')
+        self.assertEqual("'tag1','tag2','tag3'",
+                         self.tac._get_keywords_string(self.req))
+
+    def test_keywords_are_sorted(self):
+        self.env.config.set('tags', 'sticky_tags', 'tagb, tagc, taga')
+        self.assertEqual("'taga','tagb','tagc'",
+                         self.tac._get_keywords_string(self.req))
+    
+    def test_keywords_duplicates_removed(self):
+        self.env.config.set('tags', 'sticky_tags', 'tag1, tag1, tag2')
+        self.assertEqual("'tag1','tag2'",
+                         self.tac._get_keywords_string(self.req))
+
+    def test_keywords_quoted_for_javascript(self):
+        self.env.config.set('tags', 'sticky_tags', 'it\'s, "this"')
+        self.assertEqual('\'\\"this\\"\',\'it\\\'s\'',
+                         self.tac._get_keywords_string(self.req))
+
+    def test_implements_irequestfilter(self):
+        from trac.web.main import RequestDispatcher
+        self.assertTrue(self.tac in RequestDispatcher(self.env).filters)
+
+    def test_implements_itemplateprovider(self):
+        from trac.web.chrome import Chrome
+        self.assertTrue(self.tac in Chrome(self.env).template_providers)
+
+    def test_implements_itemplatestreamfilter(self):
+        from trac.web.chrome import Chrome
+        self.assertTrue(self.tac in Chrome(self.env).stream_filters)
 
 
 class TagRequestHandlerTestCase(unittest.TestCase):
@@ -118,6 +186,7 @@ class TagRequestHandlerTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TagInputAutoCompleteTestCase, 'test'))
     suite.addTest(unittest.makeSuite(TagRequestHandlerTestCase, 'test'))
     return suite
 

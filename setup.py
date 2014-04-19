@@ -27,14 +27,15 @@ setup(
     packages=find_packages(exclude=['*.tests']),
     package_data={'tractags' : [
         'templates/*.html', 'htdocs/js/*.js', 'htdocs/css/*.css',
-        'locale/*/LC_MESSAGES/*.mo', 'locale/.placeholder']},
+        'htdocs/images/*.png', 'locale/*/LC_MESSAGES/*.mo',
+        'locale/.placeholder']},
     # With acknowledgement to Muness Albrae for the original idea :)
+    # With acknowledgement to Dmitry Dianov for input field auto-completion.
     author='Alec Thomas',
     author_email='alec@swapoff.org',
     license='BSD',
     url='http://trac-hacks.org/wiki/TagsPlugin',
     description='Tags plugin for Trac',
-    dependency_links=['http://svn.edgewall.org/repos/genshi/trunk#egg=Genshi-dev'],
     extras_require={
         'babel': 'Babel>= 0.9.5',
         'tracrpc': 'TracXMLRPC >= 1.1.0'},

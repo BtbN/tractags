@@ -22,3 +22,17 @@ except ImportError:
     from trac.util.datefmt import to_datetime as to_dt
     def to_datetime(ts):
         return to_dt(ts / 1000000)
+
+# Compatibility code for `ComponentManager.is_enabled`
+# (available since Trac 0.12)
+def is_enabled(env, cls):
+    """Return whether the given component class is enabled.
+
+    For Trac 0.11 the missing algorithm is included as fallback.
+    """
+    try:
+        return env.is_enabled(cls)
+    except AttributeError:
+        if cls not in env.enabled:
+            env.enabled[cls] = env.is_component_enabled(cls)
+        return env.enabled[cls]
