@@ -3,6 +3,9 @@ Author: Alec Thomas <alec@swapoff.org>
 Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
 tractags-0.8 (not yet released)
+ resolved issues
+ * #11695: Changes to tags may be recorded as anonymous
+
  new features
  * #1304: Implement tags related XMLRPC methods
  * #1344: Choose tags via dropdown list

@@ -25,6 +25,7 @@ from trac.perm import IPermissionPolicy, IPermissionRequestor
 from trac.perm import PermissionError, PermissionSystem
 from trac.resource import IResourceManager, get_resource_url, \
                           get_resource_description
+from trac.util import get_reporter_id
 from trac.util.text import to_unicode
 from trac.wiki.model import WikiPage
 
@@ -308,25 +309,30 @@ class DefaultTagProvider(Component):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, resource, author=req.authname, tags=tags,
-                     log=self.revisable, when=when)
+        tag_resource(self.env, resource, author=self._get_author(req),
+                     tags=tags, log=self.revisable, when=when)
 
     def reparent_resource_tags(self, req, resource, old_id, comment=u''):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, resource, old_id, req.authname,
+        tag_resource(self.env, resource, old_id, self._get_author(req),
                      log=self.revisable)
 
     def remove_resource_tags(self, req, resource, comment=u''):
         assert resource.realm == self.realm
         if not self.check_permission(req.perm(resource), 'modify'):
             raise PermissionError(resource=resource, env=self.env)
-        tag_resource(self.env, resource, author=req.authname,
+        tag_resource(self.env, resource, author=self._get_author(req),
                      log=self.revisable)
 
     def describe_tagged_resource(self, req, resource):
         return ''
+
+    def _get_author(self, req):
+        # Might even eval to None.
+        author = get_reporter_id(req, 'author')
+        return author and author.strip() or 'anonymous'
 
 
 class TagPolicy(Component):
