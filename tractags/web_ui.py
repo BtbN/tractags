@@ -71,36 +71,36 @@ class TagInputAutoComplete(TagTemplateProvider):
     implements (IRequestFilter, ITemplateStreamFilter)
 
     field_opt = Option('tags', 'complete_field', 'keywords',
-        "Field to which the drop-down list should be attached.")
+        "Ticket field to which a drop-down tag list should be attached.")
 
-    keywords_opt = ListOption('tags', 'sticky_tags', '', ',',
-        doc="A list of comma separated values available for input.")
+    help_opt = Option('tags','ticket_help', None,
+        "If specified, 'keywords' label on ticket view will be turned into a "
+        "link to this URL.")
+
+    helpnewwindow_opt = BoolOption('tags','ticket_help_newwindow', False,
+        "If true and keywords_help specified, wiki page will open in a new "
+        "window. Default is false.")
 
     # Needs to be reimplemented, refs th:#8141.
     #mustmatch = BoolOption('tags', 'complete_mustmatch', False,
     #    "If true, input fields accept values from the word list only.")
 
-    matchcontains_opt = BoolOption('tags','complete_matchcontains_opt', True,
+    matchcontains_opt = BoolOption('tags','complete_matchcontains', True,
         "Include partial matches in suggestion list. Default is true.")
 
-    multiple_separator_opt = Option('tags','multipleseparator', ' ',
-        "Character(s) to use as separators between keywords. Default is a "
+    separator_opt = Option('tags','separator', ' ',
+        "Character(s) to use as separators between tags. Default is a "
         "single whitespace.")
 
-    helppage_opt = Option('tags','helppage_opt', None,
-        "If specified, 'keywords' label on ticket view will be turned into a "
-        "link to this URL.")
-
-    helppagenewwindow_opt = BoolOption('tags','helppage_opt.newwindow', False,
-        "If true and helppage_opt specified, wiki page will open in a new "
-        "window. Default is false.")
+    sticky_tags_opt = ListOption('tags', 'complete_sticky_tags', '', ',',
+        doc="A list of comma separated values available for input.")
 
     def __init__(self):
         self.tags_enabled = is_enabled(self.env, TagSystem)
 
     @property
-    def multiple_separator(self):
-        return self.multiple_separator_opt.strip('\'') or ' '
+    def separator(self):
+        return self.separator_opt.strip('\'') or ' '
 
     # IRequestFilter methods
 
@@ -140,9 +140,9 @@ class TagInputAutoComplete(TagTemplateProvider):
         js = """
             jQuery(document).ready(function($) {
                 var keywords = [ %(keywords)s ]
-                var sep = '%(multipleseparator)s'.trim() + ' '
+                var sep = '%(separator)s'.trim() + ' '
                 function split( val ) {
-                    return val.split( /%(multipleseparator)s\s*|\s+/ );
+                    return val.split( /%(separator)s\s*|\s+/ );
                 }
                 function extractLast( term ) {
                     return split( term ).pop();
@@ -188,17 +188,17 @@ class TagInputAutoComplete(TagTemplateProvider):
         if req.path_info.startswith('/ticket/') or \
            req.path_info.startswith('/newticket'):
             js_ticket =  js % {'field': '#field-' + self.field_opt,
-                               'multipleseparator': self.multiple_separator,
                                'keywords': keywords,
-                               'matchfromstart': matchfromstart}
+                               'matchfromstart': matchfromstart,
+                               'separator': self.separator}
             stream = stream | Transformer('.//head').append\
                               (builder.script(Markup(js_ticket),
                                type='text/javascript'))
 
             # Turn keywords field label into link to an arbitrary resource.
-            if self.helppage_opt:
-                link = self._get_helppage_link(req)
-                if self.helppagenewwindow_opt:
+            if self.help_opt:
+                link = self._get_help_link(req)
+                if self.helpnewwindow_opt:
                     link = builder.a(href=link, target='blank')
                 else:
                     link = builder.a(href=link)
@@ -208,9 +208,9 @@ class TagInputAutoComplete(TagTemplateProvider):
         # Inject transient part of JavaScript into wiki.html template.
         elif self.tags_enabled and req.path_info.startswith('/wiki/'):
             js_wiki =  js % {'field': '#tags',
-                             'multipleseparator': self.multiple_separator,
                              'keywords': keywords,
-                             'matchfromstart': matchfromstart}
+                             'matchfromstart': matchfromstart,
+                             'separator': self.separator}
             stream = stream | Transformer('.//head').append \
                               (builder.script(Markup(js_wiki),
                                type='text/javascript'))
@@ -219,7 +219,7 @@ class TagInputAutoComplete(TagTemplateProvider):
     # Private methods
 
     def _get_keywords_string(self, req):
-        keywords = set(self.keywords_opt) # prevent duplicates
+        keywords = set(self.sticky_tags_opt) # prevent duplicates
         if self.tags_enabled:
             # Use TagsPlugin >= 0.7 performance-enhanced API.
             tags = TagSystem(self.env).get_all_tags(req)
@@ -234,14 +234,14 @@ class TagInputAutoComplete(TagTemplateProvider):
             
         return keywords
 
-    def _get_helppage_link(self, req):
+    def _get_help_link(self, req):
         link = realm = resource_id = None
-        if self.helppage_opt.startswith('/'):
+        if self.help_opt.startswith('/'):
             # Assume valid URL to arbitrary resource inside
             #   of the current Trac environment.
-            link = req.href(self.helppage_opt)
-        if not link and ':' in self.helppage_opt:
-            realm, resource_id = self.helppage_opt.split(':', 1)
+            link = req.href(self.help_opt)
+        if not link and ':' in self.help_opt:
+            realm, resource_id = self.help_opt.split(':', 1)
             # Validate realm-like prefix against resource realm list,
             #   but exclude 'wiki' to allow deferred page creation.
             rsys = ResourceSystem(self.env)
@@ -257,7 +257,7 @@ class TagInputAutoComplete(TagTemplateProvider):
         if not link:
             if not resource_id:
                 # Assume wiki page name for backwards-compatibility.
-                resource_id = self.helppage_opt
+                resource_id = self.help_opt
             # Preserve anchor without 'path_safe' arg (since Trac 0.12.2dev).
             if '#' in resource_id:
                 path, anchor = resource_id.split('#', 1)

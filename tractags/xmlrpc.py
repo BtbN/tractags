@@ -18,7 +18,7 @@ from tractags.util import split_into_tags
 class TagRPC(Component):
     """[extra] RPC interface for the tag system.
 
-    Access Trac resource tags system through methods provided by
+    Access Trac resource tagging system through methods provided by
     [https://trac-hacks.org/wiki/XmlRpcPlugin XmlRpcPlugin].
     """
 
