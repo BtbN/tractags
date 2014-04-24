@@ -13,6 +13,7 @@ tractags-0.8 (not yet released)
  * #3891: TagSystem.get_tags(req, resource) should not need a full req object
  * #9797: Add configurable prefix for linking tags to wiki pages
  * #11661: Changes to Tags should be shown in timeline
+ * #11690: Document which components are required
  add optional fine-grained permissions based on resource tags
 
 

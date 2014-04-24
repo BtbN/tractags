@@ -75,7 +75,7 @@ class TagTemplateProvider(Component):
 
 
 class TagWikiMacros(TagTemplateProvider):
-    """Provides macros, that utilize the tagging system in wiki."""
+    """[opt] Provides macros, that utilize the tag system in wiki markup."""
 
     implements(IWikiMacroProvider)
 

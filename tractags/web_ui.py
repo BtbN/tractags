@@ -62,7 +62,7 @@ except ImportError:
 
 
 class TagInputAutoComplete(TagTemplateProvider):
-    """Provide auto-complete functionality for tag input fields.
+    """[opt] Provides auto-complete functionality for tag input fields.
 
     This module is based on KeywordSuggestModule from KeywordSuggestPlugin
     0.5dev.
@@ -274,7 +274,7 @@ class TagInputAutoComplete(TagTemplateProvider):
 
 
 class TagRequestHandler(TagTemplateProvider):
-    """Implements the /tags handler."""
+    """[main] Implements the /tags handler."""
 
     implements(INavigationContributor, IRequestHandler)
 
@@ -390,7 +390,7 @@ class TagRequestHandler(TagTemplateProvider):
 
 
 class TagTimelineEventProvider(TagTemplateProvider):
-    """Delivers recorded tag change events to the timeline."""
+    """[opt] Delivers recorded tag change events to timeline view."""
 
     implements(ITimelineEventProvider)
 

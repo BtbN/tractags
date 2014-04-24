@@ -16,6 +16,7 @@ from tractags.api import TagSystem, ITagProvider, _
 
 
 class TagChangeAdminPanel(Component):
+    """[opt] Admin web-UI providing administrative tag system actions."""
 
     implements(IAdminPanelProvider)
 
@@ -71,4 +72,3 @@ class TagChangeAdminPanel(Component):
             # Element modifiers unavailable before Trac 0.12, skip gracefully.
             pass
         return 'admin_tag_change.html', data
-

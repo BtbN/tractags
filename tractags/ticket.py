@@ -26,7 +26,7 @@ from tractags.util import get_db_exc, split_into_tags
 
 
 class TicketTagProvider(DefaultTagProvider):
-    """A tag provider using ticket fields as sources of tags.
+    """[main] Tag provider using ticket fields as sources of tags.
 
     Relevant ticket data is initially copied to plugin's own tag db store for
     more efficient regular access, that matters especially when working with

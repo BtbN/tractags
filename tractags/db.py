@@ -16,7 +16,7 @@ from tractags.ticket import TicketTagProvider
 
 
 class TagSetup(Component):
-    """Plugin setup and upgrade handler."""
+    """[main] Plugin setup and upgrade handler."""
 
     implements(IEnvironmentSetupParticipant)
 

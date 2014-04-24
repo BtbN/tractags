@@ -336,7 +336,7 @@ class DefaultTagProvider(Component):
 
 
 class TagPolicy(Component):
-    """Security policy based on tags."""
+    """[extra] Security policy based on tags."""
 
     implements(IPermissionPolicy)
 
@@ -367,7 +367,18 @@ class TagPolicy(Component):
 
 
 class TagSystem(Component):
-    """Tagging system for Trac."""
+    """[main] Tagging system for Trac.
+
+    Associating resources with tags is easy, faceted content classification.
+
+    Available components are marked according to their relevance as follows:
+     `[main]`:: provide core with a generic tagging engine as well as support
+     for common realms 'ticket' and 'wiki'.
+     `[opt]`:: provide enhance features and improve user experience
+     `[extra]`:: add advanced features for specific use cases
+    Make sure to understand their purpose before deactivating `[main]` or
+    activating `[extra]` components.
+    """
 
     implements(IPermissionRequestor, IResourceManager)
 

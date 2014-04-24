@@ -36,7 +36,7 @@ from tractags.util import split_into_tags
 
 
 class WikiTagProvider(DefaultTagProvider):
-    """Tag provider for Trac wiki."""
+    """[main] Tag provider for Trac wiki."""
 
     realm = 'wiki'
 
@@ -81,7 +81,8 @@ class WikiTagProvider(DefaultTagProvider):
 
 
 class WikiTagInterface(TagTemplateProvider):
-    """Implement the user interface for tagging Wiki pages."""
+    """[main] Implements the user interface for tagging Wiki pages."""
+
     implements(IRequestFilter, ITemplateStreamFilter,
                IWikiChangeListener, IWikiPageManipulator)
 
@@ -279,7 +280,11 @@ class WikiTagInterface(TagTemplateProvider):
 
 
 class TagWikiSyntaxProvider(Component):
-    """Provide tag:<expr> links as WikiFormatting extension."""
+    """[opt] Provides tag:<expr> links.
+
+    This extends TracLinks via WikiFormatting to point at tag queries or
+    at specific tags.
+    """
 
     implements(IWikiSyntaxProvider)
 
