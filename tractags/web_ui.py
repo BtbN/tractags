@@ -30,7 +30,8 @@ from trac.web import IRequestFilter
 from trac.web.api import IRequestHandler, ITemplateStreamFilter
 from trac.web.api import ITemplateStreamFilter
 from trac.web.chrome import Chrome, INavigationContributor
-from trac.web.chrome import add_script, add_stylesheet, add_ctxtnav
+from trac.web.chrome import add_ctxtnav, add_script, add_stylesheet
+from trac.web.chrome import add_warning
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
@@ -39,7 +40,7 @@ from tractags.compat import is_enabled
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
 from tractags.model import tag_changes
-from tractags.query import InvalidQuery
+from tractags.query import InvalidQuery, Query
 from tractags.util import split_into_tags
 
 try:
@@ -118,7 +119,6 @@ class TagInputAutoComplete(TagTemplateProvider):
                     add_script(req, 'tags/js/jquery-ui-1.8.16.custom.min.js')
                     add_stylesheet(req, 'tags/css/jquery-ui-1.8.16.custom.css')
         return template, data, content_type
-
 
     # ITemplateStreamFilter method
     def filter_stream(self, req, method, filename, stream, data):
@@ -387,6 +387,82 @@ class TagRequestHandler(TagTemplateProvider):
             data['tag_body'] = macros.expand_macro(formatter, 'TagCloud', '')
         add_stylesheet(req, 'tags/css/tractags.css')
         return 'tag_view.html', data, None
+
+
+class TagTimelineEventFilter(TagTemplateProvider):
+    """[opt] Filters timeline events by tags associated with listed resources
+    mentioned in the event.
+    """
+
+    implements(IRequestFilter, ITemplateStreamFilter)
+
+    key = 'tag_query'
+
+    # ITemplateStreamFilter method
+    def filter_stream(self, req, method, filename, stream, data):
+        if req.path_info == '/timeline':
+            insert = builder(Markup('<br />'), tag_("matching tags "),
+                             builder.input(type='text', name=self.key,
+                                           value=data.get(self.key)))
+            xpath = '//form[@id="prefs"]/div[1]'
+            stream = stream | Transformer(xpath).append(insert)
+        return stream
+
+    # IRequestFilter methods
+
+    def pre_process_request(self, req, handler):
+        return handler
+    
+    def post_process_request(self, req, template, data, content_type):
+        if req.path_info == '/timeline' and \
+                'TAGS_VIEW' in req.perm(Resource('tags')):
+
+            def realm_handler(_, node, context):
+                return query.match(node, [context.realm])
+
+            query_str = req.args.get(self.key)
+            if query_str is None and req.args.get('format') != 'rss':
+                query_str = req.session.get('timeline.%s' % self.key)
+            else:
+                query_str = (query_str or '').strip()
+                # Record tag query expression between visits.
+                req.session.set('timeline.%s' % self.key, query_str, '')
+
+            if data.get('events') and query_str:
+                tag_sys = TagSystem(self.env)
+                try:
+                    query = Query(query_str,
+                                  attribute_handlers=dict(realm=realm_handler)
+                            )
+                except InvalidQuery, e:
+                    add_warning(req, _("Tag query syntax error: %s"
+                                       % to_unicode(e)))
+                else:
+                    all_realms = tag_sys._realm_provider_map.keys()
+                    query_realms = set()
+                    for m in tag_sys._realm.finditer(query.as_string()):
+                        query_realms.add(m.group(1))
+                    # Don't care about resources from non-taggable realms.
+                    realms = not query_realms and all_realms or \
+                             query_realms.intersection(all_realms)
+                    events = []
+                    self.log.debug("Filtering timeline events by tags '%s'"
+                                   % query_str)
+                    for event in data['events']:
+                        resource = event['data'][0]
+                        if resource.realm in realms:
+                            # Shortcut view permission checks here.
+                            tags = tag_sys.get_tags(None, resource)
+                            if query(tags, context=resource):
+                                events.append(event)
+                    # Overwrite with filtered list.
+                    data['events'] = events
+            if query_str:
+                # Add current value for next form rendering.
+                data[self.key] = query_str
+            elif self.key in req.session:
+                del req.session[self.key]
+        return template, data, content_type
 
 
 class TagTimelineEventProvider(TagTemplateProvider):

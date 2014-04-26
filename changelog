@@ -10,6 +10,7 @@ tractags-0.8 (not yet released)
  * #1304: Implement tags related XMLRPC methods
  * #1344: Choose tags via dropdown list
  by integrating KeywordSuggestPlugin
+ * #3660: timeline display wiki/ticket changes only to items matching some tags
  * #3891: TagSystem.get_tags(req, resource) should not need a full req object
  * #9797: Add configurable prefix for linking tags to wiki pages
  * #11661: Changes to Tags should be shown in timeline
