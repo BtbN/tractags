@@ -76,45 +76,48 @@ class TagInputAutoCompleteTestCase(_BaseTestCase):
 
     # Tests
 
-    def test_multiplesepartor_is_default(self):
-        self.assertEqual(' ', self.tac.multiple_separator)
+    def test_separtor_is_default(self):
+        self.assertEqual(' ', self.tac.separator_opt)
 
-    def test_multipleseparator_is_empty_quotes(self):
-        self.env.config.set('tags', 'multipleseparator', "''")
-        self.assertEqual(' ', self.tac.multiple_separator)
+    def test_separator_is_empty_quotes(self):
+        self.env.config.set('tags', 'separator', "''")
+        self.assertEqual(' ', self.tac.separator)
 
-    def test_multipleseparator_is_comma(self):
-        self.env.config.set('tags', 'multipleseparator', ',')
-        self.assertEqual(',', self.tac.multiple_separator)
+    def test_separator_is_comma(self):
+        self.env.config.set('tags', 'separator', ',')
+        self.assertEqual(',', self.tac.separator)
 
-    def test_multipleseparator_is_quoted_strip_quotes(self):
-        self.env.config.set('tags', 'multipleseparator', "','")
-        self.assertEqual(',', self.tac.multiple_separator)
+    def test_separator_is_quoted_strip_quotes(self):
+        self.env.config.set('tags', 'separator', "','")
+        self.assertEqual(',', self.tac.separator)
 
-    def test_multipleseparator_is_quoted_whitespace_strip_quotes(self):
-        self.env.config.set('tags', 'multipleseparator', "' '")
-        self.assertEqual(' ', self.tac.multiple_separator)
+    def test_separator_is_quoted_whitespace_strip_quotes(self):
+        self.env.config.set('tags', 'separator', "' '")
+        self.assertEqual(' ', self.tac.separator)
 
     def test_get_keywords_no_keywords(self): 
         self.assertEqual('', self.tac._get_keywords_string(self.req))
 
     def test_get_keywords_define_in_config(self):
-        self.env.config.set('tags', 'sticky_tags', 'tag1, tag2, tag3')
+        self.env.config.set('tags', 'complete_sticky_tags',
+                            'tag1, tag2, tag3')
         self.assertEqual("'tag1','tag2','tag3'",
                          self.tac._get_keywords_string(self.req))
 
     def test_keywords_are_sorted(self):
-        self.env.config.set('tags', 'sticky_tags', 'tagb, tagc, taga')
+        self.env.config.set('tags', 'complete_sticky_tags',
+                            'tagb, tagc, taga')
         self.assertEqual("'taga','tagb','tagc'",
                          self.tac._get_keywords_string(self.req))
     
     def test_keywords_duplicates_removed(self):
-        self.env.config.set('tags', 'sticky_tags', 'tag1, tag1, tag2')
+        self.env.config.set('tags', 'complete_sticky_tags',
+                            'tag1, tag1, tag2')
         self.assertEqual("'tag1','tag2'",
                          self.tac._get_keywords_string(self.req))
 
     def test_keywords_quoted_for_javascript(self):
-        self.env.config.set('tags', 'sticky_tags', 'it\'s, "this"')
+        self.env.config.set('tags', 'complete_sticky_tags', 'it\'s, "this"')
         self.assertEqual('\'\\"this\\"\',\'it\\\'s\'',
                          self.tac._get_keywords_string(self.req))
 
