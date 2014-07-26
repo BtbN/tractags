@@ -9,12 +9,13 @@ tractags-0.8 (not yet released)
  new features
  * #1304: Implement tags related XMLRPC methods
  * #1344: Choose tags via dropdown list
- by integrating KeywordSuggestPlugin
+   by integrating KeywordSuggestPlugin
  * #3660: timeline display wiki/ticket changes only to items matching some tags
  * #3891: TagSystem.get_tags(req, resource) should not need a full req object
  * #9797: Add configurable prefix for linking tags to wiki pages
  * #11661: Changes to Tags should be shown in timeline
  * #11690: Document which components are required
+ * #11888: Show correct permission error instead of 'No handler matched ...'
  add optional fine-grained permissions based on resource tags
 
 

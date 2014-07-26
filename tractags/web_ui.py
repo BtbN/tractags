@@ -314,7 +314,7 @@ class TagRequestHandler(TagTemplateProvider):
 
     # IRequestHandler methods
     def match_request(self, req):
-        return 'TAGS_VIEW' in req.perm and req.path_info.startswith('/tags')
+        return req.path_info.startswith('/tags')
 
     def process_request(self, req):
         req.perm.require('TAGS_VIEW')
