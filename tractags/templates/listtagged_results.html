@@ -56,6 +56,12 @@
       </p>
       <ul py:otherwise="" class="taglist">
         <py:choose>
+          <span class="listtagged" py:when="format == 'compact'">
+            <py:for each="result in results[:-1]">
+              ${result.resource_link},
+            </py:for>
+            ${results[-1].resource_link}
+          </span>
           <li py:for="result in results" py:when="format == 'oldlist'">
             ${result.resource_link} ${result.desc}
             <py:if test="result.rendered_tags">

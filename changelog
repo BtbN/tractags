@@ -17,6 +17,7 @@ tractags-0.8 (not yet released)
  * #11690: Document which components are required
  * #11888: Show correct permission error instead of 'No handler matched ...'
  add optional fine-grained permissions based on resource tags
+ add inline presentation format for ListTagged results
 
 
 tractags-0.7 (06-Apr-2014)
