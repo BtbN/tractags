@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012,2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -40,8 +40,13 @@ def test_suite():
     import tractags.tests.wiki
     suite.addTest(tractags.tests.wiki.test_suite())
 
-    import tractags.tests.xmlrpc
-    suite.addTest(tractags.tests.xmlrpc.test_suite())
+    msg_fail = '%s not found: skipping tractags.tests.%s'
+    try:
+        import tractags.tests.xmlrpc
+    except ImportError:
+        print(msg_fail % ('TracXMLRPC', 'xmlrpc'))
+    else:
+        suite.addTest(tractags.tests.xmlrpc.test_suite())
 
     return suite
 
