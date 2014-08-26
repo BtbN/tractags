@@ -80,29 +80,21 @@ class TagWikiMacros(TagTemplateProvider):
     implements(IWikiMacroProvider)
 
     caseless_sort = BoolOption('tags', 'cloud_caseless_sort', default=False,
-        doc="""Whether the tag cloud should be sorted case-sensitive.""")
+        doc="Whether the tag cloud should be sorted case-sensitive.")
     default_cols = Option('tags', 'listtagged_default_table_cols',
         'id|description|tags',
-        doc="""Select columns and order for table format using a "|"-separated
-            list of column names.
-
-            Supported columns: realm, id, description, tags
-            """)
+        doc="Select columns and column order for table format.\n\n"
+            "See `ListTagged` description (WikiMacros) for supported values.")
     default_format = Option('tags', 'listtagged_default_format', 'oldlist',
-        doc="""Set the default format for the handler of the `/tags` domain.
-
-            || `oldlist` (default value) || The original format with a
-            bulleted-list of "linked-id description (tags)" ||
-            || `compact` || bulleted-list of "linked-description" ||
-            || `table` || table... (see corresponding column option) ||
-            """)
+        doc="Set default format for the handler of the `/tags` domain.\n\n"
+            "See `ListTagged` description (WikiMacros) for supported values.")
     exclude_realms = ListOption('tags', 'listtagged_exclude_realms', [],
-        doc="""Comma-separated list of realms to exclude from tags queries
-            by default, unless specifically included using "realm:realm-name"
-            in a query.""")
+        doc="Comma-separated list of realms to exclude from tags queries "
+            "by default, unless specifically included using 'realm:<realm>' "
+            "in a query.")
     items_per_page = Option('tags', 'listtagged_items_per_page', 100,
-        doc="""Number of tagged resources displayed per page in tag queries,
-            by default""")
+        doc="Number of tagged resources displayed per page of tag query "
+            "results requested by `ListTagged` macros and from `/tags`.")
     items_per_page = as_int(items_per_page, 100)
     supported_cols = frozenset(['realm', 'id', 'description', 'tags'])
 
@@ -115,7 +107,7 @@ class TagWikiMacros(TagTemplateProvider):
     Usage:
 
     {{{
-    [[TagCloud(query,caseless_sort=<bool>,mincount=<n>)]]
+    [[TagCloud(<query>[,caseless_sort=<bool>][,mincount=<n>])]]
     }}}
     caseless_sort::
       Whether the tag cloud should be sorted case-sensitive.
@@ -129,8 +121,18 @@ class TagWikiMacros(TagTemplateProvider):
     Usage:
 
     {{{
-    [[ListTagged(query)]]
+    [[ListTagged(<query>[[,format=<format>],cols=<columns>])]]
     }}}
+    format::
+      result list presentation; supported values:
+
+    || `compact` || comma-separated inline list of "linked-description" ||
+    || `oldlist` (default) || " * linked-id description (tags)" list ||
+    || `table` || table... (see corresponding column option too) ||
+    || `short` or other value || bulleted list of "linked-description" ||
+    cols::
+      columns for 'table' format using a "|"-separated list of column names
+      (order matters); supported columns: realm, id, description, tags
 
     See tags documentation for the query syntax.
     """)
