@@ -16,6 +16,7 @@ tractags-0.8 (not yet released)
  * #11661: Changes to Tags should be shown in timeline
  * #11690: Document which components are required
  * #11888: Show correct permission error instead of 'No handler matched ...'
+ * #11954: AttributeError: 'Mock' object has no attribute 'args'
  add optional fine-grained permissions based on resource tags
  add inline presentation format for ListTagged results
 

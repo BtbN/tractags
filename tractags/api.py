@@ -330,9 +330,7 @@ class DefaultTagProvider(Component):
         return ''
 
     def _get_author(self, req):
-        # Might even eval to None.
-        author = get_reporter_id(req, 'author')
-        return author and author.strip() or 'anonymous'
+        return get_reporter_id(req, 'author')
 
 
 class TagPolicy(Component):
