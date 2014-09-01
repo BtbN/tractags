@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012,2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -63,11 +64,15 @@ class TicketTagProviderTestCase(unittest.TestCase):
 
     # Helpers
 
-    def _create_ticket(self, tags):
+    def _create_ticket(self, tags, **kwargs):
         ticket = Ticket(self.env)
         ticket['keywords'] = u' '.join(sorted(map(to_unicode, tags)))
         ticket['summary'] = 'summary'
+        ticket['reporter'] = 'admin'
+        for name, value in kwargs.iteritems():
+            ticket[name] = value
         ticket.insert()
+        return ticket
 
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
@@ -138,6 +143,21 @@ class TicketTagProviderTestCase(unittest.TestCase):
         self.assertEquals(
             self.provider.describe_tagged_resource(self.req, resource),
             'defect: summary')
+
+    def test_create_ticket_by_anonymous(self):
+        ticket = self._create_ticket(self.tags, reporter='anonymous')
+        tags = self.provider.get_resource_tags(self.req, ticket.resource)
+        self.assertEquals(tags, set(self.tags))
+
+    def test_update_ticket_by_anonymous(self):
+        ticket = self._create_ticket([])
+        tags = self.provider.get_resource_tags(self.req, ticket.resource)
+        self.assertEquals(tags, set([]))
+
+        ticket['keywords'] = ', '.join(self.tags)
+        ticket.save_changes('anonymous', comment='Adding keywords')
+        tags = self.provider.get_resource_tags(self.req, ticket.resource)
+        self.assertEquals(tags, set(self.tags))
 
 
 def test_suite():

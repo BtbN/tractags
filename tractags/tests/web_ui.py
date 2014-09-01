@@ -152,13 +152,6 @@ class TagRequestHandlerTestCase(_BaseTestCase):
                   )
         self.assertEquals(True, self.tag_rh.match_request(req))
 
-    def test_matches_no_permission(self):
-        req = Mock(path_info='/tags',
-                   authname='anonymous',
-                   perm=self.anonymous
-                  )
-        self.assertEquals(False, self.tag_rh.match_request(req))
-
     def test_get_main_page(self):
         req = Mock(path_info='/tags',
                    args={},
