@@ -32,7 +32,7 @@ from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes
-from tractags.util import split_into_tags
+from tractags.util import query_realms, split_into_tags
 
 
 class WikiTagProvider(DefaultTagProvider):
@@ -87,6 +87,7 @@ class WikiTagInterface(TagTemplateProvider):
                IWikiChangeListener, IWikiPageManipulator)
 
     # IRequestFilter methods
+
     def pre_process_request(self, req, handler):
         return handler
 
@@ -288,7 +289,13 @@ class TagWikiSyntaxProvider(Component):
 
     implements(IWikiSyntaxProvider)
 
+    def __init__(self):
+        self.tag_sys = TagSystem(self.env)
+        self.all_realms = set([p.get_taggable_realm()
+                               for p in self.tag_sys.tag_providers])
+
     # IWikiSyntaxProvider methods
+
     def get_wiki_syntax(self):
         """Additional syntax for quoted tags or tag expression."""
         tag_expr = (
@@ -325,15 +332,26 @@ class TagWikiSyntaxProvider(Component):
  
         label = label and unquote(label.strip()) or ''
         target = unquote(target.strip())
+
+        query = target
+        # Pop realms from query expression.
+        realms = query_realms(target, self.all_realms)
+        if realms:
+            kwargs = dict((realm, 'on') for realm in realms)
+            target = re.sub('(^|\W)realm:\S+(\W|$)', ' ', target).strip()
+        else:
+            kwargs = {}
+
         tag_res = Resource('tag', target)
         if 'TAGS_VIEW' in formatter.perm(tag_res):
             context = formatter.context
-            href = get_resource_url(self.env, tag_res, context.href)
-            tag_sys = TagSystem(self.env)
-            # Tag exists or tags query yields at least one match.
-            if target in tag_sys.get_all_tags(formatter.req) or \
+            href = self.tag_sys.get_resource_url(tag_res, context.href, kwargs)
+            if self.all_realms and (
+                    target in self.tag_sys.get_all_tags(formatter.req) or
                     [(res, tags) for res, tags in
-                     tag_sys.query(formatter.req, target)]:
+                     self.tag_sys.query(formatter.req, query)]):
+                # At least one tag provider is available and tag exists or
+                # tags query yields at least one match.
                 if label:
                     return tag.a(label, href=href)
                 return render_resource_link(self.env, context, tag_res)

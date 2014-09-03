@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2013 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2013,2014 Steffen Hoffmann <hoff.st@web.de>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -11,6 +11,13 @@ import re
 
 _TAG_SPLIT = re.compile('[,\s]+')
 
+
+def query_realms(query, all_realms):
+    realms = []
+    for realm in all_realms:
+        if re.search('(^|\W)realm:%s(\W|$)' % realm, query):
+            realms.append(realm)
+    return realms
 
 def split_into_tags(text):
     """Split plain text into tags."""

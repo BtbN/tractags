@@ -145,6 +145,15 @@ tag:"onetag 2ndtag"
 <a href="/tags/onetag%202ndtag">tag:\"onetag 2ndtag\"</a>
 </p>
 ------------------------------
+============================== query with realm in tag: link resolver
+tag:'onetag realm:wiki 2ndtag'
+[tagged:'realm:wiki onetag' label]
+------------------------------
+<p>
+<a href="/tags?wiki=on&amp;q=onetag+2ndtag">tag:\'onetag realm:wiki 2ndtag\'</a>
+<a href="/tags?wiki=on&amp;q=onetag">label</a>
+</p>
+------------------------------
 ============================== tag links in complex wiki markup
 Linking to a list of resources [tagged with onetag] requires valid syntax
 to get [tagged:onetag rendered].

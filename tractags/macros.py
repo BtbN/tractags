@@ -29,6 +29,7 @@ from trac.wiki.api import IWikiMacroProvider, parse_args
 from trac.wiki.formatter import format_to_oneliner
 
 from tractags.api import Counter, TagSystem, N_, _, gettext
+from tractags.util import query_realms
 
 try:
     from trac.util  import as_int
@@ -403,11 +404,3 @@ class TagWikiMacros(TagTemplateProvider):
                                       current_page - 1)
             add_link(req, 'prev', prev_href, _('Previous Page'))
         return result
-
-
-def query_realms(query, all_realms):
-    realms = []
-    for realm in all_realms:
-        if re.search('(^|\W)realm:%s(\W|$)' % realm, query):
-            realms.append(realm)
-    return realms

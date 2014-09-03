@@ -5,6 +5,8 @@ Maintainer: Steffen Hoffmann <hoff.st@web.de>
 tractags-0.8 (not yet released)
  resolved issues
  * #11695: Changes to tags may be recorded as anonymous
+ * #11950: The tag TracLink doesn't allow trailing arguments
+   by supporting the 'realm' attribute in tag query expressions
 
  new features
  * #1304: Implement tags related XMLRPC methods
