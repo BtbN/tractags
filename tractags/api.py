@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
-# Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
 # Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
+# Copyright (C) 2014 Ryan J Ollos <ryan.j.ollos@gmail.com>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -19,12 +20,12 @@ from operator import itemgetter
 from pkg_resources import resource_filename
 
 from trac.config import BoolOption, ListOption, Option
-from trac.core import Component, ExtensionPoint, Interface, TracError, \
-                      implements
+from trac.core import Component, ExtensionPoint, Interface, TracError
+from trac.core import implements
 from trac.perm import IPermissionPolicy, IPermissionRequestor
 from trac.perm import PermissionError, PermissionSystem
-from trac.resource import IResourceManager, get_resource_url, \
-                          get_resource_description
+from trac.resource import IResourceManager, get_resource_url
+from trac.resource import get_resource_description
 from trac.util import get_reporter_id
 from trac.util.text import to_unicode
 from trac.wiki.model import WikiPage
@@ -403,7 +404,7 @@ class TagSystem(Component):
     # Public methods
 
     def query(self, req, query='', attribute_handlers=None):
-        """Return a sequence of (resource, tags) tuples matching a query.
+        """Returns a sequence of (resource, tags) tuples matching a query.
 
         Query syntax is described in tractags.query.
 
@@ -434,15 +435,26 @@ class TagSystem(Component):
                 if query(tags, context=resource):
                     yield resource, tags
 
+    def get_taggable_realms(self, perm=None):
+        """Returns the names of available taggable realms as set.
+
+        If a `PermissionCache` object is passed as optional `perm` argument,
+        permission checks will be done for tag providers that have a
+        `check_permission` method.
+        """
+        return set(p.get_taggable_realm()
+                   for p in self.tag_providers
+                   if perm is None or not hasattr(p, 'check_permission') or
+                       p.check_permission(perm, 'view'))
+
     def get_all_tags(self, req, realms=[]):
-        """Return all tags for all supported realms or only specified ones.
+        """Get all tags for all supported realms or only for specified ones.
 
         Returns a Counter object (special dict) with tag name as key and tag
         frequency as value.
         """
         all_tags = Counter()
-        all_realms = set([p.get_taggable_realm()
-                          for p in self.tag_providers])
+        all_realms = self.get_taggable_realms(req.perm)
         if not realms or set(realms) == all_realms:
             realms = all_realms
         for provider in self.tag_providers:

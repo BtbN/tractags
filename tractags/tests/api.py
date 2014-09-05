@@ -144,6 +144,10 @@ class TagSystemTestCase(_BaseTestCase):
                            self.tag_s.query(self.req, query='')],
                           [])
 
+    def test_get_taggable_realms(self):
+        self.assertEquals(set(['ticket', 'wiki']),
+                          self.tag_s.get_taggable_realms())
+
 
 def test_suite():
     suite = unittest.TestSuite()

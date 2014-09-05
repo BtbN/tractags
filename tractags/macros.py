@@ -159,8 +159,7 @@ class TagWikiMacros(TagTemplateProvider):
         req = formatter.req
         tag_system = TagSystem(env)
 
-        all_realms = set([p.get_taggable_realm()
-                         for p in tag_system.tag_providers])
+        all_realms = tag_system.get_taggable_realms()
         if not all_realms:
             # Tag providers are required, no result without at least one.
             return ''

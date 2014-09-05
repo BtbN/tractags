@@ -19,7 +19,7 @@ from genshi.filters.transform import Transformer
 
 from trac import __version__ as trac_version
 from trac.config import BoolOption, ListOption, Option
-from trac.core import ExtensionPoint, implements
+from trac.core import implements
 from trac.mimeview import Context
 from trac.resource import Resource, ResourceSystem, get_resource_name
 from trac.resource import get_resource_url
@@ -35,7 +35,7 @@ from trac.web.chrome import add_warning
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
-from tractags.api import TagSystem, ITagProvider, _, tag_, tagn_
+from tractags.api import TagSystem, _, tag_, tagn_
 from tractags.compat import is_enabled
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
@@ -278,8 +278,6 @@ class TagRequestHandler(TagTemplateProvider):
 
     implements(INavigationContributor, IRequestHandler)
 
-    tag_providers = ExtensionPoint(ITagProvider)
-
     cloud_mincount = Option('tags', 'cloud_mincount', 1,
         doc="""Integer threshold to hide tags with smaller count.""")
     default_cols = Option('tags', 'default_table_cols', 'id|description|tags',
@@ -324,17 +322,17 @@ class TagRequestHandler(TagTemplateProvider):
         query = req.args.get('q', '')
 
         # Consider only providers, that are permitted for display.
-        realms = [p.get_taggable_realm() for p in self.tag_providers
-                  if (not hasattr(p, 'check_permission') or \
-                      p.check_permission(req.perm, 'view'))]
-        if not (tag_id or query) or [r for r in realms if r in req.args] == []: 
-            for realm in realms:
+        tag_system = TagSystem(self.env)
+        all_realms = tag_system.get_taggable_realms(req.perm)
+        if not (tag_id or query) or [r for r in all_realms
+                                     if r in req.args] == []: 
+            for realm in all_realms:
                 if not realm in self.exclude_realms:
                     req.args[realm] = 'on'
-        checked_realms = [r for r in realms if r in req.args]
+        checked_realms = [r for r in all_realms if r in req.args]
         if query:
             # Add permitted realms from query expression.
-            checked_realms.extend(query_realms(query, realms))
+            checked_realms.extend(query_realms(query, all_realms))
         realm_args = dict(zip([r for r in checked_realms],
                               ['on' for r in checked_realms]))
         # Switch between single tag and tag query expression mode.
@@ -352,11 +350,10 @@ class TagRequestHandler(TagTemplateProvider):
         data['tag_query'] = tag_id and tag_id or query
         data['tag_realms'] = list(dict(name=realm,
                                        checked=realm in checked_realms)
-                                  for realm in realms)
+                                  for realm in all_realms)
         if tag_id:
             data['tag_page'] = WikiPage(self.env,
-                                        TagSystem(self.env).wiki_page_prefix \
-                                        + tag_id)
+                                        tag_system.wiki_page_prefix + tag_id)
         if query or tag_id:
             macro = 'ListTagged'
             # TRANSLATOR: The meta-nav link label.
@@ -412,7 +409,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
 
     def pre_process_request(self, req, handler):
         return handler
-    
+
     def post_process_request(self, req, template, data, content_type):
         if req.path_info == '/timeline' and \
                 'TAGS_VIEW' in req.perm(Resource('tags')):

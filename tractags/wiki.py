@@ -291,8 +291,7 @@ class TagWikiSyntaxProvider(Component):
 
     def __init__(self):
         self.tag_sys = TagSystem(self.env)
-        self.all_realms = set([p.get_taggable_realm()
-                               for p in self.tag_sys.tag_providers])
+        self.all_realms = self.tag_sys.get_taggable_realms()
 
     # IWikiSyntaxProvider methods
 

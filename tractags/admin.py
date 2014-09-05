@@ -9,18 +9,16 @@
 
 
 from trac.admin import IAdminPanelProvider
-from trac.core import Component, ExtensionPoint, implements
+from trac.core import Component, implements
 from trac.util.compat import sorted
 from trac.web.chrome import Chrome
-from tractags.api import TagSystem, ITagProvider, _
+from tractags.api import TagSystem, _
 
 
 class TagChangeAdminPanel(Component):
     """[opt] Admin web-UI providing administrative tag system actions."""
 
     implements(IAdminPanelProvider)
-
-    tag_providers = ExtensionPoint(ITagProvider)
 
     # AdminPanelProvider methods
     def get_admin_panels(self, req):
@@ -30,20 +28,18 @@ class TagChangeAdminPanel(Component):
     def render_admin_panel(self, req, cat, page, version):
         req.perm.require('TAGS_ADMIN')
 
-        realms = [p.get_taggable_realm() for p in self.tag_providers
-                  if (not hasattr(p, 'check_permission') or \
-                      p.check_permission(req.perm, 'view'))]
+        tag_system = TagSystem(self.env)
+        all_realms = tag_system.get_taggable_realms(req.perm)
         # Check request for enabled filters, or use default.
-        if [r for r in realms if r in req.args] == []:
-            for realm in realms:
+        if [r for r in all_realms if r in req.args] == []:
+            for realm in all_realms:
                 req.args[realm] = 'on'
-        checked_realms = [r for r in realms if r in req.args]
+        checked_realms = [r for r in all_realms if r in req.args]
         data = dict(checked_realms=checked_realms,
                     tag_realms=list(dict(name=realm,
                                          checked=realm in checked_realms)
-                                    for realm in realms))
+                                    for realm in all_realms))
 
-        tag_system = TagSystem(self.env)
         if req.method == 'POST':
             # Replace Tag
             allow_delete = req.args.get('allow_delete')

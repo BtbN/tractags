@@ -68,7 +68,7 @@ class TagRPC(Component):
 
     def getTaggableRealms(self, req):
         """Returns the list of taggable Trac realms."""
-        return [p.get_taggable_realm() for p in self.tag_sys.tag_providers]
+        return list(self.tag_sys.get_taggable_realms())
 
     def getTags(self, req, realm, id):
         """Returns the list of tags for a Trac resource."""
