@@ -12,10 +12,12 @@ import shutil
 import tempfile
 import unittest
 
+from trac.core import implements
 from trac.db.api import DatabaseManager
-from trac.perm import PermissionCache, PermissionError, PermissionSystem
+from trac.perm import IPermissionRequestor, PermissionCache, PermissionError
+from trac.perm import PermissionSystem
 from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub, Mock, MockPerm
 
 import tractags.api
 
@@ -145,8 +147,33 @@ class TagSystemTestCase(_BaseTestCase):
                           [])
 
     def test_get_taggable_realms(self):
-        self.assertEquals(set(['ticket', 'wiki']),
-                          self.tag_s.get_taggable_realms())
+
+        class HiddenTagProvider(tractags.api.DefaultTagProvider):
+
+            implements(IPermissionRequestor)
+
+            realm = 'hidden'
+
+            # IPermissionRequestor method
+            def get_permission_actions(self):
+                return ['TEST_VIEW']
+
+            # ITagProvider method overwrite
+            def check_permission(self, perm, action):
+                """Somewhat inaccessible tag provider."""
+                return perm.has_permission('TEST_VIEW')
+
+        all_realms = set(['hidden', 'ticket', 'wiki'])
+        # Mock an anonymous request.
+        perm = PermissionCache(self.env)
+        self.assertEquals(all_realms - set(['hidden']),
+                          self.tag_s.get_taggable_realms(perm))
+
+        self.perms.grant_permission('testuser', 'TEST_VIEW')
+        perm = PermissionCache(self.env, 'testuser')
+        self.assertEquals(all_realms, self.tag_s.get_taggable_realms(perm))
+        # Get realms unconditionally.
+        self.assertEquals(all_realms, self.tag_s.get_taggable_realms())
 
 
 def test_suite():

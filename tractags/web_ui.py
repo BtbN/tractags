@@ -435,7 +435,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
                     add_warning(req, _("Tag query syntax error: %s"
                                        % to_unicode(e)))
                 else:
-                    all_realms = tag_system.get_taggable_realms()
+                    all_realms = tag_system.get_taggable_realms(req.perm)
                     query_realms = set()
                     for m in REALM_RE.finditer(query.as_string()):
                         query_realms.add(m.group(1))

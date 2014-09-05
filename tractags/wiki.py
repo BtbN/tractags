@@ -335,7 +335,7 @@ class TagWikiSyntaxProvider(Component):
 
         query = target
         # Pop realms from query expression.
-        all_realms = self.tag_system.get_taggable_realms()
+        all_realms = self.tag_system.get_taggable_realms(formatter.perm)
         realms = query_realms(target, all_realms)
         if realms:
             kwargs = dict((realm, 'on') for realm in realms)
