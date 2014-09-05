@@ -330,7 +330,7 @@ class DefaultTagProvider(Component):
                      log=self.revisable)
 
     def describe_tagged_resource(self, req, resource):
-        return ''
+        raise NotImplementedError
 
     def _get_author(self, req):
         return get_reporter_id(req, 'author')
@@ -565,13 +565,14 @@ class TagSystem(Component):
                 provider.set_resource_tags(req, resource, current_tags)
 
     def describe_tagged_resource(self, req, resource):
-        """Return a short description of a taggable resource."""
+        """Returns a short description of a taggable resource."""
         provider = self._get_provider(resource.realm)
-        if hasattr(provider, 'describe_tagged_resource'):
+        try:
             return provider.describe_tagged_resource(req, resource)
-        else:
-            self.env.log.warning('ITagProvider %r does not implement '
-                                 'describe_tagged_resource()' % provider)
+        except (AttributeError, NotImplementedError):
+            get_resource_description(resource, 'summary')
+            self.env.log.info('ITagProvider %r does not implement '
+                              'describe_tagged_resource()' % provider)
             return ''
     
     # IPermissionRequestor method
