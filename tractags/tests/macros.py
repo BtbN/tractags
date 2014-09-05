@@ -19,37 +19,29 @@ from tractags.db import TagSetup
 from tractags.macros import query_realms, TagTemplateProvider, TagWikiMacros
 
 
-class TagTemplateProviderTestCase(unittest.TestCase):
+class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
+        self.env = EnvironmentStub(default_data=True,
+                                   enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
-
-        # TagTemplateProvider is abstract, test using a subclass
-        self.tag_wm = TagWikiMacros(self.env)
-
-    def tearDown(self):
-        shutil.rmtree(self.env.path)
-
-    def test_template_dirs_added(self):
-        from trac.web.chrome import Chrome
-        self.assertTrue(self.tag_wm in Chrome(self.env).template_providers)
-
-
-class ListTaggedMacroTestCase(unittest.TestCase):
-    
-    def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
-        self.env.path = tempfile.mkdtemp()
-        self.req = Mock(path_info='/wiki/ListTaggedPage',
-                        args={}, authname='user', perm=MockPerm(),
-                        href=Href('/'),
-                        abs_href=Href('http://example.org/trac/'),
-                        chrome={}, session={}, locale='', tz='')
 
         self.db = self.env.get_db_cnx()
+        setup = TagSetup(self.env)
+        # Current tractags schema is setup with enabled component anyway.
+        #   Revert these changes for getting default permissions inserted.
+        self._revert_tractags_schema_init()
+        setup.upgrade_environment(self.db)
+
+    def tearDown(self):
+        self.db.close()
+        # Really close db connections.
+        self.env.shutdown()
+        shutil.rmtree(self.env.path)
+
+    # Helpers
+
+    def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
         cursor.execute("DROP TABLE IF EXISTS tags")
         cursor.execute("DROP TABLE IF EXISTS tags_change")
@@ -57,12 +49,31 @@ class ListTaggedMacroTestCase(unittest.TestCase):
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
 
-        setup = TagSetup(self.env)
-        setup.upgrade_environment(self.db)
-        self.tag_twm = TagWikiMacros(self.env)
 
-    def tearDown(self):
-        shutil.rmtree(self.env.path)
+class TagTemplateProviderTestCase(_BaseTestCase):
+
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+
+        # TagTemplateProvider is abstract, test using a subclass
+        self.tag_wm = TagWikiMacros(self.env)
+
+    def test_template_dirs_added(self):
+        from trac.web.chrome import Chrome
+        self.assertTrue(self.tag_wm in Chrome(self.env).template_providers)
+
+
+class ListTaggedMacroTestCase(_BaseTestCase):
+    
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+        self.req = Mock(path_info='/wiki/ListTaggedPage',
+                        args={}, authname='user', perm=MockPerm(),
+                        href=Href('/'),
+                        abs_href=Href('http://example.org/trac/'),
+                        chrome={}, session={}, locale='', tz='')
+
+        self.tag_twm = TagWikiMacros(self.env)
 
     def test_empty_content(self):
         context = Mock(env=self.env, href=Href('/'), req=self.req)
@@ -72,12 +83,10 @@ class ListTaggedMacroTestCase(unittest.TestCase):
                                                       'ListTagged', '')))
 
 
-class TagCloudMacroTestCase(unittest.TestCase):
+class TagCloudMacroTestCase(_BaseTestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
-        self.env.path = tempfile.mkdtemp()
+        _BaseTestCase.setUp(self)
         self.req = Mock(path_info='/wiki/TagCloudPage',
                         args={}, authname='user', perm=MockPerm(),
                         href=Href('/'),
@@ -86,21 +95,12 @@ class TagCloudMacroTestCase(unittest.TestCase):
         self.context = Mock(env=self.env, href=self.req.href, req=self.req)
         self.formatter = Mock(context=self.context, req=self.req)
 
-        self.db = self.env.get_db_cnx()
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
-
-        setup = TagSetup(self.env)
-        setup.upgrade_environment(self.db)
-
         self.tag_twm = TagWikiMacros(self.env)
 
-    def tearDown(self):
-        shutil.rmtree(self.env.path)
+    # Helpers
+
+    def _expand_macro(self, content):
+        return self.tag_twm.expand_macro(self.formatter, 'TagCloud', content)
 
     def _insert_tags(self, tagspace, name, tags):
         cursor = self.db.cursor()
@@ -108,8 +108,7 @@ class TagCloudMacroTestCase(unittest.TestCase):
         cursor.executemany("INSERT INTO tags (tagspace,name,tag) "
                            "VALUES (%s,%s,%s)", args)
 
-    def _expand_macro(self, content):
-        return self.tag_twm.expand_macro(self.formatter, 'TagCloud', content)
+    # Tests
 
     def test_normal(self):
         self._insert_tags('wiki',   'CamelCase',     ('blah', 'foo', 'bar'))

@@ -76,6 +76,8 @@ from tractags.model import tagged_resources
 # Now call module importing i18n methods from here.
 from tractags.query import *
 
+REALM_RE = re.compile('realm:(\w+)', re.U | re.I)
+
 
 class Counter(dict):
     """Dict subclass for counting hashable objects.
@@ -391,7 +393,6 @@ class TagSystem(Component):
         doc="Prefix for tag wiki page names.")
 
     # Internal variables
-    _realm = re.compile('realm:(\w+)', re.U | re.I)
     _realm_provider_map = None
 
     def __init__(self):
@@ -421,7 +422,7 @@ class TagSystem(Component):
         all_attribute_handlers.update(attribute_handlers or {})
         query = Query(query, attribute_handlers=all_attribute_handlers)
         providers = set()
-        for m in self._realm.finditer(query.as_string()):
+        for m in REALM_RE.finditer(query.as_string()):
             realm = m.group(1)
             providers.add(self._get_provider(realm))
         if not providers:

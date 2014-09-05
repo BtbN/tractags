@@ -25,7 +25,7 @@ class TagRPC(Component):
     implements(IXMLRPCHandler)
 
     def __init__(self):
-        self.tag_sys = TagSystem(self.env)
+        self.tag_system = TagSystem(self.env)
 
     # IXMLRPCHandler methods
 
@@ -54,7 +54,7 @@ class TagRPC(Component):
         # Replicate TagSystem.add_tags() method due to xmlrpclib issue.
         tags = set(tags)
         tags.update(self._get_tags(req, resource))
-        self.tag_sys.set_tags(req, resource, tags, comment)
+        self.tag_system.set_tags(req, resource, tags, comment)
         return self._get_tags(req, resource)
 
     def getAllTags(self, req, realms=[]):
@@ -64,11 +64,11 @@ class TagRPC(Component):
         are shown.
         """
         # Type conversion needed for content transfer of Counter object.
-        return dict(self.tag_sys.get_all_tags(req, realms))
+        return dict(self.tag_system.get_all_tags(req, realms))
 
     def getTaggableRealms(self, req):
         """Returns the list of taggable Trac realms."""
-        return list(self.tag_sys.get_taggable_realms())
+        return list(self.tag_system.get_taggable_realms())
 
     def getTags(self, req, realm, id):
         """Returns the list of tags for a Trac resource."""
@@ -80,7 +80,7 @@ class TagRPC(Component):
         """
         # Type conversion needed for content transfer of Python set objects.
         return [(resource.realm, resource.id, list(tags))
-                for resource, tags in self.tag_sys.query(req, query_str)]
+                for resource, tags in self.tag_system.query(req, query_str)]
 
     def setTags(self, req, realm, id, tags, comment=u''):
         """Replace tags for a Trac resource with the supplied list of tags.
@@ -89,7 +89,7 @@ class TagRPC(Component):
         """
         resource = Resource(realm, id)
         self._get_tags(req, resource) # Trac resource exists?
-        self.tag_sys.set_tags(req, resource, tags, comment)
+        self.tag_system.set_tags(req, resource, tags, comment)
         return self._get_tags(req, resource)
 
     def splitIntoTags(self, req, tag_str):
@@ -106,7 +106,7 @@ class TagRPC(Component):
         if not resource_exists(self.env, resource):
             raise ResourceNotFound('Resource "%r" does not exists' % resource)
         # Workaround for ServiceException when calling TagSystem.get_tags().
-        provider = [p for p in self.tag_sys.tag_providers
+        provider = [p for p in self.tag_system.tag_providers
                     if p.get_taggable_realm() == resource.realm][0]
         # Type conversion needed for content transfer of Python set objects.
         return list(provider.get_resource_tags(req, resource))

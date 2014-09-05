@@ -86,6 +86,9 @@ class WikiTagInterface(TagTemplateProvider):
     implements(IRequestFilter, ITemplateStreamFilter,
                IWikiChangeListener, IWikiPageManipulator)
 
+    def __init__(self):
+        self.tag_system = TagSystem(self.env)
+
     # IRequestFilter methods
 
     def pre_process_request(self, req, handler):
@@ -154,11 +157,11 @@ class WikiTagInterface(TagTemplateProvider):
         """Called when a page has been renamed (since Trac 0.12)."""
         self.log.debug("Moving wiki page tags from %s to %s",
                        old_name, page.name)
-        tag_sys = TagSystem(self.env)
         # XXX Ugh. Hopefully this will be sufficient to fool any endpoints.
         from trac.test import Mock, MockPerm
         req = Mock(authname='anonymous', perm=MockPerm())
-        tag_sys.reparent_tags(req, Resource('wiki', page.name), old_name)
+        self.tag_system.reparent_tags(req, Resource('wiki', page.name),
+                                      old_name)
 
     def wiki_page_deleted(self, page):
         # Page gone, so remove all records on it.
@@ -177,8 +180,8 @@ class WikiTagInterface(TagTemplateProvider):
         resource = page.resource
         if version and not tags_version:
             tags_version = page.time
-        tag_sys = TagSystem(self.env)
-        tags = sorted(tag_sys.get_tags(req, resource, when=tags_version))
+        tags = sorted(self.tag_system.get_tags(req, resource,
+                                               when=tags_version))
         return tags
 
     def _redirect_listener(self, req, url, permanent):
@@ -191,8 +194,8 @@ class WikiTagInterface(TagTemplateProvider):
         template_page = WikiPage(self.env, template_pagename)
         if template_page.exists and \
                 'TAGS_VIEW' in req.perm(template_page.resource):
-            tag_sys = TagSystem(self.env)
-            tags = sorted(tag_sys.get_tags(req, template_page.resource))
+            tags = sorted(self.tag_system.get_tags(req,
+                                                   template_page.resource))
             # Prepare tags as content for the editor field.
             tags_str = ' '.join(tags)
             self.env.log.debug("Tags retrieved from template: '%s'" \
@@ -245,12 +248,11 @@ class WikiTagInterface(TagTemplateProvider):
                          .after(insert))
 
     def _update_tags(self, req, page, when=None):
-        tag_sys = TagSystem(self.env)
         newtags = split_into_tags(req.args.get('tags', ''))
-        oldtags = tag_sys.get_tags(req, page.resource)
+        oldtags = self.tag_system.get_tags(req, page.resource)
 
         if oldtags != newtags:
-            tag_sys.set_tags(req, page.resource, newtags, when=when)
+            self.tag_system.set_tags(req, page.resource, newtags, when=when)
             return True
         return False
 
@@ -290,8 +292,7 @@ class TagWikiSyntaxProvider(Component):
     implements(IWikiSyntaxProvider)
 
     def __init__(self):
-        self.tag_sys = TagSystem(self.env)
-        self.all_realms = self.tag_sys.get_taggable_realms()
+        self.tag_system = TagSystem(self.env)
 
     # IWikiSyntaxProvider methods
 
@@ -334,7 +335,8 @@ class TagWikiSyntaxProvider(Component):
 
         query = target
         # Pop realms from query expression.
-        realms = query_realms(target, self.all_realms)
+        all_realms = self.tag_system.get_taggable_realms()
+        realms = query_realms(target, all_realms)
         if realms:
             kwargs = dict((realm, 'on') for realm in realms)
             target = re.sub('(^|\W)realm:\S+(\W|$)', ' ', target).strip()
@@ -344,11 +346,12 @@ class TagWikiSyntaxProvider(Component):
         tag_res = Resource('tag', target)
         if 'TAGS_VIEW' in formatter.perm(tag_res):
             context = formatter.context
-            href = self.tag_sys.get_resource_url(tag_res, context.href, kwargs)
-            if self.all_realms and (
-                    target in self.tag_sys.get_all_tags(formatter.req) or
+            href = self.tag_system.get_resource_url(tag_res, context.href,
+                                                    kwargs)
+            if all_realms and (
+                    target in self.tag_system.get_all_tags(formatter.req) or
                     [(res, tags) for res, tags in
-                     self.tag_sys.query(formatter.req, query)]):
+                     self.tag_system.query(formatter.req, query)]):
                 # At least one tag provider is available and tag exists or
                 # tags query yields at least one match.
                 if label:

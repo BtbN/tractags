@@ -35,7 +35,7 @@ from trac.web.chrome import add_warning
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
-from tractags.api import TagSystem, _, tag_, tagn_
+from tractags.api import REALM_RE, TagSystem, _, tag_, tagn_
 from tractags.compat import is_enabled
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
@@ -426,7 +426,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
                 req.session.set('timeline.%s' % self.key, query_str, '')
 
             if data.get('events') and query_str:
-                tag_sys = TagSystem(self.env)
+                tag_system = TagSystem(self.env)
                 try:
                     query = Query(query_str,
                                   attribute_handlers=dict(realm=realm_handler)
@@ -435,9 +435,9 @@ class TagTimelineEventFilter(TagTemplateProvider):
                     add_warning(req, _("Tag query syntax error: %s"
                                        % to_unicode(e)))
                 else:
-                    all_realms = tag_sys._realm_provider_map.keys()
+                    all_realms = tag_system.get_taggable_realms()
                     query_realms = set()
-                    for m in tag_sys._realm.finditer(query.as_string()):
+                    for m in REALM_RE.finditer(query.as_string()):
                         query_realms.add(m.group(1))
                     # Don't care about resources from non-taggable realms.
                     realms = not query_realms and all_realms or \
@@ -449,7 +449,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
                         resource = event['data'][0]
                         if resource.realm in realms:
                             # Shortcut view permission checks here.
-                            tags = tag_sys.get_tags(None, resource)
+                            tags = tag_system.get_tags(None, resource)
                             if query(tags, context=resource):
                                 events.append(event)
                     # Overwrite with filtered list.
