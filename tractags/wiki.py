@@ -32,7 +32,7 @@ from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes
-from tractags.util import query_realms, split_into_tags
+from tractags.util import MockReq, query_realms, split_into_tags
 
 
 class WikiTagProvider(DefaultTagProvider):
@@ -157,9 +157,7 @@ class WikiTagInterface(TagTemplateProvider):
         """Called when a page has been renamed (since Trac 0.12)."""
         self.log.debug("Moving wiki page tags from %s to %s",
                        old_name, page.name)
-        # XXX Ugh. Hopefully this will be sufficient to fool any endpoints.
-        from trac.test import Mock, MockPerm
-        req = Mock(authname='anonymous', perm=MockPerm())
+        req = MockReq()
         self.tag_system.reparent_tags(req, Resource('wiki', page.name),
                                       old_name)
 

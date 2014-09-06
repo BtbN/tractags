@@ -37,6 +37,9 @@ def test_suite():
     import tractags.tests.web_ui
     suite.addTest(tractags.tests.web_ui.test_suite())
 
+    import tractags.tests.util
+    suite.addTest(tractags.tests.util.test_suite())
+
     import tractags.tests.wiki
     suite.addTest(tractags.tests.wiki.test_suite())
 

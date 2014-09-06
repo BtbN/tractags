@@ -13,7 +13,6 @@ from trac.config import BoolOption, ListOption
 from trac.core import Component, implements
 from trac.perm import PermissionError
 from trac.resource import Resource
-from trac.test import Mock, MockPerm
 from trac.ticket.api import ITicketChangeListener, TicketSystem
 from trac.ticket.model import Ticket
 from trac.util import get_reporter_id
@@ -22,7 +21,7 @@ from trac.util.text import to_unicode
 
 from tractags.api import DefaultTagProvider, ITagProvider, _
 from tractags.model import delete_tags
-from tractags.util import get_db_exc, split_into_tags
+from tractags.util import MockReq, get_db_exc, split_into_tags
 
 
 class TicketTagProvider(DefaultTagProvider):
@@ -176,21 +175,19 @@ class TicketTagProvider(DefaultTagProvider):
 
     def ticket_created(self, ticket):
         """Called when a ticket is created."""
+        req = MockReq(authname=ticket['reporter'])
         # Add any tags unconditionally.
-        self.set_resource_tags(Mock(args=dict(), authname=ticket['reporter'],
-                                    perm=MockPerm(), session=dict()),
-                               ticket, None, ticket['time'])
+        self.set_resource_tags(req, ticket, None, ticket['time'])
         if self.use_cache:
             # Invalidate resource cache.
             del self._tagged_resources
 
     def ticket_changed(self, ticket, comment, author, old_values):
         """Called when a ticket is modified."""
+        req = MockReq(authname=author)
         # Sync only on change of ticket fields, that are exposed as tags.
         if any(f in self.fields for f in old_values.keys()):
-            self.set_resource_tags(Mock(args=dict(), authname=author,
-                                        perm=MockPerm(), session=dict()),
-                                   ticket, None, ticket['changetime'])
+            self.set_resource_tags(req, ticket, None, ticket['changetime'])
             if self.use_cache:
                 # Invalidate resource cache.
                 del self._tagged_resources

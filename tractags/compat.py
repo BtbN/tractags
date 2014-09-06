@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2013, Steffen Hoffmann
+# Copyright (c) 2013,2014 Steffen Hoffmann
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -9,6 +9,16 @@
 """Various classes and functions to provide backwards-compatibility with
 previous versions of Python from 2.4 and Trac from 0.11 onwards.
 """
+
+try:
+    from functools import partial
+except ImportError:
+    # Cheap fallback for Python2.4 compatibility.
+    # See http://stackoverflow.com/questions/12274814
+    def partial(func, *args, **kwds):
+        """Emulate Python2.6's functools.partial."""
+        return lambda *fargs, **fkwds: func(*(args+fargs),
+                                            **dict(kwds, **fkwds))
 
 try:
     from trac.util.datefmt import to_utimestamp
