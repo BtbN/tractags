@@ -342,22 +342,30 @@ class TagWikiSyntaxProvider(Component):
             kwargs = {}
 
         tag_res = Resource('tag', target)
-        if 'TAGS_VIEW' in formatter.perm(tag_res):
-            context = formatter.context
-            href = self.tag_system.get_resource_url(tag_res, context.href,
-                                                    kwargs)
-            if all_realms and (
-                    target in self.tag_system.get_all_tags(formatter.req) or
-                    [(res, tags) for res, tags in
-                     self.tag_system.query(formatter.req, query)]):
-                # At least one tag provider is available and tag exists or
-                # tags query yields at least one match.
-                if label:
-                    return tag.a(label, href=href)
-                return render_resource_link(self.env, context, tag_res)
-            else:
-                return tag.a(label+'?', href=href, class_='missing tags',
-                             rel='nofollow')
-        else:
+        if 'TAGS_VIEW' not in formatter.perm(tag_res):
             return tag.span(label, class_='forbidden tags',
                             title=_("no permission to view tags"))
+
+        context = formatter.context
+        href = self.tag_system.get_resource_url(tag_res, context.href, kwargs)
+        if all_realms and (
+                target in self.tag_system.get_all_tags(formatter.req) or
+                not iter_is_empty(self.tag_system.query(formatter.req,
+                                                        query))):
+            # At least one tag provider is available and tag exists or
+            # tags query yields at least one match.
+            if label:
+                return tag.a(label, href=href)
+            return render_resource_link(self.env, context, tag_res)
+
+        return tag.a(label+'?', href=href, class_='missing tags',
+                     rel='nofollow')
+
+
+def iter_is_empty(i):
+    """Test for empty iterator without consuming more than first element."""
+    try:
+        i.next()
+    except StopIteration:
+        return True
+    return False
