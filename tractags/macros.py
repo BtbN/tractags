@@ -250,9 +250,6 @@ class TagWikiMacros(TagTemplateProvider):
             rows = []
             for resource, tags in results:
                 desc = tag_system.describe_tagged_resource(req, resource)
-                # Fallback to resource provider method.
-                desc = desc or get_resource_description(env, resource,
-                                                        context=context)
                 tags = sorted(tags)
                 wiki_desc = format_to_oneliner(env, context, desc)
                 if tags:

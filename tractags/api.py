@@ -570,11 +570,11 @@ class TagSystem(Component):
         try:
             return provider.describe_tagged_resource(req, resource)
         except (AttributeError, NotImplementedError):
-            get_resource_description(resource, 'summary')
+            # Fallback to resource provider method.
             self.env.log.info('ITagProvider %r does not implement '
                               'describe_tagged_resource()' % provider)
-            return ''
-    
+            return get_resource_description(self.env, resource, 'summary')
+
     # IPermissionRequestor method
     def get_permission_actions(self):
         action = ['TAGS_VIEW', 'TAGS_MODIFY']
