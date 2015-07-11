@@ -8,6 +8,7 @@ tractags-0.8 (not yet released)
  * #11950: The tag TracLink doesn't allow trailing arguments
    by supporting the 'realm' attribute in tag query expressions
  * #12292: AssertionError: Page 5 out of range
+ * #12434: AttributeError: 'NoneType' object has no attribute 'get' 
 
  new features
  * #1304: Implement tags related XMLRPC methods

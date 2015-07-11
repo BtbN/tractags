@@ -14,12 +14,16 @@ import unittest
 
 from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.perm import PermissionSystem, PermissionCache, PermissionError
+from trac.util.datefmt import utc
+from trac.web.api import RequestDone
 from trac.web.href import Href
+from trac.web.main import RequestDispatcher
 from trac.web.session import DetachedSession
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup
 from tractags.web_ui import TagInputAutoComplete, TagRequestHandler
+from tractags.web_ui import TagTimelineEventFilter, TagTimelineEventProvider
 
 
 class _BaseTestCase(unittest.TestCase):
@@ -56,6 +60,19 @@ class _BaseTestCase(unittest.TestCase):
         shutil.rmtree(self.env.path)
 
     # Helpers
+
+    def _create_request(self, authname='anonymous', **kwargs):
+        kw = {'perm': PermissionCache(self.env, authname), 'args': {},
+              'callbacks': {}, 'path_info': '', 'form_token': None,
+              'href': self.env.href, 'abs_href': self.env.abs_href,
+              'tz': utc, 'locale': None, 'lc_time': None,
+              'session': DetachedSession(self.env, authname),
+              'authname': authname, 'chrome': {'notices': [], 'warnings': []},
+              'method': None, 'get_header': lambda v: None, 'is_xhr': False}
+        kw.update(kwargs)
+        def send(self, content, content_type='text/html', status=200):
+            raise RequestDone
+        return Mock(send=send, **kw)
 
     def _revert_tractags_schema_init(self):
         cursor = self.db.cursor()
@@ -184,10 +201,60 @@ class TagRequestHandlerTestCase(_BaseTestCase):
         self.assertRaises(PermissionError, self.tag_rh.process_request, req)
 
 
+class TagTimelineEventFilterTestCase(_BaseTestCase):
+
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+        self.tef = TagTimelineEventFilter(self.env)
+        self.tep = TagTimelineEventProvider(self.env)
+
+    # Tests
+
+    def test_implements_irequestfilter(self):
+        from trac.web.main import RequestDispatcher
+        self.assertTrue(self.tef in RequestDispatcher(self.env).filters)
+
+    def test_implements_itemplatestreamfilter(self):
+        from trac.web.chrome import Chrome
+        self.assertTrue(self.tef in Chrome(self.env).stream_filters)
+
+    def test_tag_query_save(self):
+        """Save timeline tag query string in session."""
+        self.assertEqual('tag_query', self.tef.key)
+
+        from trac.timeline.web_ui import TimelineModule
+        TimelineModule(self.env)
+        perms = PermissionSystem(self.env)
+        perms.grant_permission('anonymous', 'TAGS_VIEW')
+        perms.grant_permission('anonymous', 'TIMELINE_VIEW')
+
+        req = self._create_request(args=dict(tag_query='query_str'),
+                                   path_info='/timeline', method='GET')
+        dispatcher = RequestDispatcher(self.env)
+        self.assertRaises(RequestDone, dispatcher.dispatch, req)
+        self.assertEqual('query_str', req.session['timeline.tag_query'])
+
+
+class TagTimelineEventProviderTestCase(_BaseTestCase):
+
+    def setUp(self):
+        _BaseTestCase.setUp(self)
+        self.tep = TagTimelineEventProvider(self.env)
+
+    # Tests
+
+    def test_implements_itimelineeventsprovider(self):
+        from trac.timeline.web_ui import TimelineModule
+        self.assertTrue(self.tep in TimelineModule(self.env).event_providers)
+
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagInputAutoCompleteTestCase, 'test'))
     suite.addTest(unittest.makeSuite(TagRequestHandlerTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagTimelineEventFilterTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagTimelineEventProviderTestCase,
+                                     'test'))
     return suite
 
 if __name__ == '__main__':

@@ -411,7 +411,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        if req.path_info == '/timeline' and \
+        if data and req.path_info == '/timeline' and \
                 'TAGS_VIEW' in req.perm(Resource('tags')):
 
             def realm_handler(_, node, context):
@@ -423,7 +423,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
             else:
                 query_str = (query_str or '').strip()
                 # Record tag query expression between visits.
-                req.session.set('timeline.%s' % self.key, query_str, '')
+                req.session['timeline.%s' % self.key] = query_str
 
             if data.get('events') and query_str:
                 tag_system = TagSystem(self.env)
