@@ -2,7 +2,8 @@
 #
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
 # Copyright (C) 2011 Itamar Ostricher <itamarost@gmail.com>
-# Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2011-2015 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2015 Ryan J Ollos <ryan.j.ollos@gmail.com>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -14,7 +15,7 @@ from genshi.builder import tag as builder
 from pkg_resources import resource_filename
 
 from trac.config import BoolOption, ListOption, Option
-from trac.core import Component, implements
+from trac.core import Component, TracError, implements
 from trac.resource import Resource, get_resource_description, \
                           get_resource_url, render_resource_link
 from trac.ticket.api import TicketSystem
@@ -356,7 +357,7 @@ class TagWikiMacros(TagTemplateProvider):
                 # Tag count is too low.
                 continue
             if ul:
-                # Found new tag for cloud; now add previously prepared one. 
+                # Found new tag for cloud; now add previously prepared one.
                 ul('\n', li)
             else:
                 # Found first tag for cloud; now create the list.
@@ -371,11 +372,17 @@ class TagWikiMacros(TagTemplateProvider):
 
     def _paginate(self, req, results, realms):
         query = req.args.get('q', None)
-        current_page = as_int(req.args.get('listtagged_page'), 1)
-        items_per_page = as_int(req.args.get('listtagged_per_page'), None)
-        if items_per_page is None:
+        current_page = as_int(req.args.get('listtagged_page'), 1, min=1)
+        items_per_page = as_int(req.args.get('listtagged_per_page'),
+                                self.items_per_page)
+        if items_per_page < 1:
             items_per_page = self.items_per_page
-        result = Paginator(results, current_page - 1, items_per_page)
+        try:
+            result = Paginator(results, current_page - 1, items_per_page)
+        except (AssertionError, TracError), e:
+            self.log.warn("ListTagged macro: %s", e)
+            current_page = 1
+            result = Paginator(results, current_page - 1, items_per_page)
 
         pagedata = []
         shown_pages = result.get_shown_pages(21)

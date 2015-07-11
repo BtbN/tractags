@@ -7,6 +7,7 @@ tractags-0.8 (not yet released)
  * #11695: Changes to tags may be recorded as anonymous
  * #11950: The tag TracLink doesn't allow trailing arguments
    by supporting the 'realm' attribute in tag query expressions
+ * #12292: AssertionError: Page 5 out of range
 
  new features
  * #1304: Implement tags related XMLRPC methods

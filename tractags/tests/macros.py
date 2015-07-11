@@ -3,6 +3,7 @@
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
 # Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
 # Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
+# Copyright (C) 2015 Ryan J Ollos <ryan.j.ollos@gmail.com>
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -49,6 +50,12 @@ class _BaseTestCase(unittest.TestCase):
         cursor.execute("DELETE FROM permission WHERE action %s"
                        % self.db.like(), ('TAGS_%',))
 
+    def _insert_tags(self, tagspace, name, tags):
+        cursor = self.db.cursor()
+        args = [(tagspace, name, tag) for tag in tags]
+        cursor.executemany("INSERT INTO tags (tagspace,name,tag) "
+                           "VALUES (%s,%s,%s)", args)
+
 
 class TagTemplateProviderTestCase(_BaseTestCase):
 
@@ -64,7 +71,7 @@ class TagTemplateProviderTestCase(_BaseTestCase):
 
 
 class ListTaggedMacroTestCase(_BaseTestCase):
-    
+
     def setUp(self):
         _BaseTestCase.setUp(self)
         self.req = Mock(path_info='/wiki/ListTaggedPage',
@@ -81,6 +88,53 @@ class ListTaggedMacroTestCase(_BaseTestCase):
         self.assertTrue('No resources found' in
                         str(self.tag_twm.expand_macro(formatter,
                                                       'ListTagged', '')))
+
+    def _test_listtagged_paginate(self, page, per_page=2):
+        self._insert_tags('wiki', 'InterTrac', ('blah',))
+        self._insert_tags('wiki', 'InterWiki', ('blah',))
+        self._insert_tags('wiki', 'WikiStart', ('blah',))
+        self.req.args['listtagged_per_page'] = per_page
+        self.req.args['listtagged_page'] = page
+        context = Mock(env=self.env, href=Href('/'), req=self.req)
+        formatter = Mock(context=context, req=self.req)
+        result = \
+            unicode(self.tag_twm.expand_macro(formatter, 'ListTagged', 'blah'))
+        return result
+
+    def test_listtagged_paginate_page1(self):
+        """Paginate results for page 1 has two items."""
+        result = self._test_listtagged_paginate(1)
+        self.assertTrue('InterTrac' in result)
+        self.assertTrue('InterWiki' in result)
+        self.assertFalse('WikiStart' in result)
+
+    def test_listtagged_paginate_page2(self):
+        """Paginate results for page 2 has one item."""
+        result = self._test_listtagged_paginate(2)
+        self.assertFalse('InterTrac' in result)
+        self.assertFalse('InterWiki' in result)
+        self.assertTrue('WikiStart' in result)
+
+    def test_listtagged_paginate_page_out_of_range(self):
+        """Out of range page defaults to 1."""
+        result = self._test_listtagged_paginate(3)
+        self.assertTrue('InterTrac' in result)
+        self.assertTrue('InterWiki' in result)
+        self.assertFalse('WikiStart' in result)
+
+    def test_listtagged_paginate_page_invalid(self):
+        """Invalid page default to 1."""
+        result = self._test_listtagged_paginate(-1)
+        self.assertTrue('InterTrac' in result)
+        self.assertTrue('InterWiki' in result)
+        self.assertFalse('WikiStart' in result)
+
+    def test_listtagged_paginate_per_page_invalid(self):
+        """Invalid per_page defaults to items_per_page (100)."""
+        result = self._test_listtagged_paginate(2, -1)
+        self.assertTrue('InterTrac' in result)
+        self.assertTrue('InterWiki' in result)
+        self.assertTrue('WikiStart' in result)
 
 
 class TagCloudMacroTestCase(_BaseTestCase):
@@ -101,12 +155,6 @@ class TagCloudMacroTestCase(_BaseTestCase):
 
     def _expand_macro(self, content):
         return self.tag_twm.expand_macro(self.formatter, 'TagCloud', content)
-
-    def _insert_tags(self, tagspace, name, tags):
-        cursor = self.db.cursor()
-        args = [(tagspace, name, tag) for tag in tags]
-        cursor.executemany("INSERT INTO tags (tagspace,name,tag) "
-                           "VALUES (%s,%s,%s)", args)
 
     # Tests
 
