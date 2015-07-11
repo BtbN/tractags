@@ -11,6 +11,7 @@
 
 import re
 
+from fnmatch import fnmatchcase
 from genshi.builder import tag as builder
 from pkg_resources import resource_filename
 
@@ -21,7 +22,7 @@ from trac.resource import Resource, get_resource_description, \
 from trac.ticket.api import TicketSystem
 from trac.ticket.model import Ticket
 from trac.util import embedded_numbers
-from trac.util.compat import sorted, set
+from trac.util.compat import any, sorted, set
 from trac.util.presentation import Paginator
 from trac.util.text import shorten_line, to_unicode
 from trac.web.chrome import Chrome, ITemplateProvider, \
@@ -123,7 +124,7 @@ class TagWikiMacros(TagTemplateProvider):
     Usage:
 
     {{{
-    [[ListTagged(<query>[[,format=<format>],cols=<columns>])]]
+    [[ListTagged(<query>[,exclude=<list>],[[format=<format>],cols=<columns>])]]
     }}}
     format::
       result list presentation; supported values:
@@ -135,6 +136,9 @@ class TagWikiMacros(TagTemplateProvider):
     cols::
       columns for 'table' format using a "|"-separated list of column names
       (order matters); supported columns: realm, id, description, tags
+    exclude::
+      exclude tagged resources that match a name in the colon-separated list
+      of resource ids, accepts shell-style patterns
 
     See tags documentation for the query syntax.
     """)
@@ -209,6 +213,15 @@ class TagWikiMacros(TagTemplateProvider):
             query = '(%s) (%s)' % (query or '', ' or '.join(['realm:%s' % (r)
                                                              for r in realms]))
             query_result = tag_system.query(req, query)
+            excludes = [exc.strip()
+                        for exc in kw.get('exclude', '' ).split(':')
+                        if exc.strip()]
+            if excludes and query_result:
+                filtered_result = [(resource, tags)
+                                   for resource, tags in query_result
+                                   if not any(fnmatchcase(resource.id, exc)
+                                              for exc in excludes)]
+                query_result = filtered_result
             if not query_result:
                 return ''
 

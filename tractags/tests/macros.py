@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2011 Odd Simon Simonsen <oddsimons@gmail.com>
-# Copyright (C) 2012-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2012-2015 Steffen Hoffmann <hoff.st@web.de>
 # Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
 # Copyright (C) 2015 Ryan J Ollos <ryan.j.ollos@gmail.com>
 #
@@ -88,6 +88,24 @@ class ListTaggedMacroTestCase(_BaseTestCase):
         self.assertTrue('No resources found' in
                         str(self.tag_twm.expand_macro(formatter,
                                                       'ListTagged', '')))
+
+    def test_listtagged_exclude(self):
+        self._insert_tags('wiki', 'InterTrac', ('blah',))
+        self._insert_tags('wiki', 'InterWiki', ('blah',))
+        self._insert_tags('wiki', 'WikiStart', ('blah',))
+        context = Mock(env=self.env, href=Href('/'), req=self.req)
+        formatter = Mock(context=context, req=self.req)
+        result = unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
+                                                   'blah,exclude=Inter*'))
+        self.assertFalse('InterTrac' in result)
+        self.assertFalse('InterWiki' in result)
+        self.assertTrue('WikiStart' in result)
+
+        result = unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
+                                                   'blah,exclude=Wi*:*ki'))
+        self.assertTrue('InterTrac' in result)
+        self.assertFalse('InterWiki' in result)
+        self.assertFalse('WikiStart' in result)
 
     def _test_listtagged_paginate(self, page, per_page=2):
         self._insert_tags('wiki', 'InterTrac', ('blah',))

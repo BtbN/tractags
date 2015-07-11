@@ -22,6 +22,7 @@ tractags-0.8 (not yet released)
  * #11888: Show correct permission error instead of 'No handler matched ...'
  * #11954: AttributeError: 'Mock' object has no attribute 'args'
  * #11968: Add method TagSystem.get_taggable_realms
+ * #12202: Exclude option for ListTagged macro
  add optional fine-grained permissions based on resource tags
  add inline presentation format for ListTagged results
 
