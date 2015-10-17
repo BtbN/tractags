@@ -23,7 +23,7 @@ except ImportError:
 
 setup(
     name='TracTags',
-    version='0.8',
+    version='0.9',
     packages=find_packages(exclude=['*.tests']),
     package_data={'tractags' : [
         'templates/*.html', 'htdocs/js/*.js', 'htdocs/css/*.css',
