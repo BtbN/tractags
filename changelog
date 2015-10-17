@@ -8,7 +8,8 @@ tractags-0.8 (not yet released)
  * #11950: The tag TracLink doesn't allow trailing arguments
    by supporting the 'realm' attribute in tag query expressions
  * #12292: AssertionError: Page 5 out of range
- * #12434: AttributeError: 'NoneType' object has no attribute 'get' 
+ * #12434: AttributeError: 'NoneType' object has no attribute 'get'
+ * #12486: Skip post_process_request during exception handling.
 
  new features
  * #1304: Implement tags related XMLRPC methods
@@ -83,7 +84,7 @@ tractags-0.7 (06-Apr-2014)
  * TagsQuery now supports a context object
  * refactor cloud rendering so it can be used by other plugins
  * fix regression related to missing IWikiChangeListener
- * ensure tags stylesheet is added for macros 
+ * ensure tags stylesheet is added for macros
  * log warning for tag providers that don't implement describe_tagged_resource
  * add plugin author email to display something at Trac 0.11 plugin admin page
  * fix an AttributeError specific to the 0.6 release since [2953]
