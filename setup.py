@@ -36,6 +36,7 @@ setup(
     license='BSD',
     url='http://trac-hacks.org/wiki/TagsPlugin',
     description='Tags plugin for Trac',
+    install_requires=['Trac'],
     extras_require={
         'babel': 'Babel>= 0.9.5',
         'tracrpc': 'TracXMLRPC >= 1.1.0'},

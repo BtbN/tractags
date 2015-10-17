@@ -12,8 +12,7 @@ See tractags.api for detailed information.
 """
 
 import pkg_resources
-trac_version_min = '0.11'
-pkg_resources.require('Trac >= %s' % trac_version_min)
+pkg_resources.require('Trac >= 1.0')
 
 
 import api
