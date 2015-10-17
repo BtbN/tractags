@@ -95,17 +95,19 @@ class WikiTagInterface(TagTemplateProvider):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        if req.method == 'GET' and req.path_info.startswith('/wiki/'):
-            if req.args.get('action') == 'edit' and \
-                    req.args.get('template') and 'tags' not in req.args:
-                self._post_process_request_edit(req)
-            if req.args.get('action') == 'history' and \
-                    data and 'history' in data:
-                self._post_process_request_history(req, data)
-        if req.method == 'POST' and req.path_info.startswith('/wiki/') and \
-                'save' in req.args:
-            requests.reset()
-        return (template, data, content_type)
+        if template is not None:
+            if req.method == 'GET' and req.path_info.startswith('/wiki/'):
+                if req.args.get('action') == 'edit' and \
+                        req.args.get('template') and 'tags' not in req.args:
+                    self._post_process_request_edit(req)
+                if req.args.get('action') == 'history' and \
+                        data and 'history' in data:
+                    self._post_process_request_history(req, data)
+            elif req.method == 'POST' and \
+                    req.path_info.startswith('/wiki/') and \
+                    'save' in req.args:
+                requests.reset()
+        return template, data, content_type
 
     # ITemplateStreamFilter methods
     def filter_stream(self, req, method, filename, stream, data):
@@ -327,7 +329,7 @@ class TagWikiSyntaxProvider(Component):
                 # Remove outer whitespace after stripped quotation too.
                 text = text[1:-1].strip()
             return text
- 
+
         label = label and unquote(label.strip()) or ''
         target = unquote(target.strip())
 

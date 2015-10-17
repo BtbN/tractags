@@ -107,26 +107,27 @@ class TagInputAutoComplete(TagTemplateProvider):
 
     def pre_process_request(self, req, handler):
         return handler
-    
+
     def post_process_request(self, req, template, data, content_type):
-        if req.path_info.startswith('/ticket/') or \
-           req.path_info.startswith('/newticket') or \
-           (self.tags_enabled and req.path_info.startswith('/wiki/')):
-                # In Trac 1.0 and later, jQuery-UI is included from the core.
-                if trac_version >= '1.0':
-                    Chrome(self.env).add_jquery_ui(req)
-                else:
-                    add_script(req, 'tags/js/jquery-ui-1.8.16.custom.min.js')
-                    add_stylesheet(req, 'tags/css/jquery-ui-1.8.16.custom.css')
+        if template is not None and \
+                (req.path_info.startswith('/ticket/') or
+                 req.path_info.startswith('/newticket') or
+                 (self.tags_enabled and req.path_info.startswith('/wiki/'))):
+            # In Trac 1.0 and later, jQuery-UI is included from the core.
+            if trac_version >= '1.0':
+                Chrome(self.env).add_jquery_ui(req)
+            else:
+                add_script(req, 'tags/js/jquery-ui-1.8.16.custom.min.js')
+                add_stylesheet(req, 'tags/css/jquery-ui-1.8.16.custom.css')
         return template, data, content_type
 
     # ITemplateStreamFilter method
     def filter_stream(self, req, method, filename, stream, data):
 
         if not (filename == 'ticket.html' or
-                (self.tags_enabled and filename == 'wiki_edit.html')): 
+                (self.tags_enabled and filename == 'wiki_edit.html')):
             return stream
-        
+
         keywords = self._get_keywords_string(req)
         if not keywords:
             self.log.debug(
@@ -146,7 +147,7 @@ class TagInputAutoComplete(TagTemplateProvider):
                 }
                 function extractLast( term ) {
                     return split( term ).pop();
-                }                    
+                }
                 $('%(field)s')
                     // don't navigate away from field on tab when selecting
                     // an item
@@ -168,7 +169,7 @@ class TagInputAutoComplete(TagTemplateProvider):
                         focus: function() {
                             // prevent value inserted on focus
                             return false;
-                        },                            
+                        },
                         select: function( event, ui ) {
                             var terms = split( this.value );
                             // remove the current input
@@ -180,7 +181,7 @@ class TagInputAutoComplete(TagTemplateProvider):
                             terms.push( "" );
                             this.value = terms.join( sep );
                             return false;
-                        }                            
+                        }
                     });
             });"""
 
@@ -231,7 +232,7 @@ class TagInputAutoComplete(TagTemplateProvider):
                                  for _keyword in keywords))
         else:
             keywords = ''
-            
+
         return keywords
 
     def _get_help_link(self, req):
@@ -325,7 +326,7 @@ class TagRequestHandler(TagTemplateProvider):
         tag_system = TagSystem(self.env)
         all_realms = tag_system.get_taggable_realms(req.perm)
         if not (tag_id or query) or [r for r in all_realms
-                                     if r in req.args] == []: 
+                                     if r in req.args] == []:
             for realm in all_realms:
                 if not realm in self.exclude_realms:
                     req.args[realm] = 'on'
@@ -484,7 +485,7 @@ class TagTimelineEventProvider(TagTemplateProvider):
                 tagged_resource = Resource(tagspace, name)
                 if 'TAGS_VIEW' in req.perm(tagged_resource):
                     yield ('tags', time, author,
-                           (tagged_resource, old_tags, new_tags), self) 
+                           (tagged_resource, old_tags, new_tags), self)
 
     def render_timeline_event(self, context, field, event):
         resource = event[3][0]
