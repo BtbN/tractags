@@ -25,7 +25,7 @@ from trac.resource import Resource, ResourceSystem, get_resource_name
 from trac.resource import get_resource_url
 from trac.timeline.api import ITimelineEventProvider
 from trac.util import to_unicode
-from trac.util.text import CRLF, unicode_quote_plus
+from trac.util.text import CRLF, javascript_quote, unicode_quote_plus
 from trac.web import IRequestFilter
 from trac.web.api import IRequestHandler, ITemplateStreamFilter
 from trac.web.api import ITemplateStreamFilter
@@ -42,24 +42,6 @@ from tractags.macros import query_realms
 from tractags.model import tag_changes
 from tractags.query import InvalidQuery, Query
 from tractags.util import split_into_tags
-
-try:
-    from trac.util.text import javascript_quote
-except ImportError:
-    # Fallback for Trac<0.11.3 - verbatim copy from Trac 1.0.
-    _js_quote = {'\\': '\\\\', '"': '\\"', '\b': '\\b', '\f': '\\f',
-                 '\n': '\\n', '\r': '\\r', '\t': '\\t', "'": "\\'"}
-    for i in range(0x20) + [ord(c) for c in '&<>']:
-        _js_quote.setdefault(chr(i), '\\u%04x' % i)
-    _js_quote_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t\'&<>]')
-
-    def javascript_quote(text):
-        """Quote strings for inclusion in javascript."""
-        if not text:
-            return ''
-        def replace(match):
-            return _js_quote[match.group(0)]
-        return _js_quote_re.sub(replace, text)
 
 
 class TagInputAutoComplete(TagTemplateProvider):
