@@ -28,7 +28,6 @@ from trac.util import to_unicode
 from trac.util.text import CRLF, javascript_quote, unicode_quote_plus
 from trac.web import IRequestFilter
 from trac.web.api import IRequestHandler, ITemplateStreamFilter
-from trac.web.api import ITemplateStreamFilter
 from trac.web.chrome import Chrome, INavigationContributor
 from trac.web.chrome import add_ctxtnav, add_script, add_stylesheet
 from trac.web.chrome import add_warning
