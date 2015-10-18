@@ -28,48 +28,14 @@ from trac.resource import IResourceManager, get_resource_url
 from trac.resource import get_resource_description
 from trac.util import get_reporter_id
 from trac.util.text import to_unicode
+from trac.util.translation import domain_functions
 from trac.wiki.model import WikiPage
 
 # Import translation functions.
-# Fallbacks make Babel still optional and provide for Trac 0.11.
-try:
-    from trac.util.translation  import domain_functions
-    add_domain, _, N_, gettext, ngettext, tag_, tagn_ = \
-        domain_functions('tractags', ('add_domain', '_', 'N_', 'gettext',
-                                      'ngettext', 'tag_', 'tagn_'))
-    dgettext = None
-except ImportError:
-    from trac.util.translation  import gettext
-    _ = gettext
-    N_ = lambda text: text
-    def add_domain(a,b,c=None):
-        pass
-    def dgettext(domain, string, **kwargs):
-        return safefmt(string, kwargs)
-    def ngettext(singular, plural, num, **kwargs):
-        string = (plural, singular)[num == 1]
-        kwargs.setdefault('num', num)
-        return safefmt(string, kwargs)
-    def tag_(string, **kwargs):
-        return _tag_kwargs(string, kwargs)
-    def tagn_(singular, plural, num, **kwargs):
-        string = (plural, singular)[num == 1]
-        kwargs.setdefault('num', num)
-        return _tag_kwargs(string, kwargs)
-    def safefmt(string, kwargs):
-        if kwargs:
-            try:
-                return string % kwargs
-            except KeyError:
-                pass
-        return string
-    _param_re = re.compile(r"%\((\w+)\)(?:s|[\d]*d|\d*.?\d*[fg])")
-    def _tag_kwargs(trans, kwargs):
-        from genshi.builder import tag
-        trans_elts = _param_re.split(trans)
-        for i in xrange(1, len(trans_elts), 2):
-            trans_elts[i] = kwargs.get(trans_elts[i], '???')
-        return tag(*trans_elts)
+add_domain, _, N_, gettext, ngettext, tag_, tagn_ = \
+    domain_functions('tractags', ('add_domain', '_', 'N_', 'gettext',
+                                  'ngettext', 'tag_', 'tagn_'))
+dgettext = None
 
 from tractags.model import resource_tags, tag_frequency, tag_resource
 from tractags.model import tagged_resources
