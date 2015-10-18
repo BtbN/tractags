@@ -12,7 +12,6 @@ import shutil
 import tempfile
 import unittest
 
-from trac.util.compat import sorted
 from trac.perm import PermissionCache, PermissionError, PermissionSystem
 from trac.resource import Resource, ResourceNotFound
 from trac.test import EnvironmentStub, Mock

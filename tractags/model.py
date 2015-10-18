@@ -8,13 +8,12 @@
 # you should have received as part of this distribution.
 
 from datetime import datetime
+from itertools import groupby
 
 from trac.resource import Resource
-from trac.util.compat import groupby, set
-from trac.util.datefmt import utc
+from trac.util.datefmt import to_datetime, to_utimestamp, utc
 from trac.util.text import to_unicode
 
-from tractags.compat import to_datetime, to_utimestamp
 from tractags.util import split_into_tags
 
 

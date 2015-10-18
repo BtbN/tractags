@@ -21,8 +21,7 @@ from trac.resource import Resource, get_resource_description, \
                           get_resource_url, render_resource_link
 from trac.ticket.api import TicketSystem
 from trac.ticket.model import Ticket
-from trac.util import embedded_numbers
-from trac.util.compat import any, sorted, set
+from trac.util import as_int, embedded_numbers
 from trac.util.presentation import Paginator
 from trac.util.text import shorten_line, to_unicode
 from trac.web.chrome import Chrome, ITemplateProvider, \
@@ -32,23 +31,6 @@ from trac.wiki.formatter import format_to_oneliner
 
 from tractags.api import Counter, TagSystem, N_, _, gettext
 from tractags.util import query_realms
-
-try:
-    from trac.util  import as_int
-except ImportError:
-    def as_int(s, default, min=None, max=None):
-        """Convert s to an int and limit it to the given range, or
-        return default if unsuccessful (copied verbatim from Trac0.12dev)."""
-        try:
-            value = int(s)
-        except (TypeError, ValueError):
-            return default
-        if min is not None and value < min:
-            value = min
-        if max is not None and value > max:
-            value = max
-        return value
-
 
 # Check for unsupported pre-tags-0.6 macro keyword arguments.
 _OBSOLETE_ARGS_RE = re.compile(r"""

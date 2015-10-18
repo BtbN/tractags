@@ -10,8 +10,8 @@
 
 from trac.admin import IAdminPanelProvider
 from trac.core import Component, implements
-from trac.util.compat import sorted
 from trac.web.chrome import Chrome
+
 from tractags.api import TagSystem, _
 
 

@@ -36,7 +36,6 @@ from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
 from tractags.api import REALM_RE, TagSystem, _, tag_, tagn_
-from tractags.compat import is_enabled
 from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
 from tractags.model import tag_changes
@@ -79,7 +78,7 @@ class TagInputAutoComplete(TagTemplateProvider):
         doc="A list of comma separated values available for input.")
 
     def __init__(self):
-        self.tags_enabled = is_enabled(self.env, TagSystem)
+        self.tags_enabled = self.env.is_enabled(TagSystem)
 
     @property
     def separator(self):

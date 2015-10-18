@@ -17,7 +17,7 @@ from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.mimeview.api import Context
 from trac.resource import Resource, render_resource_link, get_resource_url
-from trac.util.compat import sorted
+from trac.util.datefmt import to_utimestamp
 from trac.web.api import IRequestFilter, ITemplateStreamFilter
 from trac.web.chrome import add_stylesheet
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
@@ -28,7 +28,6 @@ from trac.wiki.parser import WikiParser
 from trac.wiki.web_ui import WikiModule
 
 from tractags.api import Counter, DefaultTagProvider, TagSystem, _, requests
-from tractags.compat import to_utimestamp
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes

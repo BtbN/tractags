@@ -9,10 +9,9 @@
 #
 
 import re
+from functools import partial
 
 from trac.test import Mock, MockPerm
-
-from tractags.compat import partial
 
 _TAG_SPLIT = re.compile('[,\s]+')
 

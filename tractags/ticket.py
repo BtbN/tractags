@@ -8,6 +8,7 @@
 #
 
 import re
+from itertools import groupby
 
 from trac.config import BoolOption, ListOption
 from trac.core import Component, implements
@@ -16,7 +17,6 @@ from trac.resource import Resource
 from trac.ticket.api import ITicketChangeListener, TicketSystem
 from trac.ticket.model import Ticket
 from trac.util import get_reporter_id
-from trac.util.compat import all, any, groupby
 from trac.util.text import to_unicode
 
 from tractags.api import DefaultTagProvider, ITagProvider, _
