@@ -375,6 +375,7 @@ class TagWikiMacros(TagTemplateProvider):
         try:
             result = Paginator(results, current_page - 1, items_per_page)
         except (AssertionError, TracError), e:
+            # AssertionError raised in Trac < 1.0.10, TracError otherwise
             self.log.warn("ListTagged macro: %s", e)
             current_page = 1
             result = Paginator(results, current_page - 1, items_per_page)
