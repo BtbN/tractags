@@ -197,8 +197,8 @@ class WikiTagInterface(TagTemplateProvider):
                                                    template_page.resource))
             # Prepare tags as content for the editor field.
             tags_str = ' '.join(tags)
-            self.env.log.debug("Tags retrieved from template: '%s'" \
-                               % unicode(tags_str).encode('utf-8'))
+            self.env.log.debug("Tags retrieved from template: '%s'",
+                               unicode(tags_str).encode('utf-8'))
             # DEVEL: More arguments need to be propagated here?
             req.redirect(req.href(req.path_info,
                                   action='edit', tags=tags_str,

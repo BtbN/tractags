@@ -221,7 +221,6 @@ class TicketTagProvider(DefaultTagProvider):
              ORDER BY id
             """ % (','.join(self.fields), db.concat(*fields),
                    db.cast('tkt.id', 'text'), ignore)
-        self.env.log.debug(sql)
         # Obtain cursors for reading tickets and altering tags db table.
         # DEVEL: Use appropriate cursor typs from Trac 1.0 db API.
         ro_cursor = db.cursor()

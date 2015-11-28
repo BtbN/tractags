@@ -351,8 +351,8 @@ class TagRequestHandler(TagTemplateProvider):
             data['mincount'] = mincount
         formatter = Formatter(self.env, Context.from_request(req,
                                                              Resource('tag')))
-        self.env.log.debug(
-            "%s macro arguments: %s" % (macro, args and args or '(none)'))
+        self.env.log.debug("%s macro arguments: %s", macro,
+                           args and args or '(none)')
         macros = TagWikiMacros(self.env)
         try:
             # Query string without realm throws 'NotImplementedError'.
@@ -424,8 +424,8 @@ class TagTimelineEventFilter(TagTemplateProvider):
                     realms = not query_realms and all_realms or \
                              query_realms.intersection(all_realms)
                     events = []
-                    self.log.debug("Filtering timeline events by tags '%s'"
-                                   % query_str)
+                    self.log.debug("Filtering timeline events by tags '%s'",
+                                   query_str)
                     for event in data['events']:
                         resource = event['data'][0]
                         if resource.realm in realms:
