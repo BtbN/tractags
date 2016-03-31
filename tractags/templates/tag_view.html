@@ -57,7 +57,7 @@
       <div id="tag_body">
         <py:choose test="">
           <h1 py:when="tag_query and tag_page and tag_page.exists and
-                       'WIKI_VIEW' in perm('wiki', tag_page.resource)"
+                       'WIKI_VIEW' in perm(tag_page.resource)"
               i18n:msg="query">
             Showing objects tagged with
             <a href="${href.wiki(tag_page.name)}" title="Go to wiki page">
