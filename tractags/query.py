@@ -11,7 +11,9 @@ A generalised query parser and matcher.
 """
 
 import re
+
 from trac.core import TracError
+
 from tractags.api import _
 
 __all__ = ['Query', 'InvalidQuery']

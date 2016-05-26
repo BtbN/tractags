@@ -11,7 +11,7 @@ import shutil
 import tempfile
 import unittest
 
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub
 
 from tractags.admin import TagChangeAdminPanel
 

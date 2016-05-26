@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2012-2013 Steffen Hoffmann <hoff.st@web.de>
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution.
+#
+
 from trac.db import Table, Column, Index, DatabaseManager
 
 schema = [
@@ -9,6 +17,7 @@ schema = [
         Index(['tagspace', 'tag']),
     ]
 ]
+
 
 def do_upgrade(env, ver, cursor):
     """Move to new, tractags db schema."""

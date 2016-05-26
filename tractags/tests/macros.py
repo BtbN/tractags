@@ -17,7 +17,7 @@ from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.web.href import Href
 
 from tractags.db import TagSetup
-from tractags.macros import query_realms, TagTemplateProvider, TagWikiMacros
+from tractags.macros import query_realms, TagWikiMacros
 
 
 class _BaseTestCase(unittest.TestCase):

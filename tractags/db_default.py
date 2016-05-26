@@ -10,8 +10,6 @@ from trac.db import Table, Column, Index
 
 schema_version = 4
 
-## Database schema
-#
 
 schema = [
     Table('tags', key=('tagspace', 'name', 'tag'))[
@@ -31,10 +29,7 @@ schema = [
     ]
 ]
 
-## Default database values
-#
 
-# (table, (column1, column2), ((row1col1, row1col2), (row2col1, row2col2)))
 def get_data(db):
     return (('permission',
               ('username', 'action'),

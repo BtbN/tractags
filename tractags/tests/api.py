@@ -13,11 +13,10 @@ import tempfile
 import unittest
 
 from trac.core import implements
-from trac.db.api import DatabaseManager
 from trac.perm import IPermissionRequestor, PermissionCache, PermissionError
 from trac.perm import PermissionSystem
 from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.test import EnvironmentStub, Mock
 
 import tractags.api
 

@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Steffen Hoffmann <hoff.st@web.de>
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution.
+#
+
+
 def do_upgrade(env, ver, cursor):
     """Register tractags db schema in `system` db table."""
 

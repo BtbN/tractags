@@ -10,7 +10,6 @@ import shutil
 import tempfile
 import unittest
 
-from trac.db.api import DatabaseManager
 from trac.perm import PermissionCache, PermissionSystem
 from trac.resource import Resource
 from trac.test import EnvironmentStub, Mock

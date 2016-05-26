@@ -10,10 +10,8 @@ import shutil
 import tempfile
 import unittest
 
-from trac.db.api import DatabaseManager
-from trac.perm import PermissionCache, PermissionError, PermissionSystem
-from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.perm import PermissionCache, PermissionSystem
+from trac.test import EnvironmentStub, Mock
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup

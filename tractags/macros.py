@@ -17,15 +17,14 @@ from pkg_resources import resource_filename
 
 from trac.config import BoolOption, ListOption, Option
 from trac.core import Component, TracError, implements
-from trac.resource import Resource, get_resource_description, \
-                          get_resource_url, render_resource_link
+from trac.resource import Resource, get_resource_url, render_resource_link
 from trac.ticket.api import TicketSystem
 from trac.ticket.model import Ticket
 from trac.util import as_int, embedded_numbers
 from trac.util.presentation import Paginator
 from trac.util.text import shorten_line, to_unicode
-from trac.web.chrome import Chrome, ITemplateProvider, \
-                            add_link, add_stylesheet
+from trac.web.chrome import Chrome, ITemplateProvider, add_link, \
+                            add_stylesheet
 from trac.wiki.api import IWikiMacroProvider, parse_args
 from trac.wiki.formatter import format_to_oneliner
 

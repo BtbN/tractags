@@ -31,7 +31,7 @@ class TagChangeAdminPanel(Component):
         tag_system = TagSystem(self.env)
         all_realms = tag_system.get_taggable_realms(req.perm)
         # Check request for enabled filters, or use default.
-        if [r for r in all_realms if r in req.args] == []:
+        if not [r for r in all_realms if r in req.args]:
             for realm in all_realms:
                 req.args[realm] = 'on'
         checked_realms = [r for r in all_realms if r in req.args]

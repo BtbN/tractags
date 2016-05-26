@@ -47,6 +47,7 @@ def delete_tags(env, resource, tags=None, db=None):
         """, (resource.realm, to_unicode(resource.id)))
         db.commit()
 
+
 def tag_changes(env, resource, start=None, stop=None):
     """Return tag history for one or all tagged Trac resources."""
     db = _get_db(env)
@@ -72,6 +73,7 @@ def tag_changes(env, resource, start=None, stop=None):
     return [(to_datetime(row[0]), row[1], row[2], row[3], row[4], row[5])
             for row in cursor]
 
+
 def tag_frequency(env, realm, filter=None, db=None):
     """Return tags and numbers of their occurrence."""
     if filter:
@@ -86,6 +88,7 @@ def tag_frequency(env, realm, filter=None, db=None):
     """ % (filter and sql or ''), (realm,))
     for row in cursor:
         yield (row[0], row[1])
+
 
 def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
                  log=False, when=None):
@@ -143,6 +146,7 @@ def tag_resource(env, resource, old_id=None, author='anonymous', tags=[],
                   u' '.join(sorted(map(to_unicode, tags))),))
     db.commit()
 
+
 def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
                      db=None):
     """Return Trac resources including their associated tags.
@@ -189,6 +193,7 @@ def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
     for name, tags in groupby(cursor, lambda row: row[0]):
         resource = resources[name]
         yield resource, set([tag[1] for tag in tags])
+
 
 def resource_tags(env, resource, db=None, when=None):
     """Return all tags for a Trac resource by realm and ID."""

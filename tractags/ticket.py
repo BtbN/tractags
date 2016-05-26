@@ -7,11 +7,10 @@
 # you should have received as part of this distribution.
 #
 
-import re
 from itertools import groupby
 
 from trac.config import BoolOption, ListOption
-from trac.core import Component, implements
+from trac.core import implements
 from trac.perm import PermissionError
 from trac.resource import Resource
 from trac.ticket.api import ITicketChangeListener, TicketSystem
@@ -19,7 +18,7 @@ from trac.ticket.model import Ticket
 from trac.util import get_reporter_id
 from trac.util.text import to_unicode
 
-from tractags.api import DefaultTagProvider, ITagProvider, _
+from tractags.api import DefaultTagProvider, _
 from tractags.model import delete_tags
 from tractags.util import MockReq, get_db_exc, split_into_tags
 
