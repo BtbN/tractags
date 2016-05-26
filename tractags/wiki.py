@@ -52,10 +52,11 @@ class WikiTagProvider(DefaultTagProvider):
 
     def get_tagged_resources(self, req, tags=None, filter=None):
         if self.exclude_templates:
-            db = self.env.get_db_cnx()
-            like_templates = ''.join(
-                ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
-            filter = (' '.join(['name NOT', db.like() % like_templates]),)
+            with self.env.db_query as db:
+                like_templates = ''.join(
+                    ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX),
+                     "%%'"])
+                filter = (' '.join(['name NOT', db.like() % like_templates]),)
         return super(WikiTagProvider, self).get_tagged_resources(req, tags,
                                                                  filter)
 
@@ -63,10 +64,11 @@ class WikiTagProvider(DefaultTagProvider):
         if not self.check_permission(req.perm, 'view'):
             return Counter()
         if self.exclude_templates:
-            db = self.env.get_db_cnx()
-            like_templates = ''.join(
-                ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX), "%%'"])
-            filter = (' '.join(['name NOT', db.like() % like_templates]),)
+            with self.env.db_transaction as db:
+                like_templates = ''.join(
+                    ["'", db.like_escape(WikiModule.PAGE_TEMPLATES_PREFIX),
+                     "%%'"])
+                filter = (' '.join(['name NOT', db.like() % like_templates]),)
         return super(WikiTagProvider, self).get_all_tags(req, filter)
 
     def describe_tagged_resource(self, req, resource):
@@ -164,7 +166,7 @@ class WikiTagInterface(TagTemplateProvider):
 
     def wiki_page_deleted(self, page):
         # Page gone, so remove all records on it.
-        delete_tags(self.env, page.resource)
+        delete_tags(self.env, page.resource, purge=True)
 
     def wiki_page_version_deleted(self, page):
         pass

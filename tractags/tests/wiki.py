@@ -176,24 +176,21 @@ class WikiTagProviderTestCase(unittest.TestCase):
         self.env = EnvironmentStub(default_data=True,
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
-        self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is partially setup with enabled component.
         #   Revert these changes for getting a clean setup.
         self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
+        setup.upgrade_environment()
 
         self.perms = PermissionSystem(self.env)
         self.tag_s = TagSystem(self.env)
         self.tag_wp = WikiTagProvider(self.env)
 
-        cursor = self.db.cursor()
         # Populate table with initial test data.
-        cursor.execute("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
+        self.env.db_transaction("""
+            INSERT INTO tags (tagspace, name, tag)
             VALUES ('wiki', 'WikiStart', 'tag1')
-        """)
+            """)
 
         self.req = Mock(authname='editor')
         # Mock an anonymous request.
@@ -202,20 +199,18 @@ class WikiTagProviderTestCase(unittest.TestCase):
         self.tags = ['tag1']
 
     def tearDown(self):
-        self.db.close()
-        # Really close db connections.
         self.env.shutdown()
         shutil.rmtree(self.env.path)
 
     # Helpers
 
     def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
     # Tests
 
@@ -226,13 +221,11 @@ class WikiTagProviderTestCase(unittest.TestCase):
                           self.tags)
 
     def test_exclude_template_tags(self):
-        cursor = self.db.cursor()
         # Populate table with more test data.
-        cursor.execute("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
+        self.env.db_transaction("""
+            INSERT INTO tags (tagspace, name, tag)
             VALUES ('wiki', 'PageTemplates/Template', 'tag2')
-        """)
+            """)
         tags = ['tag1', 'tag2']
         self.assertEquals(self.tag_s.get_all_tags(self.req).keys(), self.tags)
         self.env.config.set('tags', 'query_exclude_wiki_templates', False)
@@ -249,19 +242,14 @@ class WikiTagProviderTestCase(unittest.TestCase):
         # Shouldn't raise an error with appropriate permission.
         self.tag_wp.set_resource_tags(self.req, resource, self.tags)
         self.tag_wp.set_resource_tags(self.req, resource, ['tag2'])
-        cursor = self.db.cursor()
         # Check change records.
-        cursor.execute("""
-            SELECT *
-              FROM tags_change
-             WHERE tagspace=%s
-               AND name=%s
-             ORDER by time DESC
-        """, ('wiki', 'TaggedPage'))
-        row = cursor.fetchone()
-        self.assertEqual([v for v in row[-3:]], ['editor', 'tag1', 'tag2'])
-        row = cursor.fetchone()
-        self.assertEqual([v for v in row[-3:]], ['editor', '', 'tag1'])
+        rows = self.env.db_query("""
+            SELECT author,oldtags,newtags FROM tags_change
+            WHERE tagspace=%s AND name=%s
+            ORDER by time DESC
+            """, ('wiki', 'TaggedPage'))
+        self.assertEqual(rows[0], ('editor', 'tag1', 'tag2'))
+        self.assertEqual(rows[1], ('editor', '', 'tag1'))
 
 
 def wiki_setup(tc):
@@ -269,16 +257,14 @@ def wiki_setup(tc):
                              enable=['trac.*', 'tractags.*'])
     tc.env.path = tempfile.mkdtemp()
     tc.db_mgr = DatabaseManager(tc.env)
-    tc.db = tc.env.get_db_cnx()
 
-    cursor = tc.db.cursor()
-    cursor.execute("DROP TABLE IF EXISTS tags")
-    cursor.execute("DROP TABLE IF EXISTS tags_change")
-    cursor.execute("DELETE FROM system WHERE name='tags_version'")
-    cursor.execute("DELETE FROM permission WHERE action %s"
-                   % tc.db.like(), ('TAGS_%',))
+    with tc.env.db_transaction as db:
+        db("DROP TABLE IF EXISTS tags")
+        db("DROP TABLE IF EXISTS tags_change")
+        db("DELETE FROM system WHERE name='tags_version'")
+        db("DELETE FROM permission WHERE action %s" % db.like(), ('TAGS_%',))
 
-    TagSetup(tc.env).upgrade_environment(tc.db)
+    TagSetup(tc.env).upgrade_environment()
 
     now = datetime.now(utc)
     wiki = WikiPage(tc.env)
@@ -286,19 +272,17 @@ def wiki_setup(tc):
     wiki.text = '--'
     wiki.save('joe', 'TagsPluginTestPage', '::1', now)
 
-    cursor = tc.db.cursor()
     # Populate table with initial test data.
-    cursor.executemany("""
-        INSERT INTO tags
-               (tagspace, name, tag)
-        VALUES (%s,%s,%s)
-    """, [('wiki', 'TestPage', '2ndtag'),
-          ('wiki', 'TestPage', 'a.really?_\wild-thing'),
-          ('wiki', 'TestPage', 'heavily-quoted'),
-          ('wiki', 'TestPage', 'onetag'),
-          ('wiki', 'TestPage', 'tagged'),
-          ('wiki', 'TestPage', "single'quote"),
-         ])
+    with tc.env.db_transaction as db:
+        db.executemany("""
+            INSERT INTO tags (tagspace, name, tag)
+            VALUES (%s,%s,%s)
+            """, [('wiki', 'TestPage', '2ndtag'),
+                  ('wiki', 'TestPage', 'a.really?_\wild-thing'),
+                  ('wiki', 'TestPage', 'heavily-quoted'),
+                  ('wiki', 'TestPage', 'onetag'),
+                  ('wiki', 'TestPage', 'tagged'),
+                  ('wiki', 'TestPage', "single'quote")])
 
     req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
                authname='anonymous', perm=MockPerm(), tz=utc, args={},
@@ -309,25 +293,23 @@ def wiki_setup(tc):
     # Enable big diff output.
     tc.maxDiff = None
 
+
 def wiki_setup_no_perm(tc):
     wiki_setup(tc)
-    tc.db = tc.env.get_db_cnx()
+    with tc.env.db_transaction as db:
+        tc.env.db_transaction("DELETE FROM permission WHERE action %s"
+                              % db.like(), ('TAGS_%',))
 
-    cursor = tc.db.cursor()
-    cursor.execute("DELETE FROM permission WHERE action %s"
-                   % tc.db.like(), ('TAGS_%',))
 
 def wiki_teardown(tc):
     tc.env.reset_db()
-    tc.db.close()
-    # Really close db connections.
     tc.env.shutdown()
     shutil.rmtree(tc.env.path)
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(WikiTagProviderTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(WikiTagProviderTestCase))
     suite.addTest(formatter.suite(TEST_CASES, wiki_setup, __file__,
                                   wiki_teardown))
     suite.addTest(formatter.suite(TEST_NOPERM, wiki_setup_no_perm, __file__,
@@ -336,4 +318,3 @@ def test_suite():
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
-TEST_NOPERM

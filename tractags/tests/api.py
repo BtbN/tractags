@@ -35,16 +35,14 @@ class _BaseTestCase(unittest.TestCase):
         self.req = Mock(authname='editor')
 
         self.actions = ['TAGS_ADMIN', 'TAGS_MODIFY', 'TAGS_VIEW']
-        self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting default permissions inserted.
         self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
+        setup.upgrade_environment()
         self.tag_s = tractags.api.TagSystem(self.env)
 
     def tearDown(self):
-        self.db.close()
         # Really close db connections.
         self.env.shutdown()
         shutil.rmtree(self.env.path)
@@ -52,30 +50,28 @@ class _BaseTestCase(unittest.TestCase):
     # Helpers
 
     def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
 
 class TagPolicyTestCase(_BaseTestCase):
 
     def setUp(self):
         _BaseTestCase.setUp(self)
-        cursor = self.db.cursor()
         # Populate table with initial test data.
-        cursor.executemany("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
-            VALUES (%s,%s,%s)
-        """, [('wiki', 'PublicPage', 'anonymous:modify'),
-              ('wiki', 'RestrictedPage', 'anonymous:-view'),
-              ('wiki', 'RestrictedPage', 'classified'),
-              ('wiki', 'UserPage', 'private'),
-              ('wiki', 'UserPage', 'user:admin'),
-             ])
+        with self.env.db_transaction as db:
+            db.executemany("""
+                INSERT INTO tags (tagspace, name, tag)
+                VALUES (%s,%s,%s)
+                """, [('wiki', 'PublicPage', 'anonymous:modify'),
+                      ('wiki', 'RestrictedPage', 'anonymous:-view'),
+                      ('wiki', 'RestrictedPage', 'classified'),
+                      ('wiki', 'UserPage', 'private'),
+                      ('wiki', 'UserPage', 'user:admin')])
         self.check = tractags.api.TagPolicy(self.env).check_permission
         self.env.config.set('trac', 'permission_policies',
                             'TagPolicy, DefaultPermissionPolicy')
@@ -178,8 +174,8 @@ class TagSystemTestCase(_BaseTestCase):
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(doctest.DocTestSuite(module=tractags.api))
-    suite.addTest(unittest.makeSuite(TagPolicyTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(TagSystemTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagPolicyTestCase))
+    suite.addTest(unittest.makeSuite(TagSystemTestCase))
     return suite
 
 if __name__ == '__main__':

@@ -18,8 +18,7 @@ from tractags.util import MockReq
 class MockReqTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
+        self.env = EnvironmentStub(enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
 
     def tearDown(self):
@@ -34,7 +33,7 @@ class MockReqTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MockReqTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(MockReqTestCase))
     return suite
 
 if __name__ == '__main__':

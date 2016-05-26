@@ -12,28 +12,15 @@ import re
 from functools import partial
 
 from trac.test import Mock, MockPerm
+from trac.web.api import _RequestArgs
 
 _TAG_SPLIT = re.compile('[,\s]+')
 
 
 # DEVEL: This needs monitoring for possibly varying endpoint requirements.
-MockReq = partial(Mock, args=dict(), authname='anonymous',
+MockReq = partial(Mock, args=_RequestArgs(), authname='anonymous',
                   perm=MockPerm(), session=dict())
 
-
-def get_db_exc(env):
-    if hasattr(env, 'db_exc'):
-        return env.db_exc
-    database = env.config.get('trac', 'database')
-    if database.startswith('sqlite:'):
-        from trac.db.sqlite_backend import sqlite
-        return sqlite
-    if database.startswith('postgres:'):
-        from trac.db.postgres_backend import psycopg
-        return psycopg
-    if database.startswith('mysql:'):
-        from trac.db.mysql_backend import MySQLdb
-        return MySQLdb
 
 def query_realms(query, all_realms):
     realms = []
@@ -41,6 +28,7 @@ def query_realms(query, all_realms):
         if re.search('(^|\W)realm:%s(\W|$)' % realm, query):
             realms.append(realm)
     return realms
+
 
 def split_into_tags(text):
     """Split plain text into tags."""

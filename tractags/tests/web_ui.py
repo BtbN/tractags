@@ -15,7 +15,7 @@ import unittest
 from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.perm import PermissionSystem, PermissionCache, PermissionError
 from trac.util.datefmt import utc
-from trac.web.api import RequestDone
+from trac.web.api import _RequestArgs, RequestDone
 from trac.web.href import Href
 from trac.web.main import RequestDispatcher
 from trac.web.session import DetachedSession
@@ -29,15 +29,13 @@ from tractags.web_ui import TagTimelineEventFilter, TagTimelineEventProvider
 class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
+        self.env = EnvironmentStub(enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
-        self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting a clean setup.
         self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
+        setup.upgrade_environment()
 
         self.tag_s = TagSystem(self.env)
         self.tag_rh = TagRequestHandler(self.env)
@@ -54,8 +52,6 @@ class _BaseTestCase(unittest.TestCase):
         self.abs_href = Href('http://example.org/trac')
 
     def tearDown(self):
-        self.db.close()
-        # Really close db connections.
         self.env.shutdown()
         shutil.rmtree(self.env.path)
 
@@ -75,12 +71,12 @@ class _BaseTestCase(unittest.TestCase):
         return Mock(send=send, **kw)
 
     def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
 
 class TagInputAutoCompleteTestCase(_BaseTestCase):
@@ -228,7 +224,7 @@ class TagTimelineEventFilterTestCase(_BaseTestCase):
         perms.grant_permission('anonymous', 'TAGS_VIEW')
         perms.grant_permission('anonymous', 'TIMELINE_VIEW')
 
-        req = self._create_request(args=dict(tag_query='query_str'),
+        req = self._create_request(args=_RequestArgs(tag_query='query_str'),
                                    path_info='/timeline', method='GET')
         dispatcher = RequestDispatcher(self.env)
         self.assertRaises(RequestDone, dispatcher.dispatch, req)
@@ -250,11 +246,10 @@ class TagTimelineEventProviderTestCase(_BaseTestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagInputAutoCompleteTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(TagRequestHandlerTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(TagTimelineEventFilterTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(TagTimelineEventProviderTestCase,
-                                     'test'))
+    suite.addTest(unittest.makeSuite(TagInputAutoCompleteTestCase))
+    suite.addTest(unittest.makeSuite(TagRequestHandlerTestCase))
+    suite.addTest(unittest.makeSuite(TagTimelineEventFilterTestCase))
+    suite.addTest(unittest.makeSuite(TagTimelineEventProviderTestCase))
     return suite
 
 if __name__ == '__main__':

@@ -19,8 +19,7 @@ from tractags.admin import TagChangeAdminPanel
 class TagChangeAdminPanelTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.env = EnvironmentStub(
-                enable=['trac.*', 'tractags.*'])
+        self.env = EnvironmentStub(enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
 
         self.tag_cap = TagChangeAdminPanel(self.env)
@@ -35,7 +34,7 @@ class TagChangeAdminPanelTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagChangeAdminPanelTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagChangeAdminPanelTestCase))
     return suite
 
 if __name__ == '__main__':

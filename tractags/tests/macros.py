@@ -27,34 +27,32 @@ class _BaseTestCase(unittest.TestCase):
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
 
-        self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting default permissions inserted.
         self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
+        setup.upgrade_environment()
 
     def tearDown(self):
-        self.db.close()
-        # Really close db connections.
         self.env.shutdown()
         shutil.rmtree(self.env.path)
 
     # Helpers
 
     def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
     def _insert_tags(self, tagspace, name, tags):
-        cursor = self.db.cursor()
         args = [(tagspace, name, tag) for tag in tags]
-        cursor.executemany("INSERT INTO tags (tagspace,name,tag) "
-                           "VALUES (%s,%s,%s)", args)
+        with self.env.db_transaction as db:
+            db.executemany("""
+                INSERT INTO tags (tagspace,name,tag) VALUES (%s,%s,%s)
+                """, args)
 
 
 class TagTemplateProviderTestCase(_BaseTestCase):
@@ -245,10 +243,10 @@ class QueryRealmsTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(TagCloudMacroTestCase, 'test'))
-    suite.addTest(unittest.makeSuite(QueryRealmsTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase))
+    suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase))
+    suite.addTest(unittest.makeSuite(TagCloudMacroTestCase))
+    suite.addTest(unittest.makeSuite(QueryRealmsTestCase))
     return suite
 
 if __name__ == '__main__':

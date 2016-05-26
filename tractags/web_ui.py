@@ -48,16 +48,16 @@ class TagInputAutoComplete(TagTemplateProvider):
     0.5dev.
     """
 
-    implements (IRequestFilter, ITemplateStreamFilter)
+    implements(IRequestFilter, ITemplateStreamFilter)
 
     field_opt = Option('tags', 'complete_field', 'keywords',
         "Ticket field to which a drop-down tag list should be attached.")
 
-    help_opt = Option('tags','ticket_help', None,
+    help_opt = Option('tags', 'ticket_help', None,
         "If specified, 'keywords' label on ticket view will be turned into a "
         "link to this URL.")
 
-    helpnewwindow_opt = BoolOption('tags','ticket_help_newwindow', False,
+    helpnewwindow_opt = BoolOption('tags', 'ticket_help_newwindow', False,
         "If true and keywords_help specified, wiki page will open in a new "
         "window. Default is false.")
 
@@ -65,10 +65,10 @@ class TagInputAutoComplete(TagTemplateProvider):
     #mustmatch = BoolOption('tags', 'complete_mustmatch', False,
     #    "If true, input fields accept values from the word list only.")
 
-    matchcontains_opt = BoolOption('tags','complete_matchcontains', True,
+    matchcontains_opt = BoolOption('tags', 'complete_matchcontains', True,
         "Include partial matches in suggestion list. Default is true.")
 
-    separator_opt = Option('tags','separator', ' ',
+    separator_opt = Option('tags', 'separator', ' ',
         "Character(s) to use as separators between tags. Default is a "
         "single whitespace.")
 
@@ -167,13 +167,13 @@ class TagInputAutoComplete(TagTemplateProvider):
         # Inject transient part of JavaScript into ticket.html template.
         if req.path_info.startswith('/ticket/') or \
            req.path_info.startswith('/newticket'):
-            js_ticket =  js % {'field': '#field-' + self.field_opt,
-                               'keywords': keywords,
-                               'matchfromstart': matchfromstart,
-                               'separator': self.separator}
-            stream = stream | Transformer('.//head').append\
-                              (builder.script(Markup(js_ticket),
-                               type='text/javascript'))
+            js_ticket = js % {'field': '#field-' + self.field_opt,
+                              'keywords': keywords,
+                              'matchfromstart': matchfromstart,
+                              'separator': self.separator}
+            stream = stream | Transformer('.//head')\
+                              .append(builder.script(Markup(js_ticket),
+                                      type='text/javascript'))
 
             # Turn keywords field label into link to an arbitrary resource.
             if self.help_opt:
@@ -182,24 +182,24 @@ class TagInputAutoComplete(TagTemplateProvider):
                     link = builder.a(href=link, target='blank')
                 else:
                     link = builder.a(href=link)
-                stream = stream | Transformer\
-                     ('//label[@for="field-keywords"]/text()').wrap(link)
+                xpath = '//label[@for="field-keywords"]/text()'
+                stream = stream | Transformer(xpath).wrap(link)
 
         # Inject transient part of JavaScript into wiki.html template.
         elif self.tags_enabled and req.path_info.startswith('/wiki/'):
-            js_wiki =  js % {'field': '#tags',
-                             'keywords': keywords,
-                             'matchfromstart': matchfromstart,
-                             'separator': self.separator}
-            stream = stream | Transformer('.//head').append \
-                              (builder.script(Markup(js_wiki),
-                               type='text/javascript'))
+            js_wiki = js % {'field': '#tags',
+                            'keywords': keywords,
+                            'matchfromstart': matchfromstart,
+                            'separator': self.separator}
+            stream = stream | Transformer('.//head')\
+                              .append(builder.script(Markup(js_wiki),
+                                                     type='text/javascript'))
         return stream
 
     # Private methods
 
     def _get_keywords_string(self, req):
-        keywords = set(self.sticky_tags_opt) # prevent duplicates
+        keywords = set(self.sticky_tags_opt)  # prevent duplicates
         if self.tags_enabled:
             # Use TagsPlugin >= 0.7 performance-enhanced API.
             tags = TagSystem(self.env).get_all_tags(req)
@@ -215,7 +215,7 @@ class TagInputAutoComplete(TagTemplateProvider):
         return keywords
 
     def _get_help_link(self, req):
-        link = realm = resource_id = None
+        link = resource_id = None
         if self.help_opt.startswith('/'):
             # Assume valid URL to arbitrary resource inside
             #   of the current Trac environment.
@@ -307,7 +307,7 @@ class TagRequestHandler(TagTemplateProvider):
         if not (tag_id or query) or [r for r in all_realms
                                      if r in req.args] == []:
             for realm in all_realms:
-                if not realm in self.exclude_realms:
+                if realm not in self.exclude_realms:
                     req.args[realm] = 'on'
         checked_realms = [r for r in all_realms if r in req.args]
         if query:
@@ -409,11 +409,9 @@ class TagTimelineEventFilter(TagTemplateProvider):
                 tag_system = TagSystem(self.env)
                 try:
                     query = Query(query_str,
-                                  attribute_handlers=dict(realm=realm_handler)
-                            )
+                                  attribute_handlers={'realm': realm_handler})
                 except InvalidQuery, e:
-                    add_warning(req, _("Tag query syntax error: %s"
-                                       % to_unicode(e)))
+                    add_warning(req, _("Tag query syntax error: %s" % e))
                 else:
                     all_realms = tag_system.get_taggable_realms(req.perm)
                     query_realms = set()
@@ -456,7 +454,7 @@ class TagTimelineEventProvider(TagTemplateProvider):
     def get_timeline_events(self, req, start, stop, filters):
         if 'tags' in filters:
             tags_realm = Resource('tags')
-            if not 'TAGS_VIEW' in req.perm(tags_realm):
+            if 'TAGS_VIEW' not in req.perm(tags_realm):
                 return
             add_stylesheet(req, 'tags/css/tractags.css')
             for time, author, tagspace, name, old_tags, new_tags in \

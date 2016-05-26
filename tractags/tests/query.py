@@ -37,7 +37,7 @@ class QueryTestCase(unittest.TestCase):
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(doctest.DocTestSuite(module=tractags.query))
-    suite.addTest(unittest.makeSuite(QueryTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(QueryTestCase))
     return suite
 
 if __name__ == '__main__':

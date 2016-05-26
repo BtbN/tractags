@@ -29,43 +29,38 @@ class TagModelTestCase(unittest.TestCase):
         self.req = Mock(authname='editor')
 
         self.check_perm = WikiTagProvider(self.env).check_permission
-        self.db = self.env.get_db_cnx()
         setup = TagSetup(self.env)
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for getting default permissions inserted.
         self._revert_tractags_schema_init()
-        setup.upgrade_environment(self.db)
+        setup.upgrade_environment()
 
-        cursor = self.db.cursor()
         # Populate table with initial test data.
-        cursor.execute("""
-            INSERT INTO tags
-                   (tagspace, name, tag)
+        self.env.db_transaction("""
+            INSERT INTO tags (tagspace, name, tag)
             VALUES ('wiki', 'WikiStart', 'tag1')
-        """)
+            """)
         self.realm = 'wiki'
 
     def tearDown(self):
-        self.db.close()
-        # Really close db connections.
         self.env.shutdown()
         shutil.rmtree(self.env.path)
 
     # Helpers
 
     def _revert_tractags_schema_init(self):
-        cursor = self.db.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tags")
-        cursor.execute("DROP TABLE IF EXISTS tags_change")
-        cursor.execute("DELETE FROM system WHERE name='tags_version'")
-        cursor.execute("DELETE FROM permission WHERE action %s"
-                       % self.db.like(), ('TAGS_%',))
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
     def _tags(self):
         tags = {}
-        cursor = self.db.cursor()
-        cursor.execute("SELECT name,tag FROM tags")
-        for name, tag in cursor:
+        for name, tag in self.env.db_query("""
+                SELECT name,tag FROM tags
+                """):
             if name in tags:
                 tags[name].add(tag)
             else:
@@ -133,7 +128,7 @@ class TagModelTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagModelTestCase, 'test'))
+    suite.addTest(unittest.makeSuite(TagModelTestCase))
     return suite
 
 if __name__ == '__main__':
