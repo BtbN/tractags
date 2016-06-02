@@ -26,9 +26,10 @@ from trac.util.text import shorten_line, to_unicode
 from trac.web.chrome import Chrome, ITemplateProvider, add_link, \
                             add_stylesheet
 from trac.wiki.api import IWikiMacroProvider, parse_args
-from trac.wiki.formatter import format_to_oneliner
+from trac.wiki.formatter import format_to_oneliner, system_message
 
-from tractags.api import Counter, TagSystem, N_, _, gettext
+from tractags.api import Counter, InvalidTagRealm, TagSystem, N_, _, gettext
+from tractags.query import InvalidQuery
 from tractags.util import query_realms
 
 # Check for unsupported pre-tags-0.6 macro keyword arguments.
@@ -239,8 +240,11 @@ class TagWikiMacros(TagTemplateProvider):
                 data.update({'cols': cols,
                              'headers': headers})
 
-            results = sorted(query_result, key=lambda r: \
-                             embedded_numbers(to_unicode(r[0].id)))
+            try:
+                results = sorted(query_result, key=lambda r:
+                                 embedded_numbers(to_unicode(r[0].id)))
+            except (InvalidQuery, InvalidTagRealm), e:
+                return system_message(_("ListTagged macro error"), e)
             results = self._paginate(req, results, realms)
             rows = []
             for resource, tags in results:

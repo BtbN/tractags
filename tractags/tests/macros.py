@@ -17,7 +17,8 @@ from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.web.href import Href
 
 from tractags.db import TagSetup
-from tractags.macros import query_realms, TagWikiMacros
+from tractags.macros import TagWikiMacros, query_realms
+from tractags.tests import formatter
 
 
 class _BaseTestCase(unittest.TestCase):
@@ -153,6 +154,37 @@ class ListTaggedMacroTestCase(_BaseTestCase):
         self.assertTrue('WikiStart' in result)
 
 
+LISTTAGGED_MACRO_TEST_CASES = u"""
+============================== invalid operator
+[[ListTagged(xyz:wiki xyz)]]
+------------------------------
+<p>
+</p><div class="system-message">\
+<strong>ListTagged macro error</strong>\
+<pre>Invalid attribute \'xyz\'</pre>\
+</div><p>
+</p>
+============================== invalid realm
+[[ListTagged(realm:xyz blah)]]
+------------------------------
+<p>
+</p><div class="system-message">\
+<strong>ListTagged macro error</strong>\
+<pre>Tags are not supported on the \'xyz\' realm</pre>\
+</div><p>
+</p>
+"""
+
+
+def listtagged_setup(tc):
+    with tc.env.db_transaction as db:
+        db.executemany("""
+            INSERT INTO tags (tagspace, name, tag)
+            VALUES (%s,%s,%s)
+            """, [('wiki', 'WikiStart', 'abc'),
+                  ('wiki', 'WikiStart', 'xyz')])
+
+
 class TagCloudMacroTestCase(_BaseTestCase):
 
     def setUp(self):
@@ -245,6 +277,8 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase))
     suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase))
+    suite.addTest(formatter.suite(LISTTAGGED_MACRO_TEST_CASES,
+                                  listtagged_setup, __file__))
     suite.addTest(unittest.makeSuite(TagCloudMacroTestCase))
     suite.addTest(unittest.makeSuite(QueryRealmsTestCase))
     return suite

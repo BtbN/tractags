@@ -11,8 +11,15 @@ import difflib
 import re
 import unittest
 
+from trac.test import EnvironmentStub, Mock, MockPerm, locale_en
+from trac.util.datefmt import utc
 from trac.util.text import to_unicode
+from trac.web.chrome import web_context
+from trac.web.href import Href
+from trac.web.session import DetachedSession
 from trac.wiki.formatter import HtmlFormatter, InlineHtmlFormatter
+
+from tractags.db import TagSetup
 
 
 class WikiTestCase(unittest.TestCase):
@@ -31,13 +38,34 @@ class WikiTestCase(unittest.TestCase):
         self._teardown = teardown
 
     def setUp(self):
+        self.env = EnvironmentStub(default_data=True,
+                                   enable=('trac.*', 'tractags.*'))
+        self.req = Mock(href=Href('/'),
+                        abs_href=Href('http://www.example.com/'),
+                        authname='anonymous', perm=MockPerm(),
+                        path_info='/wiki/WikiStart', chrome={},
+                        session=DetachedSession(self.env, 'anonymous'),
+                        tz=utc, args={}, locale=locale_en)
+        self.context = web_context(self.req, 'wiki', 'WikiStart')
+        setup = TagSetup(self.env)
+        self._revert_tractags_schema_init()
+        setup.upgrade_environment()
         if self._setup:
             self._setup(self)
 
     def tearDown(self):
+        self._revert_tractags_schema_init()
         self.env.reset_db()
         if self._teardown:
             self._teardown(self)
+
+    def _revert_tractags_schema_init(self):
+        with self.env.db_transaction as db:
+            db("DROP TABLE IF EXISTS tags")
+            db("DROP TABLE IF EXISTS tags_change")
+            db("DELETE FROM system WHERE name='tags_version'")
+            db("DELETE FROM permission WHERE action %s" % db.like(),
+               ('TAGS_%',))
 
     def test(self):
         """Testing WikiFormatter"""
