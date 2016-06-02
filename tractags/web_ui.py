@@ -397,7 +397,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
             def realm_handler(_, node, context):
                 return query.match(node, [context.realm])
 
-            query_str = req.args.get(self.key)
+            query_str = req.args.getfirst(self.key)
             if query_str is None and req.args.get('format') != 'rss':
                 query_str = req.session.get('timeline.%s' % self.key)
             else:
