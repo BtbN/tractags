@@ -14,6 +14,7 @@ import tempfile
 import unittest
 
 from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.web.chrome import Chrome
 from trac.web.href import Href
 
 from tractags.db import TagSetup
@@ -65,7 +66,6 @@ class TagTemplateProviderTestCase(_BaseTestCase):
         self.tag_wm = TagWikiMacros(self.env)
 
     def test_template_dirs_added(self):
-        from trac.web.chrome import Chrome
         self.assertTrue(self.tag_wm in Chrome(self.env).template_providers)
 
 
