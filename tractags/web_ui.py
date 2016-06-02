@@ -422,8 +422,8 @@ class TagTimelineEventFilter(TagTemplateProvider):
                     self.log.debug("Filtering timeline events by tags '%s'",
                                    query_str)
                     for event in data['events']:
-                        resource = event['data'][0]
-                        if resource.realm in realms:
+                        resource = resource_from_event(event)
+                        if resource and resource.realm in realms:
                             # Shortcut view permission checks here.
                             tags = tag_system.get_tags(None, resource)
                             if query(tags, context=resource):
@@ -436,6 +436,22 @@ class TagTimelineEventFilter(TagTemplateProvider):
             elif self.key in req.session:
                 del req.session[self.key]
         return template, data, content_type
+
+
+def resource_from_event(event):
+    resource = None
+    event_data = event['data']
+    if not isinstance(event_data, (tuple, list)):
+        event_data = [event_data]
+    for entry in event_data:
+        try:
+            entry.realm
+        except AttributeError:
+            pass
+        else:
+            resource = entry
+            break
+    return resource
 
 
 class TagTimelineEventProvider(TagTemplateProvider):
