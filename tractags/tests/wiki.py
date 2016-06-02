@@ -21,11 +21,11 @@ except ImportError:
 from datetime import datetime
 
 from trac.db.api import DatabaseManager
-from trac.mimeview import Context
 from trac.perm import PermissionCache, PermissionError, PermissionSystem
 from trac.resource import Resource
 from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.util.datefmt import utc
+from trac.web.chrome import web_context
 from trac.web.href import Href
 from trac.wiki.model import WikiPage
 
@@ -289,7 +289,7 @@ def wiki_setup(tc):
                locale=locale_en)
     tc.env.href = req.href
     tc.env.abs_href = req.abs_href
-    tc.context = Context.from_request(req)
+    tc.context = web_context(req)
     # Enable big diff output.
     tc.maxDiff = None
 

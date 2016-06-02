@@ -19,7 +19,6 @@ from genshi.filters.transform import Transformer
 from trac import __version__ as trac_version
 from trac.config import BoolOption, ListOption, Option
 from trac.core import implements
-from trac.mimeview import Context
 from trac.resource import Resource, ResourceSystem, get_resource_name
 from trac.resource import get_resource_url
 from trac.timeline.api import ITimelineEventProvider
@@ -29,7 +28,7 @@ from trac.web import IRequestFilter
 from trac.web.api import IRequestHandler, ITemplateStreamFilter
 from trac.web.chrome import Chrome, INavigationContributor
 from trac.web.chrome import add_ctxtnav, add_script, add_stylesheet
-from trac.web.chrome import add_warning
+from trac.web.chrome import add_warning, web_context
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
@@ -348,8 +347,7 @@ class TagRequestHandler(TagTemplateProvider):
                               self.cloud_mincount)
             args = mincount and "mincount=%s" % mincount or None
             data['mincount'] = mincount
-        formatter = Formatter(self.env, Context.from_request(req,
-                                                             Resource('tag')))
+        formatter = Formatter(self.env, web_context(req, Resource('tag')))
         self.env.log.debug("%s macro arguments: %s", macro,
                            args and args or '(none)')
         macros = TagWikiMacros(self.env)

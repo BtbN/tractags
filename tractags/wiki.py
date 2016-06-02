@@ -15,11 +15,10 @@ from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption
 from trac.core import Component, implements
-from trac.mimeview.api import Context
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.datefmt import to_utimestamp
 from trac.web.api import IRequestFilter, ITemplateStreamFilter
-from trac.web.chrome import add_stylesheet
+from trac.web.chrome import add_stylesheet, web_context
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
 from trac.wiki.api import IWikiSyntaxProvider
 from trac.wiki.formatter import format_to_oneliner
@@ -239,7 +238,8 @@ class WikiTagInterface(TagTemplateProvider):
         for tag_ in tags:
             resource = Resource('tag', tag_)
             anchor = render_resource_link(self.env,
-                Context.from_request(req, resource), resource)
+                                          web_context(req, resource),
+                                          resource)
             anchor = anchor(rel='tag')
             li.append(tag.li(anchor, ' '))
 
