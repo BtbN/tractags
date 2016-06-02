@@ -11,28 +11,31 @@ import shutil
 import tempfile
 import unittest
 
-try:
-    from babel import Locale
-    locale_en = Locale.parse('en_US')
-except ImportError:
-    Locale = None
-    locale_en = None
-
-from datetime import datetime
-
-from trac.db.api import DatabaseManager
 from trac.perm import PermissionCache, PermissionError, PermissionSystem
 from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock, MockPerm
-from trac.util.datefmt import utc
-from trac.web.chrome import web_context
-from trac.web.href import Href
-from trac.wiki.model import WikiPage
+from trac.test import EnvironmentStub, Mock
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup
 from tractags.tests import formatter
 from tractags.wiki import WikiTagProvider
+
+
+def _revert_tractags_schema_init(env):
+    with env.db_transaction as db:
+        db("DROP TABLE IF EXISTS tags")
+        db("DROP TABLE IF EXISTS tags_change")
+        db("DELETE FROM system WHERE name='tags_version'")
+        db("DELETE FROM permission WHERE action %s" % db.like(),
+           ('TAGS_%',))
+
+
+def _insert_tags(env, tagspace, name, tags):
+    args = [(tagspace, name, tag) for tag in tags]
+    with env.db_transaction as db:
+        db.executemany("""
+            INSERT INTO tags (tagspace,name,tag) VALUES (%s,%s,%s)
+            """, args)
 
 
 TEST_NOPERM = u"""
@@ -205,12 +208,7 @@ class WikiTagProviderTestCase(unittest.TestCase):
     # Helpers
 
     def _revert_tractags_schema_init(self):
-        with self.env.db_transaction as db:
-            db("DROP TABLE IF EXISTS tags")
-            db("DROP TABLE IF EXISTS tags_change")
-            db("DELETE FROM system WHERE name='tags_version'")
-            db("DELETE FROM permission WHERE action %s" % db.like(),
-               ('TAGS_%',))
+        _revert_tractags_schema_init(self.env)
 
     # Tests
 
@@ -253,43 +251,15 @@ class WikiTagProviderTestCase(unittest.TestCase):
 
 
 def wiki_setup(tc):
-    tc.env = EnvironmentStub(default_data=True,
-                             enable=['trac.*', 'tractags.*'])
+    tc.env.enable_component('tractags')
     tc.env.path = tempfile.mkdtemp()
-    tc.db_mgr = DatabaseManager(tc.env)
-
-    with tc.env.db_transaction as db:
-        db("DROP TABLE IF EXISTS tags")
-        db("DROP TABLE IF EXISTS tags_change")
-        db("DELETE FROM system WHERE name='tags_version'")
-        db("DELETE FROM permission WHERE action %s" % db.like(), ('TAGS_%',))
-
+    _revert_tractags_schema_init(tc.env)
     TagSetup(tc.env).upgrade_environment()
 
-    now = datetime.now(utc)
-    wiki = WikiPage(tc.env)
-    wiki.name = 'TestPage'
-    wiki.text = '--'
-    wiki.save('joe', 'TagsPluginTestPage', '::1', now)
+    tags = ('2ndtag', 'a.really?_\wild-thing', 'heavily-quoted',
+            'onetag', 'tagged', "single'quote")
+    _insert_tags(tc.env, 'wiki', 'TestPage', tags)
 
-    # Populate table with initial test data.
-    with tc.env.db_transaction as db:
-        db.executemany("""
-            INSERT INTO tags (tagspace, name, tag)
-            VALUES (%s,%s,%s)
-            """, [('wiki', 'TestPage', '2ndtag'),
-                  ('wiki', 'TestPage', 'a.really?_\wild-thing'),
-                  ('wiki', 'TestPage', 'heavily-quoted'),
-                  ('wiki', 'TestPage', 'onetag'),
-                  ('wiki', 'TestPage', 'tagged'),
-                  ('wiki', 'TestPage', "single'quote")])
-
-    req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
-               authname='anonymous', perm=MockPerm(), tz=utc, args={},
-               locale=locale_en)
-    tc.env.href = req.href
-    tc.env.abs_href = req.abs_href
-    tc.context = web_context(req)
     # Enable big diff output.
     tc.maxDiff = None
 
