@@ -183,12 +183,7 @@ LISTTAGGED_MACRO_TEST_CASES = u"""
 
 
 def listtagged_setup(tc):
-    with tc.env.db_transaction as db:
-        db.executemany("""
-            INSERT INTO tags (tagspace, name, tag)
-            VALUES (%s,%s,%s)
-            """, [('wiki', 'WikiStart', 'abc'),
-                  ('wiki', 'WikiStart', 'xyz')])
+    _insert_tags(tc.env, 'wiki', 'WikiStart', ('abc', 'xyz'))
 
 
 class TagCloudMacroTestCase(_BaseTestCase):
