@@ -22,6 +22,23 @@ from tractags.macros import TagWikiMacros, query_realms
 from tractags.tests import formatter
 
 
+def _revert_tractags_schema_init(env):
+    with env.db_transaction as db:
+        db("DROP TABLE IF EXISTS tags")
+        db("DROP TABLE IF EXISTS tags_change")
+        db("DELETE FROM system WHERE name='tags_version'")
+        db("DELETE FROM permission WHERE action %s" % db.like(),
+           ('TAGS_%',))
+
+
+def _insert_tags(env, tagspace, name, tags):
+    args = [(tagspace, name, tag) for tag in tags]
+    with env.db_transaction as db:
+        db.executemany("""
+            INSERT INTO tags (tagspace,name,tag) VALUES (%s,%s,%s)
+            """, args)
+
+
 class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -39,22 +56,11 @@ class _BaseTestCase(unittest.TestCase):
         self.env.shutdown()
         shutil.rmtree(self.env.path)
 
-    # Helpers
-
     def _revert_tractags_schema_init(self):
-        with self.env.db_transaction as db:
-            db("DROP TABLE IF EXISTS tags")
-            db("DROP TABLE IF EXISTS tags_change")
-            db("DELETE FROM system WHERE name='tags_version'")
-            db("DELETE FROM permission WHERE action %s" % db.like(),
-               ('TAGS_%',))
+        _revert_tractags_schema_init(self.env)
 
     def _insert_tags(self, tagspace, name, tags):
-        args = [(tagspace, name, tag) for tag in tags]
-        with self.env.db_transaction as db:
-            db.executemany("""
-                INSERT INTO tags (tagspace,name,tag) VALUES (%s,%s,%s)
-                """, args)
+        _insert_tags(self.env, tagspace, name, tags)
 
 
 class TagTemplateProviderTestCase(_BaseTestCase):
