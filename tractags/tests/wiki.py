@@ -53,14 +53,14 @@ TEST_CASES = u"""
 tag:onetag
 tag:2ndtag n' more
 tag:a.really?_\wild-thing!
-# regression test for ticket `#9057`
+# regression test for ticket !#9057
 tag:single'quote
 ------------------------------
 <p>
 <a href="/tags/onetag">tag:onetag</a>
 <a href="/tags/2ndtag">tag:2ndtag</a> n' more
 <a href="/tags/a.really%3F_%5Cwild-thing">tag:a.really?_\wild-thing</a>!
-# regression test for ticket <tt>#9057</tt>
+# regression test for ticket #9057
 <a href="/tags/single\'quote">tag:single\'quote</a>
 </p>
 ------------------------------
