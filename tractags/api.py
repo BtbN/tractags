@@ -339,10 +339,12 @@ class TagSystem(Component):
     Associating resources with tags is easy, faceted content classification.
 
     Available components are marked according to their relevance as follows:
+
      `[main]`:: provide core with a generic tagging engine as well as support
      for common realms 'ticket' (TracTickets) and 'wiki' (TracWiki).
      `[opt]`:: add more features to improve user experience and maintenance
      `[extra]`:: enable advanced features for specific use cases
+
     Make sure to understand their purpose before deactivating `[main]` or
     activating `[extra]` components.
     """
