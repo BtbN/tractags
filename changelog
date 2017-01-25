@@ -2,7 +2,17 @@ Originally created by Muness Alrubaie, totally rewritten by
 Author: Alec Thomas <alec@swapoff.org>
 Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
-tractags-0.8 (not yet released)
+tractags-0.9 (25-Jan-2017)
+ resolved issues
+ * #8345: Remove compatibility code for Trac < 1.0
+ * #12056: Fix invalid XHTML on plugin page
+ * #12137: Make compatible with Trac 1.2
+ * #12292: Fix noisy assertion errors in log
+ * #12542: Render system message for invalid arguments to ListTagged macro
+ * #12693: Fix AttributeError exception due to incorrect permissions check
+ * #12718: Fix AttributeError exception when rendering timeline
+
+tractags-0.8 (18-Oct-2015)
  resolved issues
  * #11695: Changes to tags may be recorded as anonymous
  * #11950: The tag TracLink doesn't allow trailing arguments
