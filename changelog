@@ -2,6 +2,10 @@ Originally created by Muness Alrubaie, totally rewritten by
 Author: Alec Thomas <alec@swapoff.org>
 Maintainer: Steffen Hoffmann <hoff.st@web.de>
 
+tractags-0.10 (not yet released)
+ resolved issues
+ *
+
 tractags-0.9 (25-Jan-2017)
  resolved issues
  * #8345: Remove compatibility code for Trac < 1.0
