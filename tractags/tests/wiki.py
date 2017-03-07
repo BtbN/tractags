@@ -16,10 +16,10 @@ import unittest
 from trac.perm import PermissionCache, PermissionError, PermissionSystem
 from trac.resource import Resource
 from trac.test import EnvironmentStub, Mock
+from trac.wiki.test import wikisyntax_test_suite
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup
-from tractags.tests import formatter
 from tractags.wiki import WikiTagProvider
 
 
@@ -282,10 +282,10 @@ def wiki_teardown(tc):
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(WikiTagProviderTestCase))
-    suite.addTest(formatter.suite(TEST_CASES, wiki_setup, __file__,
-                                  wiki_teardown))
-    suite.addTest(formatter.suite(TEST_NOPERM, wiki_setup_no_perm, __file__,
-                                  wiki_teardown))
+    suite.addTest(wikisyntax_test_suite(TEST_CASES, wiki_setup, __file__,
+                                        wiki_teardown))
+    suite.addTest(wikisyntax_test_suite(TEST_NOPERM, wiki_setup_no_perm, __file__,
+                                        wiki_teardown))
     return suite
 
 if __name__ == '__main__':

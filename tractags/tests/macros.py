@@ -18,10 +18,10 @@ import unittest
 from trac.test import EnvironmentStub, Mock, MockPerm
 from trac.web.chrome import Chrome
 from trac.web.href import Href
+from trac.wiki.test import wikisyntax_test_suite
 
 from tractags.db import TagSetup
 from tractags.macros import TagWikiMacros, query_realms
-from tractags.tests import formatter
 
 
 def _revert_tractags_schema_init(env):
@@ -185,7 +185,13 @@ LISTTAGGED_MACRO_TEST_CASES = u"""
 
 
 def listtagged_setup(tc):
+    _revert_tractags_schema_init(tc.env)
+    TagSetup(tc.env).upgrade_environment()
     _insert_tags(tc.env, 'wiki', 'WikiStart', ('abc', 'xyz'))
+
+
+def listtagged_teardown(tc):
+    _revert_tractags_schema_init(tc.env)
 
 
 class TagCloudMacroTestCase(_BaseTestCase):
@@ -280,8 +286,10 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase))
     suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase))
-    suite.addTest(formatter.suite(LISTTAGGED_MACRO_TEST_CASES,
-                                  listtagged_setup, __file__))
+    suite.addTest(
+        wikisyntax_test_suite(LISTTAGGED_MACRO_TEST_CASES, listtagged_setup,
+                              __file__, listtagged_teardown,
+                              enable_components=('trac.*', 'tractags.*')))
     suite.addTest(unittest.makeSuite(TagCloudMacroTestCase))
     suite.addTest(unittest.makeSuite(QueryRealmsTestCase))
     return suite

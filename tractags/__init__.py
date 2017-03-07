@@ -12,7 +12,7 @@ See tractags.api for detailed information.
 """
 
 import pkg_resources
-pkg_resources.require('Trac >= 1.0')
+pkg_resources.require('Trac >= 1.2')
 
 
 import api
