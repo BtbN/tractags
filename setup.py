@@ -1,31 +1,32 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 extra = {}
 
 try:
-    from trac.util.dist  import  get_l10n_cmdclass
+    from trac.util.dist import get_l10n_cmdclass
+# i18n is implemented to be optional here
+except ImportError:
+    pass
+else:
     cmdclass = get_l10n_cmdclass()
     if cmdclass:
         extra['cmdclass'] = cmdclass
         extractors = [
-            ('**.py',                'python', None),
+            ('**.py', 'python', None),
             ('**/templates/**.html', 'genshi', None),
         ]
         extra['message_extractors'] = {
             'tractags': extractors,
         }
-# i18n is implemented to be optional here
-except ImportError:
-    pass
 
 
 setup(
     name='TracTags',
     version='0.10',
     packages=find_packages(exclude=['*.tests']),
-    package_data={'tractags' : [
+    package_data={'tractags': [
         'templates/*.html', 'htdocs/js/*.js', 'htdocs/css/*.css',
         'htdocs/images/*.png', 'locale/*/LC_MESSAGES/*.mo',
         'locale/.placeholder']},
@@ -34,16 +35,16 @@ setup(
     author='Alec Thomas',
     author_email='alec@swapoff.org',
     license='BSD',
-    url='http://trac-hacks.org/wiki/TagsPlugin',
+    url='https://trac-hacks.org/wiki/TagsPlugin',
     description='Tags plugin for Trac',
     install_requires=['Trac'],
     extras_require={
         'babel': 'Babel>= 0.9.5',
         'tracrpc': 'TracXMLRPC >= 1.1.0'},
-    entry_points = {'trac.plugins': [
+    entry_points={'trac.plugins': [
         'tractags = tractags',
         'tractags.xmlrpc = tractags.xmlrpc[tracrpc]']},
-    test_suite = 'tractags.tests.test_suite',
-    tests_require = [],
+    test_suite='tractags.tests.test_suite',
+    tests_require=[],
     **extra
-    )
+)
