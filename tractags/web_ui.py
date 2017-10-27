@@ -12,8 +12,6 @@
 
 import re
 
-from genshi.builder import tag as builder
-from genshi.core import Markup
 from genshi.filters.transform import Transformer
 
 from trac import __version__ as trac_version
@@ -23,6 +21,7 @@ from trac.resource import Resource, ResourceSystem, get_resource_name
 from trac.resource import get_resource_url
 from trac.timeline.api import ITimelineEventProvider
 from trac.util import to_unicode
+from trac.util.html import Markup, html as builder
 from trac.util.text import javascript_quote, unicode_quote_plus
 from trac.web import IRequestFilter
 from trac.web.api import IRequestHandler, ITemplateStreamFilter

@@ -12,13 +12,13 @@ from __future__ import with_statement
 
 import re
 
-from genshi.builder import Fragment, Markup, tag
 from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.datefmt import to_utimestamp
+from trac.util.html import Fragment, Markup, html as tag
 from trac.web.api import IRequestFilter, ITemplateStreamFilter
 from trac.web.chrome import add_stylesheet, web_context
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator

@@ -12,7 +12,6 @@
 import re
 
 from fnmatch import fnmatchcase
-from genshi.builder import tag as builder
 from pkg_resources import resource_filename
 
 from trac.config import BoolOption, ListOption, Option
@@ -21,6 +20,7 @@ from trac.resource import Resource, get_resource_url, render_resource_link
 from trac.ticket.api import TicketSystem
 from trac.ticket.model import Ticket
 from trac.util import as_int, embedded_numbers
+from trac.util.html import html as builder
 from trac.util.presentation import Paginator
 from trac.util.text import shorten_line, to_unicode
 from trac.web.chrome import Chrome, ITemplateProvider, add_link, \
