@@ -91,7 +91,7 @@ class TagSetupTestCase(unittest.TestCase):
         #   Revert these changes for clean install testing.
         self._revert_tractags_schema_init()
 
-        connector = self.db_mgr._get_connector()[0]
+        connector = self.db_mgr.get_connector()[0]
         with self.env.db_transaction as db:
             for table in schema:
                 for stmt in connector.to_sql(table):
@@ -133,7 +133,7 @@ class TagSetupTestCase(unittest.TestCase):
         #   Revert these changes for clean install testing.
         self._revert_tractags_schema_init()
 
-        connector = self.db_mgr._get_connector()[0]
+        connector = self.db_mgr.get_connector()[0]
         with self.env.db_transaction as db:
             for table in schema:
                 for stmt in connector.to_sql(table):
@@ -175,7 +175,7 @@ class TagSetupTestCase(unittest.TestCase):
         #   Revert these changes for clean install testing.
         self._revert_tractags_schema_init()
 
-        connector = self.db_mgr._get_connector()[0]
+        connector = self.db_mgr.get_connector()[0]
         with self.env.db_transaction as db:
             for table in schema:
                 for stmt in connector.to_sql(table):

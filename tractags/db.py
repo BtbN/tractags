@@ -50,7 +50,7 @@ class TagSetup(Component):
             if not schema_ver:
                 # Perform a single-step install: Create plugin schema and
                 # insert default data into the database.
-                connector = db_mgr._get_connector()[0]
+                connector = db_mgr.get_connector()[0]
                 for table in db_default.schema:
                     for stmt in connector.to_sql(table):
                         db(stmt)
