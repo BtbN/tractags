@@ -7,13 +7,10 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import shutil
 import tempfile
 import unittest
 
-from trac import __version__ as trac_version
 from trac.db import Table, Column, Index
 from trac.db.api import DatabaseManager
 from trac.test import EnvironmentStub
@@ -36,11 +33,7 @@ class TagSetupTestCase(unittest.TestCase):
     # Helpers
 
     def _get_cursor_description(self, cursor):
-        # Cursors don't look the same across Trac versions
-        if trac_version < '0.12':
-            return cursor.description
-        else:
-            return cursor.cursor.description
+        return cursor.cursor.description
 
     def _revert_tractags_schema_init(self):
         with self.env.db_transaction as db:
@@ -202,6 +195,7 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagSetupTestCase))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

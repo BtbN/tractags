@@ -19,7 +19,8 @@ _TAG_SPLIT = re.compile('[,\s]+')
 
 # DEVEL: This needs monitoring for possibly varying endpoint requirements.
 MockReq = partial(Mock, args=_RequestArgs(), authname='anonymous',
-                  perm=MockPerm(), session=dict())
+                  perm=MockPerm(), session=dict(),
+                  is_authenticated=lambda a: a != 'anonymous')
 
 
 def query_realms(query, all_realms):

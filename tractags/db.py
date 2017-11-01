@@ -6,8 +6,6 @@
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
 
-from __future__ import with_statement
-
 from trac.core import Component, TracError, implements
 from trac.db.api import DatabaseManager
 from trac.env import IEnvironmentSetupParticipant

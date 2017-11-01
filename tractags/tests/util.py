@@ -29,12 +29,14 @@ class MockReqTestCase(unittest.TestCase):
         self.assertTrue(req.args.get('something') is None)
         req = MockReq(authname='user')
         self.assertEqual('user', req.authname)
+        self.assertTrue(req.is_authenticated)
 
 
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(MockReqTestCase))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

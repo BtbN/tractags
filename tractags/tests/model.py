@@ -6,15 +6,13 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import shutil
 import tempfile
 import unittest
 
 from trac.perm import PermissionCache, PermissionSystem
 from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub, MockRequest
 
 from tractags.db import TagSetup
 from tractags.model import resource_tags, tag_resource, tagged_resources
@@ -28,7 +26,7 @@ class TagModelTestCase(unittest.TestCase):
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
         self.perms = PermissionSystem(self.env)
-        self.req = Mock(authname='editor')
+        self.req = MockRequest(self.env, authname='editor')
 
         self.check_perm = WikiTagProvider(self.env).check_permission
         setup = TagSetup(self.env)

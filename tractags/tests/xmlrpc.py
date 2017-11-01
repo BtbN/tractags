@@ -6,14 +6,12 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import shutil
 import tempfile
 import unittest
 
 from trac.perm import PermissionCache, PermissionSystem
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub, MockRequest
 
 from tractags.api import TagSystem
 from tractags.db import TagSetup
@@ -41,9 +39,7 @@ class TagRPCTestCase(unittest.TestCase):
             VALUES ('wiki', 'WikiStart', 'tag1')
             """)
 
-        self.req = Mock(authname='editor')
-        # Mock an anonymous request.
-        self.req.perm = PermissionCache(self.env)
+        self.req = MockRequest(self.env, authname='editor')
 
     def tearDown(self):
         self.env.shutdown()
@@ -69,6 +65,7 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TagRPCTestCase))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

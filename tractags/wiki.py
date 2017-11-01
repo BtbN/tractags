@@ -8,8 +8,6 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import re
 
 from genshi.filters.transform import Transformer
@@ -18,7 +16,8 @@ from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.datefmt import to_utimestamp
-from trac.util.html import Fragment, Markup, html as tag
+from trac.util.html import Fragment, tag
+from trac.util.translation import tag_
 from trac.web.api import IRequestFilter, ITemplateStreamFilter
 from trac.web.chrome import add_stylesheet, web_context
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
@@ -237,8 +236,8 @@ class WikiTagInterface(TagTemplateProvider):
         if not tags:
             return stream
         li = []
-        for tag_ in tags:
-            resource = Resource('tag', tag_)
+        for t in tags:
+            resource = Resource('tag', t)
             anchor = render_resource_link(self.env,
                                           web_context(req, resource),
                                           resource)
@@ -260,14 +259,15 @@ class WikiTagInterface(TagTemplateProvider):
         return False
 
     def _wiki_edit(self, req, stream):
+        tags = ' '.join(self._page_tags(req))
         # TRANSLATOR: Label text for link to '/tags'.
         link = tag.a(_("view all tags"), href=req.href.tags())
         # TRANSLATOR: ... (view all tags)
-        insert = tag(Markup(_("Tag under: (%(tags_link)s)", tags_link=link)))
-        insert(
+        insert = tag(
+            tag_("Tag under: (%(tags_link)s)", tags_link=link),
             tag.br(),
             tag.input(id='tags', type='text', name='tags', size='50',
-                value=req.args.get('tags', ' '.join(self._page_tags(req))))
+                      value=req.args.get('tags', tags))
         )
         insert = tag.div(tag.label(insert), class_='field')
         return stream | Transformer('//div[@id="changeinfo1"]').append(insert)

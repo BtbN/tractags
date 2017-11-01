@@ -40,5 +40,6 @@ def test_suite():
     suite.addTest(unittest.makeSuite(QueryTestCase))
     return suite
 
+
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

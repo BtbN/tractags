@@ -42,9 +42,6 @@
 
     <form id="tagchange" class="mod" method="post" action="">
       <fieldset>
-        <div class="system-message" py:if="error">
-          <p>${error}</p>
-        </div>
         <legend>Replace</legend>
         <p i18n:msg="">Select an existing tag to replace with another one;
           two or more to consolidate into one. The <em>required</em> new tag
@@ -55,7 +52,7 @@
           <label>Current Tag:<br />
             <select name="tag_name" size="7" multiple="true" >
               <option py:for="tag in tags"
-                      value="${tag}" class="textwidget" 
+                      value="${tag}" class="textwidget"
                       selected="${tag == selected and 'selected' or None}">
                 ${tag}
               </option>

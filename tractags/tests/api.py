@@ -7,18 +7,16 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import doctest
 import shutil
 import tempfile
 import unittest
 
 from trac.core import implements
-from trac.perm import IPermissionRequestor, PermissionCache, PermissionError
-from trac.perm import PermissionSystem
+from trac.perm import (
+    PermissionCache, PermissionSystem, IPermissionRequestor, PermissionError)
 from trac.resource import Resource
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub, MockRequest
 
 import tractags.api
 
@@ -34,7 +32,6 @@ class _BaseTestCase(unittest.TestCase):
                                    enable=['trac.*', 'tractags.*'])
         self.env.path = tempfile.mkdtemp()
         self.perms = PermissionSystem(self.env)
-        self.req = Mock(authname='editor')
 
         self.actions = ['TAGS_ADMIN', 'TAGS_MODIFY', 'TAGS_VIEW']
         setup = TagSetup(self.env)
@@ -121,26 +118,24 @@ class TagSystemTestCase(_BaseTestCase):
     def test_set_tags_no_perms(self):
         resource = Resource('wiki', 'WikiStart')
         tags = ['tag1']
-        # Mock an anonymous request.
-        self.req.perm = PermissionCache(self.env)
-        self.assertRaises(PermissionError, self.tag_s.set_tags, self.req,
+        req = MockRequest(self.env, authname='anonymous')
+        self.assertRaises(PermissionError, self.tag_s.set_tags, req,
                           resource, tags)
 
     def test_set_tags(self):
         resource = Resource('wiki', 'WikiStart')
         tags = ['tag1']
-        self.req.perm = PermissionCache(self.env, username='editor')
+        req = MockRequest(self.env, authname='editor')
         # Shouldn't raise an error with appropriate permission.
-        self.tag_s.set_tags(self.req, resource, tags)
+        self.tag_s.set_tags(req, resource, tags)
 
     def test_query_no_args(self):
         # Regression test for query without argument,
         #   reported as th:ticket:7857.
 
-        # Mock an anonymous request.
-        self.req.perm = PermissionCache(self.env)
+        req = MockRequest(self.env, authname='editor')
         self.assertEquals([(res, tags) for res, tags in
-                           self.tag_s.query(self.req, query='')],
+                           self.tag_s.query(req, query='')],
                           [])
 
     def test_get_taggable_realms(self):
@@ -162,13 +157,14 @@ class TagSystemTestCase(_BaseTestCase):
 
         all_realms = set(['hidden', 'ticket', 'wiki'])
         # Mock an anonymous request.
-        perm = PermissionCache(self.env)
+        req = MockRequest(self.env, authname='anonymous')
         self.assertEquals(all_realms - set(['hidden']),
-                          self.tag_s.get_taggable_realms(perm))
+                          self.tag_s.get_taggable_realms(req.perm))
 
         self.perms.grant_permission('testuser', 'TEST_VIEW')
-        perm = PermissionCache(self.env, 'testuser')
-        self.assertEquals(all_realms, self.tag_s.get_taggable_realms(perm))
+        req = MockRequest(self.env, authname='testuser')
+        self.assertEquals(all_realms,
+                          self.tag_s.get_taggable_realms(req.perm))
         # Get realms unconditionally.
         self.assertEquals(all_realms, self.tag_s.get_taggable_realms())
 
@@ -179,6 +175,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(TagPolicyTestCase))
     suite.addTest(unittest.makeSuite(TagSystemTestCase))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

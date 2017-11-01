@@ -9,13 +9,11 @@
 # you should have received as part of this distribution.
 #
 
-from __future__ import with_statement
-
 import shutil
 import tempfile
 import unittest
 
-from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.test import EnvironmentStub, Mock, MockRequest
 from trac.web.chrome import Chrome
 from trac.web.href import Href
 from trac.wiki.test import wikisyntax_test_suite
@@ -81,11 +79,8 @@ class ListTaggedMacroTestCase(_BaseTestCase):
 
     def setUp(self):
         _BaseTestCase.setUp(self)
-        self.req = Mock(path_info='/wiki/ListTaggedPage',
-                        args={}, authname='user', perm=MockPerm(),
-                        href=Href('/'),
-                        abs_href=Href('http://example.org/trac/'),
-                        chrome={}, session={}, locale='', tz='')
+        self.req = MockRequest(self.env, path_info='/wiki/ListTaggedPage',
+                               authname='user')
 
         self.tag_twm = TagWikiMacros(self.env)
 
@@ -198,11 +193,8 @@ class TagCloudMacroTestCase(_BaseTestCase):
 
     def setUp(self):
         _BaseTestCase.setUp(self)
-        self.req = Mock(path_info='/wiki/TagCloudPage',
-                        args={}, authname='user', perm=MockPerm(),
-                        href=Href('/'),
-                        abs_href='http://example.org/trac/',
-                        chrome={}, session={}, locale='', tz='')
+        self.req = MockRequest(self.env, path_info='/wiki/TagCloudPage',
+                               authname='user')
         self.context = Mock(env=self.env, href=self.req.href, req=self.req)
         self.formatter = Mock(context=self.context, req=self.req)
 
@@ -293,6 +285,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(TagCloudMacroTestCase))
     suite.addTest(unittest.makeSuite(QueryRealmsTestCase))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
