@@ -62,8 +62,9 @@ class TagChangeAdminPanel(Component):
         query = ' or '.join('realm:%s' % r for r in checked_realms)
         all_tags = sorted(tag_system.get_all_tags(req, query))
         data['tags'] = all_tags
-        Chrome(self.env).add_textarea_grips(req)
-        if parse_version(__version__) < parse_version('1.2.3'):
-            return 'admin_tag_change.html', data
-        else:
+        chrome = Chrome(self.env)
+        chrome.add_textarea_grips(req)
+        if hasattr(chrome, 'jenv'):
             return 'admin_tag_change.html', data, None
+        else:
+            return 'admin_tag_change.html', data
