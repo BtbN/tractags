@@ -7,7 +7,9 @@
 # you should have received as part of this distribution.
 #
 
+from pkg_resources import parse_version
 
+from trac import __version__
 from trac.admin import IAdminPanelProvider
 from trac.core import Component, implements
 from trac.web.chrome import Chrome, add_warning
@@ -61,4 +63,8 @@ class TagChangeAdminPanel(Component):
         all_tags = sorted(tag_system.get_all_tags(req, query))
         data['tags'] = all_tags
         Chrome(self.env).add_textarea_grips(req)
-        return 'admin_tag_change.html', data, None
+        if parse_version(__version__) < parse_version('1.2.3'):
+            return 'admin_tag_change.html', data
+        else:
+            print('hello')
+            return 'admin_tag_change.html', data, None
