@@ -66,5 +66,4 @@ class TagChangeAdminPanel(Component):
         if parse_version(__version__) < parse_version('1.2.3'):
             return 'admin_tag_change.html', data
         else:
-            print('hello')
             return 'admin_tag_change.html', data, None
