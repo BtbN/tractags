@@ -40,10 +40,15 @@ setup(
     install_requires=['Trac'],
     extras_require={
         'babel': 'Babel>= 0.9.5',
-        'tracrpc': 'TracXMLRPC >= 1.1.0'},
+        'tracrpc': 'TracXMLRPC >= 1.1.0',
+        'wikiautocomplete': 'WikiAutoComplete >= 1.4',
+    },
     entry_points={'trac.plugins': [
-        'tractags = tractags',
-        'tractags.xmlrpc = tractags.xmlrpc[tracrpc]']},
+            'tractags = tractags',
+            'tractags.xmlrpc = tractags.xmlrpc[tracrpc]',
+            'tractags.wikiautocomplete = tractags.wikiautocomplete[wikiautocomplete]',
+        ],
+    },
     test_suite='tractags.tests.test_suite',
     tests_require=[],
     **extra
