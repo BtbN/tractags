@@ -23,10 +23,14 @@ class TagsWikiAutoComplete(Component):
     def get_wiki_auto_complete_strategies(self):
         return [(
             {
-                'match': r'\b(tag:|tagged:)(\S*)$',
                 'name': 'tag',
-                'index': 2,
-                'replace_prefix': '$1',
+                'match': (
+                    r'\b(tag:|tagged:)'  # tag: or tagged: query
+                    r'("(?:\S+ )*)?'  # Optional: Quotes allow multiple OR-tags
+                    r'(\S*)$'  # tag-prefix to complete
+                ),
+                'index': 3,
+                'replace_prefix': '$1$2',
                 'cache': True,
             },
             self._suggest_tags,
