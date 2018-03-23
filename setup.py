@@ -41,7 +41,7 @@ setup(
     extras_require={
         'babel': 'Babel>= 0.9.5',
         'tracrpc': 'TracXMLRPC >= 1.1.0',
-        'wikiautocomplete': 'WikiAutoComplete >= 1.4',
+        'wikiautocomplete': 'WikiAutoComplete >= 1.4dev',
     },
     entry_points={'trac.plugins': [
             'tractags = tractags',
