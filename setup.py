@@ -24,7 +24,7 @@ else:
 
 setup(
     name='TracTags',
-    version='0.10',
+    version='0.11',
     packages=find_packages(exclude=['*.tests']),
     package_data={'tractags': [
         'templates/*.html', 'htdocs/js/*.js', 'htdocs/css/*.css',
