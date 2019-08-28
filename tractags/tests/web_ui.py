@@ -70,7 +70,7 @@ class TagInputAutoCompleteTestCase(_BaseTestCase):
 
     # Tests
 
-    def test_separtor_is_default(self):
+    def test_separator_is_default(self):
         self.assertEqual(' ', self.tac.separator_opt)
 
     def test_separator_is_empty_quotes(self):
@@ -90,30 +90,25 @@ class TagInputAutoCompleteTestCase(_BaseTestCase):
         self.assertEqual(' ', self.tac.separator)
 
     def test_get_keywords_no_keywords(self):
-        self.assertEqual('', self.tac._get_keywords_string(self.req))
+        self.assertEqual([], self.tac._get_keywords(self.req))
 
     def test_get_keywords_define_in_config(self):
         self.env.config.set('tags', 'complete_sticky_tags',
                             'tag1, tag2, tag3')
-        self.assertEqual("'tag1','tag2','tag3'",
-                         self.tac._get_keywords_string(self.req))
+        self.assertEqual(['tag1','tag2','tag3'],
+                         self.tac._get_keywords(self.req))
 
     def test_keywords_are_sorted(self):
         self.env.config.set('tags', 'complete_sticky_tags',
                             'tagb, tagc, taga')
-        self.assertEqual("'taga','tagb','tagc'",
-                         self.tac._get_keywords_string(self.req))
+        self.assertEqual(['taga','tagb','tagc'],
+                         self.tac._get_keywords(self.req))
 
     def test_keywords_duplicates_removed(self):
         self.env.config.set('tags', 'complete_sticky_tags',
                             'tag1, tag1, tag2')
-        self.assertEqual("'tag1','tag2'",
-                         self.tac._get_keywords_string(self.req))
-
-    def test_keywords_quoted_for_javascript(self):
-        self.env.config.set('tags', 'complete_sticky_tags', 'it\'s, "this"')
-        self.assertEqual('\'\\"this\\"\',\'it\\\'s\'',
-                         self.tac._get_keywords_string(self.req))
+        self.assertEqual(['tag1','tag2'],
+                         self.tac._get_keywords(self.req))
 
     def test_implements_irequestfilter(self):
         from trac.web.main import RequestDispatcher
@@ -122,10 +117,6 @@ class TagInputAutoCompleteTestCase(_BaseTestCase):
     def test_implements_itemplateprovider(self):
         from trac.web.chrome import Chrome
         self.assertTrue(self.tac in Chrome(self.env).template_providers)
-
-    def test_implements_itemplatestreamfilter(self):
-        from trac.web.chrome import Chrome
-        self.assertTrue(self.tac in Chrome(self.env).stream_filters)
 
 
 class TagRequestHandlerTestCase(_BaseTestCase):
