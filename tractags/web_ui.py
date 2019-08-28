@@ -14,20 +14,17 @@ import re
 
 from genshi.filters.transform import Transformer
 
-from trac import __version__ as trac_version
 from trac.config import BoolOption, ListOption, Option
 from trac.core import implements
-from trac.resource import Resource, ResourceSystem, get_resource_name
-from trac.resource import get_resource_url
+from trac.resource import (
+    Resource, ResourceSystem, get_resource_name, get_resource_url)
 from trac.timeline.api import ITimelineEventProvider
-from trac.util import to_unicode
 from trac.util.html import Markup, html as builder
-from trac.util.text import javascript_quote, unicode_quote_plus
-from trac.web import IRequestFilter
-from trac.web.api import IRequestHandler, ITemplateStreamFilter
-from trac.web.chrome import Chrome, INavigationContributor
-from trac.web.chrome import add_ctxtnav, add_script, add_stylesheet
-from trac.web.chrome import add_warning, web_context
+from trac.util.text import javascript_quote, to_unicode, unicode_quote_plus
+from trac.web.api import IRequestFilter, IRequestHandler, ITemplateStreamFilter
+from trac.web.chrome import (
+    Chrome, INavigationContributor, add_ctxtnav, add_script, add_script_data,
+    add_stylesheet, add_warning, web_context)
 from trac.wiki.formatter import Formatter
 from trac.wiki.model import WikiPage
 
@@ -46,7 +43,7 @@ class TagInputAutoComplete(TagTemplateProvider):
     0.5dev.
     """
 
-    implements(IRequestFilter, ITemplateStreamFilter)
+    implements(IRequestFilter)
 
     field_opt = Option('tags', 'complete_field', 'keywords',
         "Ticket field to which a drop-down tag list should be attached.")
@@ -55,7 +52,7 @@ class TagInputAutoComplete(TagTemplateProvider):
         "If specified, 'keywords' label on ticket view will be turned into a "
         "link to this URL.")
 
-    helpnewwindow_opt = BoolOption('tags', 'ticket_help_newwindow', False,
+    help_new_window_opt = BoolOption('tags', 'ticket_help_newwindow', False,
         "If true and keywords_help specified, wiki page will open in a new "
         "window. Default is false.")
 
@@ -63,7 +60,7 @@ class TagInputAutoComplete(TagTemplateProvider):
     #mustmatch = BoolOption('tags', 'complete_mustmatch', False,
     #    "If true, input fields accept values from the word list only.")
 
-    matchcontains_opt = BoolOption('tags', 'complete_matchcontains', True,
+    match_contains_opt = BoolOption('tags', 'complete_matchcontains', True,
         "Include partial matches in suggestion list. Default is true.")
 
     separator_opt = Option('tags', 'separator', ' ',
@@ -86,133 +83,49 @@ class TagInputAutoComplete(TagTemplateProvider):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        if template is not None and \
-                (req.path_info.startswith('/ticket/') or
-                 req.path_info.startswith('/newticket') or
-                 (self.tags_enabled and req.path_info.startswith('/wiki/'))):
-            # In Trac 1.0 and later, jQuery-UI is included from the core.
-            if trac_version >= '1.0':
-                Chrome(self.env).add_jquery_ui(req)
-            else:
-                add_script(req, 'tags/js/jquery-ui-1.8.16.custom.min.js')
-                add_stylesheet(req, 'tags/css/jquery-ui-1.8.16.custom.css')
+        if template == 'ticket.html' or \
+                (self.tags_enabled and template == 'wiki_edit.html'):
+            keywords = self._get_keywords(req)
+            if not keywords:
+                self.log.debug("No keywords found. TagInputAutoComplete is "
+                               "disabled.")
+                return template, data, content_type
+
+            def add_autocomplete_script(field, help_href=None):
+                match_from_start = '' if self.match_contains_opt else '"^" +'
+                add_script_data(req, tags={
+                    'autocomplete_field': field,
+                    'keywords': keywords,
+                    'match_from_start': match_from_start,
+                    'separator': self.separator,
+                    'help_href': help_href,
+                    'help_new_window': self.help_new_window_opt,
+                })
+                add_script(req, 'tags/js/autocomplete_tags.js')
+
+            if template == 'ticket.html':
+                help_href = self._get_help_href(req)
+                add_autocomplete_script('field-' + self.field_opt, help_href)
+            elif self.tags_enabled and template == 'wiki_edit.html':
+                add_autocomplete_script('tags')
+
+            Chrome(self.env).add_jquery_ui(req)
         return template, data, content_type
-
-    # ITemplateStreamFilter method
-    def filter_stream(self, req, method, filename, stream, data):
-
-        if not (filename == 'ticket.html' or
-                (self.tags_enabled and filename == 'wiki_edit.html')):
-            return stream
-
-        keywords = self._get_keywords_string(req)
-        if not keywords:
-            self.log.debug(
-                "No keywords found. TagInputAutoComplete is disabled.")
-            return stream
-
-        matchfromstart = '"^" +'
-        if self.matchcontains_opt:
-            matchfromstart = ''
-
-        js = """
-            jQuery(document).ready(function($) {
-                var keywords = [ %(keywords)s ]
-                var sep = '%(separator)s'.trim() + ' '
-                function split( val ) {
-                    return val.split( /%(separator)s\s*|\s+/ );
-                }
-                function extractLast( term ) {
-                    return split( term ).pop();
-                }
-                $('%(field)s')
-                    // don't navigate away from field on tab when selecting
-                    // an item
-                    .bind( "keydown", function( event ) {
-                        if ( event.keyCode === $.ui.keyCode.TAB &&
-                             $( this ).data( "autocomplete" ).menu.active ) {
-                            event.preventDefault();
-                        }
-                    })
-                    .autocomplete({
-                        delay: 0,
-                        minLength: 0,
-                        source: function( request, response ) {
-                            // delegate back to autocomplete, but extract
-                            // the last term
-                            response( $.ui.autocomplete.filter(
-                                keywords, extractLast( request.term ) ) );
-                        },
-                        focus: function() {
-                            // prevent value inserted on focus
-                            return false;
-                        },
-                        select: function( event, ui ) {
-                            var terms = split( this.value );
-                            // remove the current input
-                            terms.pop();
-                            // add the selected item
-                            terms.push( ui.item.value );
-                            // add placeholder to get the comma-and-space at
-                            // the end
-                            terms.push( "" );
-                            this.value = terms.join( sep );
-                            return false;
-                        }
-                    });
-            });"""
-
-        # Inject transient part of JavaScript into ticket.html template.
-        if req.path_info.startswith('/ticket/') or \
-           req.path_info.startswith('/newticket'):
-            js_ticket = js % {'field': '#field-' + self.field_opt,
-                              'keywords': keywords,
-                              'matchfromstart': matchfromstart,
-                              'separator': self.separator}
-            stream = stream | Transformer('.//head')\
-                              .append(builder.script(Markup(js_ticket),
-                                      type='text/javascript'))
-
-            # Turn keywords field label into link to an arbitrary resource.
-            if self.help_opt:
-                link = self._get_help_link(req)
-                if self.helpnewwindow_opt:
-                    link = builder.a(href=link, target='blank')
-                else:
-                    link = builder.a(href=link)
-                xpath = '//label[@for="field-keywords"]/text()'
-                stream = stream | Transformer(xpath).wrap(link)
-
-        # Inject transient part of JavaScript into wiki.html template.
-        elif self.tags_enabled and req.path_info.startswith('/wiki/'):
-            js_wiki = js % {'field': '#tags',
-                            'keywords': keywords,
-                            'matchfromstart': matchfromstart,
-                            'separator': self.separator}
-            stream = stream | Transformer('.//head')\
-                              .append(builder.script(Markup(js_wiki),
-                                                     type='text/javascript'))
-        return stream
 
     # Private methods
 
-    def _get_keywords_string(self, req):
+    def _get_keywords(self, req):
         keywords = set(self.sticky_tags_opt)  # prevent duplicates
         if self.tags_enabled:
             # Use TagsPlugin >= 0.7 performance-enhanced API.
             tags = TagSystem(self.env).get_all_tags(req)
             keywords.update(tags.keys())
+        return sorted(keywords) if keywords else []
 
-        if keywords:
-            keywords = sorted(keywords)
-            keywords = ','.join(("'%s'" % javascript_quote(_keyword)
-                                 for _keyword in keywords))
-        else:
-            keywords = ''
 
-        return keywords
-
-    def _get_help_link(self, req):
+    def _get_help_href(self, req):
+        if not self.help_opt:
+            return None
         link = resource_id = None
         if self.help_opt.startswith('/'):
             # Assume valid URL to arbitrary resource inside
@@ -236,18 +149,12 @@ class TagInputAutoComplete(TagTemplateProvider):
             if not resource_id:
                 # Assume wiki page name for backwards-compatibility.
                 resource_id = self.help_opt
-            # Preserve anchor without 'path_safe' arg (since Trac 0.12.2dev).
             if '#' in resource_id:
                 path, anchor = resource_id.split('#', 1)
-            else:
-                anchor = None
-                path = resource_id
-            if hasattr(unicode_quote_plus, "safe"):
-                # Use method for query string quoting (since Trac 0.13dev).
                 anchor = unicode_quote_plus(anchor, safe="?!~*'()")
+                link = '#'.join((req.href.wiki(path), anchor))
             else:
-                anchor = unicode_quote_plus(anchor)
-            link = '#'.join([req.href.wiki(path), anchor])
+                link = req.href.wiki(resource_id)
         return link
 
 
