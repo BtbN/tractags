@@ -43,6 +43,9 @@ setup(
         'tracrpc': 'TracXMLRPC >= 1.1.0',
         'wikiautocomplete': 'WikiAutoComplete >= 1.4dev',
     },
+    classifiers=[
+        'Framework :: Trac',
+    ],
     entry_points={'trac.plugins': [
             'tractags = tractags',
             'tractags.xmlrpc = tractags.xmlrpc[tracrpc]',
