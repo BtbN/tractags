@@ -198,7 +198,7 @@ class TicketTagProvider(DefaultTagProvider):
         ignore = ''
         if self.ignore_closed_tickets:
             ignore = " AND status != 'closed'"
-        with self.env.db_query as db:
+        with self.env.db_transaction as db:
             sql = """
                   SELECT *
                   FROM (SELECT id, %s, %s AS std_fields
@@ -211,7 +211,7 @@ class TicketTagProvider(DefaultTagProvider):
                   """ % (','.join(self.fields), db.concat(*fields),
                          db.cast('tkt.id', 'text'), ignore)
             # Obtain cursors for reading tickets and altering tags db table.
-            # DEVEL: Use appropriate cursor typs from Trac 1.0 db API.
+            # DEVEL: Use appropriate cursor types from Trac 1.0 db API.
             ro_cursor = db.cursor()
             rw_cursor = db.cursor()
             # Delete tags for non-existent ticket
