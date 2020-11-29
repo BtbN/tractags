@@ -8,6 +8,7 @@
 # you should have received as part of this distribution.
 #
 
+import collections
 import re
 
 from genshi.filters.transform import Transformer
@@ -27,7 +28,7 @@ from trac.wiki.model import WikiPage
 from trac.wiki.parser import WikiParser
 from trac.wiki.web_ui import WikiModule
 
-from tractags.api import Counter, DefaultTagProvider, TagSystem, _, requests
+from tractags.api import DefaultTagProvider, TagSystem, _, requests
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes
@@ -62,7 +63,7 @@ class WikiTagProvider(DefaultTagProvider):
 
     def get_all_tags(self, req, filter=None):
         if not self.check_permission(req.perm, 'view'):
-            return Counter()
+            return collections.Counter()
         if self.exclude_templates:
             with self.env.db_transaction as db:
                 like_templates = ''.join(

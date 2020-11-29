@@ -9,6 +9,7 @@
 
 from itertools import groupby
 
+from trac.cache import cached
 from trac.config import BoolOption, ListOption
 from trac.core import implements
 from trac.perm import PermissionError
@@ -46,7 +47,6 @@ class TicketTagProvider(DefaultTagProvider):
 
     map = {'view': 'TICKET_VIEW', 'modify': 'TICKET_CHGPROP'}
     realm = 'ticket'
-    use_cache = False
 
     def __init__(self):
         try:
@@ -166,9 +166,8 @@ class TicketTagProvider(DefaultTagProvider):
         req = MockReq(authname=ticket['reporter'])
         # Add any tags unconditionally.
         self.set_resource_tags(req, ticket, None, ticket['time'])
-        if self.use_cache:
-            # Invalidate resource cache.
-            del self._tagged_resources
+        # Invalidate resource cache.
+        del self._tagged_resources
 
     def ticket_changed(self, ticket, comment, author, old_values):
         """Called when a ticket is modified."""
@@ -176,17 +175,15 @@ class TicketTagProvider(DefaultTagProvider):
         # Sync only on change of ticket fields, that are exposed as tags.
         if any(f in self.fields for f in old_values.keys()):
             self.set_resource_tags(req, ticket, None, ticket['changetime'])
-            if self.use_cache:
-                # Invalidate resource cache.
-                del self._tagged_resources
+            # Invalidate resource cache.
+            del self._tagged_resources
 
     def ticket_deleted(self, ticket):
         """Called when a ticket is deleted."""
         # Ticket gone, so remove all records on it.
         delete_tags(self.env, ticket.resource, purge=True)
-        if self.use_cache:
-            # Invalidate resource cache.
-            del self._tagged_resources
+        # Invalidate resource cache.
+        del self._tagged_resources
 
     # Private methods
 
@@ -232,35 +229,19 @@ class TicketTagProvider(DefaultTagProvider):
                     INSERT INTO tags (tagspace, name, tag)
                     VALUES (%s, %s, %s)
                     """, [(self.realm, str(tkt_id), tag) for tag in ticket_tags])
-
-    try:
-        from trac.cache import cached
-        use_cache = True
-
-        @cached
-        def _tagged_resources(self):
-            """Cached version."""
-            resources = []
-            counter = 0
-            for name, tags in groupby(self.env.db_query("""
-                    SELECT name, tag FROM tags
-                    WHERE tagspace=%s ORDER by name
-                    """, (self.realm,)), lambda row: row[0]):
-                resource = Resource(self.realm, name)
-                resources.append((resource, set([tag[1] for tag in tags])))
-                counter += 1
-            return resources
-
-    except ImportError:
-        @property
-        def _tagged_resources(self):
-            """The old, uncached method."""
-            for name, tags in groupby(self.env.db_query("""
-                    SELECT name, tag FROM tags
-                    WHERE tagspace=%s ORDER by name
-                    """, (self.realm,)), lambda row: row[0]):
-                resource = Resource(self.realm, name)
-                yield resource, set([tag[1] for tag in tags])
+    @cached
+    def _tagged_resources(self):
+        """Cached version."""
+        resources = []
+        counter = 0
+        for name, tags in groupby(self.env.db_query("""
+                SELECT name, tag FROM tags
+                WHERE tagspace=%s ORDER by name
+                """, (self.realm,)), lambda row: row[0]):
+            resource = Resource(self.realm, name)
+            resources.append((resource, set([tag[1] for tag in tags])))
+            counter += 1
+        return resources
 
     def _ticket_tags(self, ticket):
         return split_into_tags(

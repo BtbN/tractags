@@ -7,9 +7,6 @@
 # you should have received as part of this distribution.
 #
 
-from pkg_resources import parse_version
-
-from trac import __version__
 from trac.admin import IAdminPanelProvider
 from trac.core import Component, implements
 from trac.web.chrome import Chrome, add_warning

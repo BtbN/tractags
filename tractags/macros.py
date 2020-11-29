@@ -9,6 +9,7 @@
 # you should have received as part of this distribution.
 #
 
+import collections
 import re
 
 from fnmatch import fnmatchcase
@@ -28,7 +29,7 @@ from trac.web.chrome import Chrome, ITemplateProvider, add_link, \
 from trac.wiki.api import IWikiMacroProvider, parse_args
 from trac.wiki.formatter import format_to_oneliner, system_message
 
-from tractags.api import Counter, InvalidTagRealm, TagSystem, N_, _, gettext
+from tractags.api import InvalidTagRealm, TagSystem, N_, _, gettext
 from tractags.query import InvalidQuery
 from tractags.util import query_realms
 
@@ -46,6 +47,7 @@ class TagTemplateProvider(Component):
     abstract = True
 
     # ITemplateProvider methods
+
     def get_templates_dirs(self):
         """Return the absolute path of the directory containing the provided
         Genshi templates.
@@ -167,7 +169,7 @@ class TagWikiMacros(TagTemplateProvider):
             if not realms:
                 realms = all_realms
             if query:
-                all_tags = Counter()
+                all_tags = collections.Counter()
                 # Require per resource query including view permission checks.
                 for resource, tags in tag_system.query(req, query):
                     all_tags.update(tags)
