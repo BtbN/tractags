@@ -152,7 +152,7 @@ class WikiTagInterface(TagTemplateProvider):
         if req:
             self._update_tags(req, page, page.time)
 
-    def wiki_page_changed(self, page, version, t, comment, author, ipnr):
+    def wiki_page_changed(self, page, version, t, comment, author):
         req = requests.get()
         if req:
             self._update_tags(req, page, page.time)
@@ -224,8 +224,7 @@ class WikiTagInterface(TagTemplateProvider):
                                version=page_history['version'],
                                tags_version=to_utimestamp(date))
                 history.append({'version': '*', 'url': url, 'date': date,
-                                'author': author, 'comment': comment,
-                                'ipnr': ''})
+                                'author': author, 'comment': comment})
             history.append(page_history)
 
         data.update(dict(history=history,
