@@ -293,7 +293,8 @@ class TagWikiMacros(TagTemplateProvider):
             add_stylesheet(req, 'common/css/search.css')
 
             return Chrome(env).render_template(
-                req, 'listtagged_results.html', data, 'text/html', True)
+                req, 'listtagged_results.html', data, {'fragment': True,
+                                                       'domain': 'tractags'})
 
     def get_href(self, req, realms, query=None, per_page=None, page=None,
                  tag=None, **kwargs):

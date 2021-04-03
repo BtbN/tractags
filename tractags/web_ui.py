@@ -11,13 +11,13 @@
 #
 
 import re
-
 from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption, ListOption, Option
 from trac.core import implements
 from trac.resource import (
     Resource, ResourceSystem, get_resource_name, get_resource_url)
+from trac.test import MockRequest
 from trac.timeline.api import ITimelineEventProvider
 from trac.util.html import Markup, html as builder
 from trac.util.text import javascript_quote, to_unicode, unicode_quote_plus
@@ -246,14 +246,23 @@ class TagRequestHandler(TagTemplateProvider):
             args = "%s,format=%s,cols=%s" % \
                    (tag_id and tag_id or query, self.default_format,
                     self.default_cols)
-            data['mincount'] = None
+            data['mincount'] = 0
         else:
             macro = 'TagCloud'
-            mincount = as_int(req.args.get('mincount', None),
+            mincount = as_int(req.args.get('mincount', 0),
                               self.cloud_mincount)
             args = mincount and "mincount=%s" % mincount or None
             data['mincount'] = mincount
-        formatter = Formatter(self.env, web_context(req, Resource('tag')))
+
+        # When using the given req the page isn't rendered properly. The call
+        # to expand_macro() leads to Chrome().render_template(req, ...).
+        # The function render_template() breaks something in the request handling.
+        # That used to work with Genshi.
+        #
+        # With this mocked req everything is just fine.
+        mock_req = MockRequest(self.env, path_info=req.path_info,
+                           authname=req.authname, script_name=req.href())
+        formatter = Formatter(self.env, web_context(mock_req, Resource('tag')))
         self.env.log.debug("%s macro arguments: %s", macro,
                            args and args or '(none)')
         macros = TagWikiMacros(self.env)
@@ -263,11 +272,14 @@ class TagRequestHandler(TagTemplateProvider):
                                macros.expand_macro(formatter, macro, args,
                                                    realms=checked_realms) \
                                or ''
-        except InvalidQuery, e:
+            data['tag_body'] = Markup(data['tag_body'])
+        except InvalidQuery as e:
             data['tag_query_error'] = to_unicode(e)
             data['tag_body'] = macros.expand_macro(formatter, 'TagCloud', '')
+
+        data['realm_args'] = realm_args
         add_stylesheet(req, 'tags/css/tractags.css')
-        return 'tag_view.html', data, None
+        return 'tag_view.html', data, {'domain': 'tractags'}
 
 
 class TagTimelineEventFilter(TagTemplateProvider):

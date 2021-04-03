@@ -1,81 +1,105 @@
-<!--!
-  Copyright (C) 2011,2012 Steffen Hoffmann <hoff.st@web.de>
+{#
+    Copyright (C) 2011-2012 Steffen Hoffmann <hoff.st@web.de>
+    Copyright (C) 2021 Cinc
 
-  This software is licensed as described in the file COPYING, which
-  you should have received as part of this distribution.
--->
-<!--!
+    This software is licensed as described in the file COPYING, which
+    you should have received as part of this distribution.
+
        headers   - a sequence of header structure:
                      .label    - what to display for this header
-
--->
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:xi="http://www.w3.org/2001/XInclude"
-     xmlns:py="http://genshi.edgewall.org/"
-     xmlns:i18n="http://genshi.edgewall.org/i18n"
-     i18n:domain="tractags">
-  <div py:if="warning" class="central system-message warning">
-    <p i18n:msg="">
+#}
+<div>
+  # if warning:
+  <div class="central system-message warning">
+    <p>
+      # trans
       You seem to be using an old Tag query. Try using the
       <a href="${tags_url}">new syntax</a> in your
       <strong>ListTagged</strong> macro.
+      # endtrans
     </p>
   </div>
-  <h2 class="report-result" py:if="paginator.has_more_pages">
+  #endif
+
+  # if paginator.has_more_pages:
+  <h2 class="report-result">
     Results <span class="numresults">(${paginator.displayed_items()})</span>
   </h2>
-  <xi:include py:if="paginator.show_index" href="page_index.html" />
+  # endif
 
-    <py:choose>
-      <table py:when="format == 'table'" class="listing listtagged">
+  # if paginator.show_index:
+  #   include "page_index.html" ignore missing
+  # endif
+      # if format == 'table':
+      <table class="listing listtagged">
         <thead>
           <tr>
-            <th py:for="header in headers">
+            # for header in headers:
+            <th>
               ${header.label}
             </th>
+            # endfor
           </tr>
         </thead>
 
         <tbody>
-          <tr py:if="not results" class="even">
+          # if not results:
+          <tr class="even">
             <td colspan="${len(headers)}">
               No resources found
             </td>
           </tr>
-          <py:for each="idx, result in enumerate(results)">
-            <tr class="${idx % 2 and 'odd' or 'even'}">
-              <td py:for="cell in result.cells">
+          # else:
+          # for result in results:
+            <tr class="${loop.index0 % 2 and 'odd' or 'even'}">
+              # for cell in result.cells:
+              <td>
                 ${cell}
               </td>
+              # endfor
             </tr>
-          </py:for>
+
+          # endfor
+        # endif
         </tbody>
       </table>
-      <p py:when="not results">
+      # elif not results:
+      <p>
         No resources found
       </p>
-      <ul py:otherwise="" class="taglist">
-        <py:choose>
-          <span class="listtagged" py:when="format == 'compact'">
-            <py:for each="result in results[:-1]">
+      # else:
+      <ul class="taglist">
+          # if format == 'compact':
+          <span class="listtagged">
+            # for result in results[:-1]:
               ${result.resource_link},
-            </py:for>
+            # endfor
             ${results[-1].resource_link}
           </span>
-          <li py:for="result in results" py:when="format == 'oldlist'">
+          # elif format == 'oldlist':
+          # for result in results:
+          <li>
             ${result.resource_link} ${result.desc}
-            <py:if test="result.rendered_tags">
+            # if result.rendered_tags:
               (${result.rendered_tags[0]}
-              <py:for each="tag in result.rendered_tags[1:]"> ${tag}</py:for>)
-            </py:if>
+              # for tag in result.rendered_tags[1:]:
+               ${tag})
+              # endfor
+              )
+            # endif
           </li>
+          # endfor
+          # else:
           <!--! alternative compact list -->
-          <li py:for="result in results" py:otherwise="">
+          # for result in results:
+          <li>
             ${result.resource_link}
           </li>
-        </py:choose>
+          # endfor
+          # endif
       </ul>
-    </py:choose>
-
-  <xi:include py:if="paginator.show_index" href="page_index.html" />
+      # endif
+  # if paginator.show_index:
+  #   include "page_index.html" ignore missing
+  # endif
 </div>

@@ -1,28 +1,31 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      xmlns:i18n="http://genshi.edgewall.org/i18n"
-      i18n:domain="tractags">
-  <!--!
+{#
     Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
     Copyright (C) 2010-2013 Steffen Hoffmann <hoff.st@web.de>
+    Copyright (C) 2021 Cinc
 
     This software is licensed as described in the file COPYING, which
     you should have received as part of this distribution.
-  -->
-  <xi:include href="layout.html" />
-  <?python
-    from tractags.api import _
-  ?>
-
+#}
+# extends 'layout.html'
+<!DOCTYPE>
+<html>
   <head>
-    <title py:if="page_title">$page_title</title>
+    <title>
+      # block title
+      # if page_title:
+      ${page_title}
+      # else:
+      ${_("Tags")}
+      # endif
+      ${ super() }
+      # endblock
+    </title>
+    # block head
+    ${ super() }
+    # endblock
   </head>
-
   <body>
+  # block content
     <div id="content" class="tags">
       <form id="query" action="${href.tags()}" method="get">
         <div>
@@ -31,62 +34,82 @@
           <input type="submit" value="${_('Filter Tags')}"/>
         </div>
         <div>
-          <py:for each="realm in tag_realms">
-            <input type="checkbox" id="${realm.name}" name="${realm.name}"
-              checked="${realm.checked or None}"/>
-            <label for="${realm.name}">${realm.name}</label>
-          </py:for>
+          # for realm in tag_realms:
+          <input type="checkbox" id="${realm.name}" name="${realm.name}"
+                 ${{"checked": realm.checked}|htmlattr}/>
+          <label for="${realm.name}">${realm.name}</label>
+          # endfor
         </div>
-        <div py:if="tag_query_error" id="query-error">
-          <strong>Error:</strong> ${tag_query_error}
+        # if tag_query_error:
+        <div id="query-error">
+          <strong>${_("Error:")}</strong> ${tag_query_error}
         </div>
+        # endif
         <div>
-          <p><strong>Query syntax:</strong></p>
-          <ul i18n:msg="">
+          <p><strong>${_("Query syntax:")}</strong></p>
+          <ul>
+            # trans
             <li>Use <strong>tag1 tag2</strong> to match <em>all</em> tags.</li>
             <li><strong>tag1 or tag2</strong> will match <em>any</em> tag.</li>
             <li>Negate a tag with <strong>-tag1</strong>.</li>
             <li>Group sub-queries with <strong>(tag1 or tag2)</strong>.</li>
             <li>Quote strings to include special characters.</li>
             <li>Restrict search to a specific realm with <strong>realm:wiki</strong>.</li>
+            # endtrans
           </ul>
         </div>
       </form>
 
       <div id="tag_body">
-        <py:choose test="">
-          <h1 py:when="tag_query and tag_page and tag_page.exists and
-                       'WIKI_VIEW' in perm(tag_page.resource)"
-              i18n:msg="query">
+          # if tag_query and tag_page and tag_page.exists and 'WIKI_VIEW' in perm(tag_page.resource):
+          <h1>
+            # set url = href.wiki(tag_page.name)
+            # trans query = tag_query
             Showing objects tagged with
-            <a href="${href.wiki(tag_page.name)}" title="Go to wiki page">
-              '${tag_query}'
+            <a href="${url}" title="Go to wiki page">
+              '${query}'
             </a>
+            # endtrans
           </h1>
-          <h1 py:when="tag_query and tag_page" i18n:msg="query">
-            Showing objects tagged with '${tag_query}'
+          # elif tag_query and tag_page:
+          <h1>
+            # trans query = tag_query
+            Showing objects tagged with '${query}'
+            # endtrans
           </h1>
-          <h1 py:when="tag_query" i18n:msg="query">
-            Showing objects matching '${tag_query}'
+          # elif tag_query:
+          <h1>
+            # trans query = tag_query
+            Showing objects matching '${query}'
+            # endtrans
           </h1>
-        </py:choose>
-        <p py:if="tag_page and not tag_page.exists and
-                  'WIKI_CREATE' in perm" class="hint" i18n:msg="">
-          <a href="${href.wiki(tag_page.name, action='edit',
-                   text='= %s =\n\n[[ListTagged(%s)]]'
-                   % (tag_page.name, tag_page.name))}">
+          # endif
+
+        # if tag_page and not tag_page.exists and 'WIKI_CREATE' in perm:
+        <p>
+          # set url = href.wiki(tag_page.name, action='edit', text='= %s =\n\n[[ListTagged(%s)]]' % (tag_page.name, tag_page.name))
+          # trans
+          <a href="${url}">
             Create Wiki page
           </a>
           for this tag
+          # endtrans
         </p>
+        # endif
+
         ${tag_body}
-        <p py:if="mincount > 1" i18n:msg="mincount">
+
+        # if mincount > 1:
+        <p>
+          # set url = href.tags(realm_args, mincount=1)
+          # trans mincount
           Showing only tags with ${mincount} or more occurrences
-          (<a href="${href.tags(dict(zip([r for r in checked_realms],
-                                         ['on' for r in checked_realms])),
-                                mincount=1)}">view all tags</a>)
+          (<a href="${url}">view all tags</a>)
         </p>
+        # endtrans
+        # endif
       </div>
     </div>
+  # endblock
   </body>
 </html>
