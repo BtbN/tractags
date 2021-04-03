@@ -5,13 +5,13 @@
 # Copyright (C) 2011 Itamar Ostricher <itamarost@gmail.com>
 # Copyright (C) 2011-2012 Ryan J Ollos <ryan.j.ollos@gmail.com>
 # Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2021 Cinc
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
 #
 
 import re
-from genshi.filters.transform import Transformer
 
 from trac.config import BoolOption, ListOption, Option
 from trac.core import implements
@@ -21,7 +21,7 @@ from trac.test import MockRequest
 from trac.timeline.api import ITimelineEventProvider
 from trac.util.html import Markup, html as builder
 from trac.util.text import javascript_quote, to_unicode, unicode_quote_plus
-from trac.web.api import IRequestFilter, IRequestHandler, ITemplateStreamFilter
+from trac.web.api import IRequestFilter, IRequestHandler
 from trac.web.chrome import (
     Chrome, INavigationContributor, add_ctxtnav, add_script, add_script_data,
     add_stylesheet, add_warning, web_context)
@@ -33,7 +33,7 @@ from tractags.macros import TagTemplateProvider, TagWikiMacros, as_int
 from tractags.macros import query_realms
 from tractags.model import tag_changes
 from tractags.query import InvalidQuery, Query
-from tractags.util import split_into_tags
+from tractags.util import JTransformer, split_into_tags
 
 
 class TagInputAutoComplete(TagTemplateProvider):
@@ -287,19 +287,9 @@ class TagTimelineEventFilter(TagTemplateProvider):
     mentioned in the event.
     """
 
-    implements(IRequestFilter, ITemplateStreamFilter)
+    implements(IRequestFilter)
 
     key = 'tag_query'
-
-    # ITemplateStreamFilter method
-    def filter_stream(self, req, method, filename, stream, data):
-        if req.path_info == '/timeline':
-            insert = builder(Markup('<br />'), tag_("matching tags "),
-                             builder.input(type='text', name=self.key,
-                                           value=data.get(self.key)))
-            xpath = '//form[@id="prefs"]/div[1]'
-            stream = stream | Transformer(xpath).append(insert)
-        return stream
 
     # IRequestFilter methods
 
@@ -337,7 +327,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
                     realms = not query_realms and all_realms or \
                              query_realms.intersection(all_realms)
                     events = []
-                    self.log.debug("Filtering timeline events by tags '%s'",
+                    self.log.info("Filtering timeline events by tags '%s'",
                                    query_str)
                     for event in data['events']:
                         resource = resource_from_event(event)
@@ -353,6 +343,17 @@ class TagTimelineEventFilter(TagTemplateProvider):
                 data[self.key] = query_str
             elif self.key in req.session:
                 del req.session[self.key]
+
+            filter_lst = []
+            # xpath = '//form[@id="prefs"]/div[1]'
+            xform = JTransformer('form#prefs > div:nth-of-type(1)')
+            html = '<br />{matching}<input type="text" name="{name}" value="{val}"/>'\
+                .format(matching=_('matching tags '), name=self.key, val=data.get(self.key, ''))
+            filter_lst.append(xform.append(html))
+
+            add_script_data(req, {'tags_filter': filter_lst})
+            add_script(req, 'tags/js/tags_jtransform.js')
+
         return template, data, content_type
 
 
