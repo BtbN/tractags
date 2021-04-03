@@ -61,7 +61,5 @@ class TagChangeAdminPanel(Component):
         data['tags'] = all_tags
         chrome = Chrome(self.env)
         chrome.add_textarea_grips(req)
-        if hasattr(chrome, 'jenv'):
-            return 'admin_tag_change.html', data, None
-        else:
-            return 'admin_tag_change.html', data
+
+        return 'admin_tag_change.html', data, {'domain': 'tractags'}

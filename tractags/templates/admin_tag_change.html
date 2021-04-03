@@ -1,35 +1,39 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      xmlns:i18n="http://genshi.edgewall.org/i18n"
-      i18n:domain="tractags">
-  <!--!
+{#
     Copyright (C) 2011-2013 Steffen Hoffmann <hoff.st@web.de>
+    Copyright (C) 2021 Cinc
 
     This software is licensed as described in the file COPYING, which
     you should have received as part of this distribution.
-  -->
-  <xi:include href="admin.html" />
-  <?python
-    from tractags.api import _ ?>
+#}
+# extends 'admin.html'
+<!DOCTYPE html>
+<html>
   <head>
-    <title>Tags</title>
+    <title>
+      # block admintitle
+      ${_("Tags")}
+      # endblock
+    </title>
+    # block head
+    ${ super() }
+    # endblock
   </head>
   <body>
-    <h2>Manage Tags</h2>
+  # block adminpanel
+  <div>
+    <h2>${_("Manage Tags")}</h2>
      <form id="filter" method="get" action="">
        <fieldset id="filters">
-         <legend>Filters</legend>
+         <legend>${_("Filters")}</legend>
          <table summary="Tag filters">
-           <th scope="row">Realms</th>
+           <th scope="row">${_("Realms")}</th>
            <td class="filter">
-             <label class="control" py:for="realm in tag_realms">
+             # for realm in tag_realms:
+             <label class="control">
                <input type="checkbox" name="${realm.name}"
                       checked="${realm.checked or None}"/> ${realm.name}
              </label>
+             # endfor
            </td>
            <td>
              <div class="inlinebuttons">
@@ -41,56 +45,68 @@
      </form>
 
     <form id="tagchange" class="mod" method="post" action="">
+      ${jmacros.form_token_input()}
       <fieldset>
-        <legend>Replace</legend>
-        <p i18n:msg="">Select an existing tag to replace with another one;
+        <legend>${_("Replace")}</legend>
+        <p>
+          # trans
+          Select an existing tag to replace with another one;
           two or more to consolidate into one. The <em>required</em> new tag
           may actually be an existing tag or a new one. A change comment will
           be added if supported by the tag storage for the resource's realm.
+          # endtrans
         </p>
         <div class="field">
-          <label>Current Tag:<br />
+          <label>${_("Current Tag:")}<br />
             <select name="tag_name" size="7" multiple="true" >
-              <option py:for="tag in tags"
-                      value="${tag}" class="textwidget"
-                      selected="${tag == selected and 'selected' or None}">
+              # for tag in tags:
+              <option value="${tag}" class="textwidget"
+                      ${{"selected": tag == selected}|htmlattr}>
                 ${tag}
               </option>
+              # endfor
             </select>
           </label>
         </div>
         <div class="field">
-          <label i18n:msg="">New Tag:<br />
-            <input type="text" name="tag_new_name" /><br />or
+          <label>${_("New Tag:")}<br />
+            <input type="text" name="tag_new_name" /><br />${_("or")}
             <input type="checkbox" name="allow_delete" value="True" />
-            allow tag deletion
+            ${_("allow tag deletion")}
           </label>
         </div>
         <div class="field">
-          <label>Comment (optional):<br />
+          <label>${_("Comment (optional):")}<br />
             <textarea name="comment" class="trac-resizable"
                       cols="50" rows="3"></textarea>
           </label>
           <p class="help" i18n:msg="">
+            # trans
             <b>Beware:</b> Attempting to replace one or more tags will
             always add the new tag, but <b>removal could fail</b>
             for some tags, because tags might be immutable depending
             on internals of the tag provider they've been derived from.
+            # endtrans
           </p>
           <p class="hint" i18n:msg="">
+            # trans
             You'll need to investigate further on how to change/remove these
             remaining tags closer to the tagged resource, i.e. in your
             <code>trac.ini</code> see <code>ticket_fields</code> option
             that lists fields to expose as tags for tag realm:ticket.
+            # endtrans
           </p>
         </div>
       </fieldset>
       <div class="buttons">
         <!--! Preserve previous realm filter selection -->
-        <input py:for="realm in checked_realms"
-               type="hidden" name="${realm}" value="1" />
+        # for realm in checked_realms:
+        <input type="hidden" name="${realm}" value="1" />
+        # endfor
         <input type="submit" value="${_('Change')}" />
       </div>
     </form>
+  </div>
+  # endblock adminpanel
   </body>
 </html>
