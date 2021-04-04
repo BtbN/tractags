@@ -133,9 +133,10 @@ class TagRequestHandlerTestCase(_BaseTestCase):
     def test_get_main_page(self):
         req = MockRequest(self.env, path_info='/tags', authname='reader')
         template, data, content_type = self.tag_rh.process_request(req)
-        self.assertEquals('tag_view.html', template)
-        self.assertEquals(None, content_type)
-        self.assertEquals(['checked_realms', 'mincount', 'page_title',
+        self.assertEqual('tag_view.html', template)
+        self.assertIsInstance(content_type, dict)
+        self.assertEqual(['checked_realms', 'mincount', 'page_title',
+                          'realm_args',
                            'tag_body', 'tag_query', 'tag_realms'],
                           sorted(data.keys()))
 
@@ -156,10 +157,6 @@ class TagTimelineEventFilterTestCase(_BaseTestCase):
     def test_implements_irequestfilter(self):
         from trac.web.main import RequestDispatcher
         self.assertTrue(self.tef in RequestDispatcher(self.env).filters)
-
-    def test_implements_itemplatestreamfilter(self):
-        from trac.web.chrome import Chrome
-        self.assertTrue(self.tef in Chrome(self.env).stream_filters)
 
     def test_tag_query_save(self):
         """Save timeline tag query string in session."""

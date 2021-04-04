@@ -44,7 +44,16 @@ setup(
         'wikiautocomplete': 'WikiAutoComplete >= 1.4dev',
     },
     classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Plugins',
+        'Environment :: Web Environment',
         'Framework :: Trac',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
     ],
     entry_points={'trac.plugins': [
             'tractags = tractags',
