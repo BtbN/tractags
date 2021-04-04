@@ -13,6 +13,7 @@ A generalised query parser and matcher.
 import re
 
 from trac.core import TracError
+from trac.util.text import to_unicode
 
 from tractags.api import _
 
@@ -85,7 +86,7 @@ class QueryNode(object):
                     text += u'%snil' % (u'  ' * (depth + 1))
             text += u')'
             return text
-        return show(self).encode('utf-8')
+        return to_unicode(show(self))
 
 
 class Query(QueryNode):

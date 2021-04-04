@@ -115,9 +115,10 @@ class TicketTagProviderTestCase(unittest.TestCase):
         self.assertRaises(ResourceNotFound, self.provider.get_resource_tags,
                           req, resource)
         self._create_ticket(self.tags)
-        self.assertEquals(
-            [tag for tag in
-             self.provider.get_resource_tags(req, resource)], self.tags)
+        # provider.get_resource_tags() returns a set. Sort order is not defined
+        self.assertEqual(
+            sorted([tag for tag in
+             self.provider.get_resource_tags(req, resource)]), sorted(self.tags))
 
     def test_set_tags(self):
         req = MockRequest(self.env, authname='editor')
@@ -126,7 +127,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         ticket['keywords'] = tags[0]
         # Tags get updated by TicketChangeListener method.
         ticket.save_changes(req.authname)
-        self.assertEquals(self.tag_sys.get_all_tags(req).keys(), tags)
+        self.assertEquals(list(self.tag_sys.get_all_tags(req).keys()), tags)
 
     def test_remove_tags(self):
         req = MockRequest(self.env, authname='editor')

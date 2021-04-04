@@ -35,6 +35,16 @@ from tractags.web_ui import render_tag_changes
 from tractags.util import JTransformer, MockReq, query_realms, split_into_tags
 
 
+try:
+    unicode
+except NameError:
+    # Python 3
+    def next_iter(i):
+        return next(i)
+else:
+    def next_iter(i):
+        return i.next()
+
 class WikiTagProvider(DefaultTagProvider):
     """[main] Tag provider for Trac wiki."""
 
@@ -385,7 +395,7 @@ class TagWikiSyntaxProvider(Component):
 def iter_is_empty(i):
     """Test for empty iterator without consuming more than first element."""
     try:
-        i.next()
+        next_iter(i)
     except StopIteration:
         return True
     return False
