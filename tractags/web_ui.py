@@ -347,10 +347,10 @@ class TagTimelineEventFilter(TagTemplateProvider):
             filter_lst = []
             # xpath = '//form[@id="prefs"]/div[1]'
             xform = JTransformer('form#prefs > div:nth-of-type(1)')
-            html = '<br />{matching}<input type="text" name="{name}" value="{val}"/>'\
-                .format(matching=_('matching tags '), name=self.key, val=data.get(self.key, ''))
-            filter_lst.append(xform.append(html))
-
+            insert = builder(Markup('<br />'), tag_("matching tags "),
+                             builder.input(type='text', name=self.key,
+                                           value=data.get(self.key)))
+            filter_lst.append(xform.append(Markup(insert)))
             add_script_data(req, {'tags_filter': filter_lst})
             add_script(req, 'tags/js/tags_jtransform.js')
 
