@@ -316,7 +316,7 @@ class TagTimelineEventFilter(TagTemplateProvider):
                 try:
                     query = Query(query_str,
                                   attribute_handlers={'realm': realm_handler})
-                except InvalidQuery, e:
+                except InvalidQuery as e:
                     add_warning(req, _("Tag query syntax error: %s" % e))
                 else:
                     all_realms = tag_system.get_taggable_realms(req.perm)

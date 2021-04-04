@@ -22,6 +22,17 @@ from tractags.api import TagSystem
 from tractags.db import TagSetup
 from tractags.ticket import TicketTagProvider
 
+try:
+    dict.iteritems
+except AttributeError:
+    # Python 3
+    def iteritems(d):
+        return iter(d.items())
+else:
+    # Python 2
+    def iteritems(d):
+        return d.iteritems()
+
 
 class TicketTagProviderTestCase(unittest.TestCase):
 
@@ -56,7 +67,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         ticket['keywords'] = u' '.join(sorted(map(to_unicode, tags)))
         ticket['summary'] = 'summary'
         ticket['reporter'] = 'admin'
-        for name, value in kwargs.iteritems():
+        for name, value in iteritems(kwargs):
             ticket[name] = value
         ticket.insert()
         return ticket

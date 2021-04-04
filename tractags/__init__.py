@@ -15,10 +15,10 @@ import pkg_resources
 pkg_resources.require('Trac >= 1.4')
 
 
-import api
-import db
-import wiki
-import ticket
-import macros
-import web_ui
-import admin
+import tractags.api
+import tractags.db
+import tractags.wiki
+import tractags.ticket
+import tractags.macros
+import tractags.web_ui
+import tractags.admin

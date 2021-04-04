@@ -14,6 +14,7 @@ import tempfile
 import unittest
 
 from trac.test import EnvironmentStub, Mock, MockRequest
+from trac.util.text import to_unicode
 from trac.web.chrome import Chrome
 from trac.web.href import Href
 from trac.wiki.test import wikisyntax_test_suite
@@ -97,13 +98,13 @@ class ListTaggedMacroTestCase(_BaseTestCase):
         self._insert_tags('wiki', 'WikiStart', ('blah',))
         context = Mock(env=self.env, href=Href('/'), req=self.req)
         formatter = Mock(context=context, req=self.req)
-        result = unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
+        result = to_unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
                                                    'blah,exclude=Inter*'))
         self.assertFalse('InterTrac' in result)
         self.assertFalse('InterWiki' in result)
         self.assertTrue('WikiStart' in result)
 
-        result = unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
+        result = to_unicode(self.tag_twm.expand_macro(formatter, 'ListTagged',
                                                    'blah,exclude=Wi*:*ki'))
         self.assertTrue('InterTrac' in result)
         self.assertFalse('InterWiki' in result)
@@ -118,7 +119,7 @@ class ListTaggedMacroTestCase(_BaseTestCase):
         context = Mock(env=self.env, href=Href('/'), req=self.req)
         formatter = Mock(context=context, req=self.req)
         result = \
-            unicode(self.tag_twm.expand_macro(formatter, 'ListTagged', 'blah'))
+            to_unicode(self.tag_twm.expand_macro(formatter, 'ListTagged', 'blah'))
         return result
 
     def test_listtagged_paginate_page1(self):
@@ -220,40 +221,40 @@ class TagCloudMacroTestCase(_BaseTestCase):
         self._insert_tags('ticket', '3',             ('blah', 'bar'))
         self._insert_tags('ticket', '4',             ('blah', 'bar'))
 
-        result = unicode(self._expand_macro(''))
+        result = to_unicode(self._expand_macro(''))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertTrue('">foo</a>' in result, repr(result))
         self.assertTrue('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('mincount=5'))
+        result = to_unicode(self._expand_macro('mincount=5'))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertFalse('">foo</a>' in result, repr(result))
         self.assertTrue('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('mincount=6'))
+        result = to_unicode(self._expand_macro('mincount=6'))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertFalse('">foo</a>' in result, repr(result))
         self.assertFalse('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('realm=ticket|wiki'))
+        result = to_unicode(self._expand_macro('realm=ticket|wiki'))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertTrue('">foo</a>' in result, repr(result))
         self.assertTrue('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('realm=ticket'))
+        result = to_unicode(self._expand_macro('realm=ticket'))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertFalse('">foo</a>' in result, repr(result))
         self.assertTrue('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('realm=ticket,mincount=4'))
+        result = to_unicode(self._expand_macro('realm=ticket,mincount=4'))
         self.assertTrue('">blah</a>' in result, repr(result))
         self.assertFalse('">foo</a>' in result, repr(result))
         self.assertFalse('">bar</a>' in result, repr(result))
 
-        result = unicode(self._expand_macro('realm=unknown'))
+        result = to_unicode(self._expand_macro('realm=unknown'))
         self.assertEquals('No tags found', result)
 
-        result = unicode(self._expand_macro('mincount=100'))
+        result = to_unicode(self._expand_macro('mincount=100'))
         self.assertEquals('No tags found', result)
 
 

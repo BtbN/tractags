@@ -17,6 +17,7 @@ from trac.core import Component, implements
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.datefmt import to_utimestamp
 from trac.util.html import Fragment, Markup, tag
+from trac.util.text import to_unicode
 from trac.util.translation import tag_
 from trac.web.api import IRequestFilter
 from trac.web.chrome import add_script, add_script_data, add_stylesheet, web_context
@@ -201,7 +202,7 @@ class WikiTagInterface(TagTemplateProvider):
             # Prepare tags as content for the editor field.
             tags_str = ' '.join(tags)
             self.env.log.debug("Tags retrieved from template: '%s'",
-                               unicode(tags_str).encode('utf-8'))
+                               to_unicode(tags_str).encode('utf-8'))
             # DEVEL: More arguments need to be propagated here?
             req.redirect(req.href(req.path_info,
                                   action='edit', tags=tags_str,

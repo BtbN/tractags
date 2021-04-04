@@ -440,8 +440,8 @@ class TagSystem(Component):
                 return get_resource_url(self.env, page.resource, href,
                                         **kwargs)
         if form_realms:
-            return href.tags(form_realms, q=unicode(resource.id), **kwargs)
-        return href.tags(unicode(resource.id), form_realms, **kwargs)
+            return href.tags(form_realms, q=to_unicode(resource.id), **kwargs)
+        return href.tags(to_unicode(resource.id), form_realms, **kwargs)
 
     def get_resource_description(self, resource, format='default',
                                  context=None, **kwargs):

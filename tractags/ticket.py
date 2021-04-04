@@ -51,7 +51,7 @@ class TicketTagProvider(DefaultTagProvider):
     def __init__(self):
         try:
             self._fetch_tkt_tags()
-        except self.env.db_exc.IntegrityError, e:
+        except self.env.db_exc.IntegrityError as e:
             self.log.warn('tags for ticket already exist: %s', to_unicode(e))
         cfg = self.config
         cfg_key = 'permission_policies'

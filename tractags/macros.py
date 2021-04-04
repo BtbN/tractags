@@ -38,6 +38,17 @@ _OBSOLETE_ARGS_RE = re.compile(r"""
     (expression|operation|showheadings|tagspace|tagspaces)=
     """, re.VERBOSE)
 
+try:
+    dict.iteritems
+except AttributeError:
+    # Python 3
+    def iteritems(d):
+        return iter(d.items())
+else:
+    # Python 2
+    def iteritems(d):
+        return d.iteritems()
+
 
 class TagTemplateProvider(Component):
     """Provides templates and static resources for the tags plugin."""
@@ -245,7 +256,7 @@ class TagWikiMacros(TagTemplateProvider):
             try:
                 results = sorted(query_result, key=lambda r:
                                  embedded_numbers(to_unicode(r[0].id)))
-            except (InvalidQuery, InvalidTagRealm), e:
+            except (InvalidQuery, InvalidTagRealm) as e:
                 return system_message(_("ListTagged macro error"), e)
             results = self._paginate(req, results, realms)
             rows = []
@@ -347,10 +358,10 @@ class TagWikiMacros(TagTemplateProvider):
 
         if caseless_sort:
             # Preserve upper-case precedence within similar tags.
-            items = reversed(sorted(cloud.iteritems(),
+            items = reversed(sorted(iteritems(cloud),
                                     key=lambda t: t[0].lower(), reverse=True))
         else:
-            items = sorted(cloud.iteritems())
+            items = sorted(iteritems(cloud))
         ul = li = None
         for i, (tag, count) in enumerate(items):
             percent = size_lut[count] * scale
@@ -380,7 +391,7 @@ class TagWikiMacros(TagTemplateProvider):
             items_per_page = self.items_per_page
         try:
             result = Paginator(results, current_page - 1, items_per_page)
-        except (AssertionError, TracError), e:
+        except (AssertionError, TracError) as e:
             # AssertionError raised in Trac < 1.0.10, TracError otherwise
             self.log.warn("ListTagged macro: %s", e)
             current_page = 1
