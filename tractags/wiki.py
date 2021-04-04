@@ -3,6 +3,7 @@
 # Copyright (C) 2006 Alec Thomas <alec@swapoff.org>
 # Copyright (C) 2014 Jun Omae <jun66j5@gmail.com>
 # Copyright (C) 2011-2014 Steffen Hoffmann <hoff.st@web.de>
+# Copyright (C) 2021 Cinc
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.
@@ -11,16 +12,14 @@
 import collections
 import re
 
-from genshi.filters.transform import Transformer
-
 from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.resource import Resource, render_resource_link, get_resource_url
 from trac.util.datefmt import to_utimestamp
-from trac.util.html import Fragment, tag
+from trac.util.html import Fragment, Markup, tag
 from trac.util.translation import tag_
-from trac.web.api import IRequestFilter, ITemplateStreamFilter
-from trac.web.chrome import add_stylesheet, web_context
+from trac.web.api import IRequestFilter
+from trac.web.chrome import add_script, add_script_data, add_stylesheet, web_context
 from trac.wiki.api import IWikiChangeListener, IWikiPageManipulator
 from trac.wiki.api import IWikiSyntaxProvider
 from trac.wiki.formatter import format_to_oneliner
@@ -32,7 +31,7 @@ from tractags.api import DefaultTagProvider, TagSystem, _, requests
 from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes
-from tractags.util import MockReq, query_realms, split_into_tags
+from tractags.util import JTransformer, MockReq, query_realms, split_into_tags
 
 
 class WikiTagProvider(DefaultTagProvider):
@@ -85,8 +84,7 @@ class WikiTagProvider(DefaultTagProvider):
 class WikiTagInterface(TagTemplateProvider):
     """[main] Implements the user interface for tagging Wiki pages."""
 
-    implements(IRequestFilter, ITemplateStreamFilter,
-               IWikiChangeListener, IWikiPageManipulator)
+    implements(IRequestFilter, IWikiChangeListener, IWikiPageManipulator)
 
     def __init__(self):
         self.tag_system = TagSystem(self.env)
@@ -109,21 +107,21 @@ class WikiTagInterface(TagTemplateProvider):
                     req.path_info.startswith('/wiki/') and \
                     'save' in req.args:
                 requests.reset()
-        return template, data, content_type
 
-    # ITemplateStreamFilter methods
-    def filter_stream(self, req, method, filename, stream, data):
-        page_name = req.args.get('page', 'WikiStart')
-        resource = Resource('wiki', page_name)
-        if filename == 'wiki_view.html' and 'TAGS_VIEW' in req.perm(resource):
-            return self._wiki_view(req, stream)
-        elif filename == 'wiki_edit.html' and \
-                         'TAGS_MODIFY' in req.perm(resource):
-            return self._wiki_edit(req, stream)
-        elif filename == 'history_view.html' and \
-                         'TAGS_VIEW' in req.perm(resource):
-            return self._wiki_history(req, stream)
-        return stream
+            # Insert the tags information and controls into
+            # the wiki page
+            if data and 'page' in data:
+                if template == 'wiki_view.html' and \
+                        'TAGS_VIEW' in req.perm(data['page'].resource):
+                    self._post_process_request_wiki_view(req)
+                elif template == 'wiki_edit.html' and \
+                        'TAGS_MODIFY' in req.perm(data['page'].resource):
+                    self._post_process_request_wiki_edit(req)
+                elif template == 'history_view.html' and \
+                        'TAGS_VIEW' in req.perm(data['page'].resource):
+                    self._post_process_request_wiki_history(req)
+
+        return template, data, content_type
 
     # IWikiPageManipulator methods
     def prepare_wiki_page(self, req, page, fields):
@@ -175,6 +173,8 @@ class WikiTagInterface(TagTemplateProvider):
     # Internal methods
     def _page_tags(self, req):
         pagename = req.args.get('page', 'WikiStart')
+        # 'version' and 'tags_version' are part of the url
+        # whrn coming from the history
         version = req.args.get('version')
         tags_version = req.args.get('tags_version')
 
@@ -230,11 +230,11 @@ class WikiTagInterface(TagTemplateProvider):
         data.update(dict(history=history,
                          wiki_to_oneliner=self._wiki_to_oneliner))
 
-    def _wiki_view(self, req, stream):
+    def _post_process_request_wiki_view(self, req):
         add_stylesheet(req, 'tags/css/tractags.css')
         tags = self._page_tags(req)
         if not tags:
-            return stream
+            return
         li = []
         for t in tags:
             resource = Resource('tag', t)
@@ -246,8 +246,14 @@ class WikiTagInterface(TagTemplateProvider):
 
         # TRANSLATOR: Header label text for tag list at wiki page bottom.
         insert = tag.ul(class_='tags')(tag.li(_("Tags"), class_='header'), li)
-        return stream | (Transformer('//div[contains(@class,"wikipage")]')
-                         .after(insert))
+
+        filter_lst = []
+        # xpath = //div[contains(@class,"wikipage")]
+        xform = JTransformer('div[class*=wikipage]')
+        filter_lst.append(xform.after(Markup(insert)))
+
+        self._add_jtransform(req, filter_lst)
+        return
 
     def _update_tags(self, req, page, when=None):
         newtags = split_into_tags(req.args.get('tags', ''))
@@ -258,7 +264,11 @@ class WikiTagInterface(TagTemplateProvider):
             return True
         return False
 
-    def _wiki_edit(self, req, stream):
+    def _add_jtransform(self, req, filter_lst):
+        add_script_data(req, {'tags_filter': filter_lst})
+        add_script(req, 'tags/js/tags_jtransform.js')
+
+    def _post_process_request_wiki_edit(self, req):
         tags = ' '.join(self._page_tags(req))
         # TRANSLATOR: Label text for link to '/tags'.
         link = tag.a(_("view all tags"), href=req.href.tags())
@@ -270,14 +280,18 @@ class WikiTagInterface(TagTemplateProvider):
                       value=req.args.get('tags', tags))
         )
         insert = tag.div(tag.label(insert), class_='field')
-        return stream | Transformer('//div[@id="changeinfo1"]').append(insert)
+        filter_lst = []
+        # xpath = //div[@id="changeinfo1"]
+        xform = JTransformer('div#changeinfo1')
+        filter_lst.append(xform.append(Markup(insert)))
+        self._add_jtransform(req, filter_lst)
 
-    def _wiki_history(self, req, stream):
-        xpath = '//input[@type="radio" and @value="*"]'
-        stream = stream | Transformer(xpath).remove()
-        # Remove invalid links to wiki page revisions (fix for Trac < 0.12).
-        xpath = '//a[contains(@href,"%2A")]'
-        return stream | Transformer(xpath).remove()
+    def _post_process_request_wiki_history(self, req):
+        filter_lst = []
+        # xpath = '//input[@type="radio" and @value="*"]'
+        xform = JTransformer('input[type="radio"][value="*"]')
+        filter_lst.append(xform.remove())
+        self._add_jtransform(req, filter_lst)
 
     def _wiki_to_oneliner(self, context, wiki, shorten=None):
         if isinstance(wiki, Fragment):
