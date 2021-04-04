@@ -272,7 +272,7 @@ class TagRequestHandler(TagTemplateProvider):
                                macros.expand_macro(formatter, macro, args,
                                                    realms=checked_realms) \
                                or ''
-            data['tag_body'] = Markup(data['tag_body'])
+            data['tag_body'] = Markup(to_unicode(data['tag_body']))
         except InvalidQuery as e:
             data['tag_query_error'] = to_unicode(e)
             data['tag_body'] = macros.expand_macro(formatter, 'TagCloud', '')

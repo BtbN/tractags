@@ -162,7 +162,7 @@ def tagged_resources(env, perm_check, perm, realm, tags=None, filter=None,
             WHERE tagspace=%%s AND name IN (%s)
             ORDER BY name
             """ % ', '.join(['%s'] * len(resources)),
-            [realm] + resources.keys()), lambda row: row[0]):
+            [realm] + list(resources.keys())), lambda row: row[0]):
         resource = resources[name]
         yield resource, set([tag[1] for tag in tags])
 
