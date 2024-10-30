@@ -34,7 +34,7 @@ def query_realms(query, all_realms):
 
 def split_into_tags(text):
     """Split plain text into tags."""
-    return set(filter(None, [tag.strip() for tag in _TAG_SPLIT.split(text)]))
+    return set(filter(None, [tag.strip().lower() for tag in _TAG_SPLIT.split(text)]))
 
 class JTransformer(object):
     """Class modelled after the Genshi Transformer class. Instead of an xpath it uses a
