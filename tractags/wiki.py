@@ -54,7 +54,7 @@ class WikiTagProvider(DefaultTagProvider):
         default=True,
         doc="Whether tagged wiki page templates should be queried.")
 
-    first_head = re.compile('=\s+([^=\n]*)={0,1}')
+    first_head = re.compile(r'=\s+([^=\n]*)={0,1}')
 
     def check_permission(self, perm, action):
         map = {'view': 'WIKI_VIEW', 'modify': 'WIKI_MODIFY'}
@@ -367,7 +367,7 @@ class TagWikiSyntaxProvider(Component):
         realms = query_realms(target, all_realms)
         if realms:
             kwargs = dict((realm, 'on') for realm in realms)
-            target = re.sub('(^|\W)realm:\S+(\W|$)', ' ', target).strip()
+            target = re.sub(r'(^|\W)realm:\S+(\W|$)', ' ', target).strip()
         else:
             kwargs = {}
 

@@ -15,7 +15,7 @@ from functools import partial
 from trac.test import Mock, MockPerm
 from trac.web.api import _RequestArgs
 
-_TAG_SPLIT = re.compile('[,\s]+')
+_TAG_SPLIT = re.compile(r'[,\s]+')
 
 
 # DEVEL: This needs monitoring for possibly varying endpoint requirements.
@@ -27,7 +27,7 @@ MockReq = partial(Mock, args=_RequestArgs(), authname='anonymous',
 def query_realms(query, all_realms):
     realms = []
     for realm in all_realms:
-        if re.search('(^|\W)realm:%s(\W|$)' % realm, query):
+        if re.search(r'(^|\W)realm:%s(\W|$)' % realm, query):
             realms.append(realm)
     return realms
 

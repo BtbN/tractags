@@ -174,7 +174,7 @@ class TagWikiMacros(TagTemplateProvider):
             realms.extend(query_realms(query, all_realms))
             # Remove redundant realm selection for performance.
             if set(realms) == all_realms:
-                query = re.sub('(^|\W)realm:\S+(\W|$)', ' ', query).strip()
+                query = re.sub(r'(^|\W)realm:\S+(\W|$)', ' ', query).strip()
         if name == 'TagCloud':
             # Set implicit 'all tagged realms' as default.
             if not realms:

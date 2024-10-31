@@ -37,7 +37,7 @@ from tractags.model import tagged_resources
 # Now call module importing i18n methods from here.
 from tractags.query import *
 
-REALM_RE = re.compile('realm:(\w+)', re.U | re.I)
+REALM_RE = re.compile(r'realm:(\w+)', re.U | re.I)
 
 
 class InvalidTagRealm(TracError):
