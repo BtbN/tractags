@@ -17,10 +17,11 @@ from trac.perm import PermissionSystem, PermissionError
 from trac.web.api import RequestDone
 from trac.web.main import RequestDispatcher
 
-from tractags.api import TagSystem
-from tractags.db import TagSetup
-from tractags.web_ui import TagInputAutoComplete, TagRequestHandler
-from tractags.web_ui import TagTimelineEventFilter, TagTimelineEventProvider
+from ..api import TagSystem
+from ..db import TagSetup
+from ..web_ui import TagInputAutoComplete, TagRequestHandler
+from ..web_ui import TagTimelineEventFilter, TagTimelineEventProvider
+from . import makeSuite
 
 
 class _BaseTestCase(unittest.TestCase):
@@ -128,7 +129,7 @@ class TagRequestHandlerTestCase(_BaseTestCase):
 
     def test_matches(self):
         req = MockRequest(self.env, path_info='/tags', authname='reader')
-        self.assertEquals(True, self.tag_rh.match_request(req))
+        self.assertEqual(True, self.tag_rh.match_request(req))
 
     def test_get_main_page(self):
         req = MockRequest(self.env, path_info='/tags', authname='reader')
@@ -190,10 +191,10 @@ class TagTimelineEventProviderTestCase(_BaseTestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagInputAutoCompleteTestCase))
-    suite.addTest(unittest.makeSuite(TagRequestHandlerTestCase))
-    suite.addTest(unittest.makeSuite(TagTimelineEventFilterTestCase))
-    suite.addTest(unittest.makeSuite(TagTimelineEventProviderTestCase))
+    suite.addTest(makeSuite(TagInputAutoCompleteTestCase))
+    suite.addTest(makeSuite(TagRequestHandlerTestCase))
+    suite.addTest(makeSuite(TagTimelineEventFilterTestCase))
+    suite.addTest(makeSuite(TagTimelineEventProviderTestCase))
     return suite
 
 

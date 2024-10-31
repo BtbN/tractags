@@ -18,11 +18,11 @@ from trac.perm import (
 from trac.resource import Resource
 from trac.test import EnvironmentStub, MockRequest
 
-import tractags.api
-
-from tractags.db import TagSetup
-from tractags.ticket import TicketTagProvider
-from tractags.wiki import WikiTagProvider
+from .. import api
+from ..db import TagSetup
+from ..ticket import TicketTagProvider
+from ..wiki import WikiTagProvider
+from . import makeSuite
 
 
 class _BaseTestCase(unittest.TestCase):
@@ -39,7 +39,7 @@ class _BaseTestCase(unittest.TestCase):
         #   Revert these changes for getting default permissions inserted.
         self._revert_tractags_schema_init()
         setup.upgrade_environment()
-        self.tag_s = tractags.api.TagSystem(self.env)
+        self.tag_s = api.TagSystem(self.env)
 
     def tearDown(self):
         # Really close db connections.
@@ -71,7 +71,7 @@ class TagPolicyTestCase(_BaseTestCase):
                       ('wiki', 'RestrictedPage', 'classified'),
                       ('wiki', 'UserPage', 'private'),
                       ('wiki', 'UserPage', 'user:admin')])
-        self.check = tractags.api.TagPolicy(self.env).check_permission
+        self.check = api.TagPolicy(self.env).check_permission
         self.env.config.set('trac', 'permission_policies',
                             'TagPolicy, DefaultPermissionPolicy')
 
@@ -79,22 +79,22 @@ class TagPolicyTestCase(_BaseTestCase):
 
     def test_action_granted(self):
         resource = Resource('wiki', 'PublicPage')
-        self.assertEquals(self.check('WIKI_MODIFY', 'anonymous', resource,
-                                     PermissionCache(self.env)), True)
+        self.assertEqual(self.check('WIKI_MODIFY', 'anonymous', resource,
+                                    PermissionCache(self.env)), True)
 
     def test_action_revoked(self):
         resource = Resource('wiki', 'RestrictedPage')
-        self.assertEquals(self.check('WIKI_VIEW', 'anonymous', resource,
-                                     PermissionCache(self.env)), False)
+        self.assertEqual(self.check('WIKI_VIEW', 'anonymous', resource,
+                                    PermissionCache(self.env)), False)
 
     def test_meta_action_granted(self):
         resource = Resource('wiki', 'UserPage')
-        self.assertEquals(self.check('WIKI_DELETE', 'user', resource,
-                                     PermissionCache(self.env,
+        self.assertEqual(self.check('WIKI_DELETE', 'user', resource,
+                                    PermissionCache(self.env,
                                                      username='user')), True)
-        self.assertEquals(self.check('WIKI_DELETE', 'other', resource,
-                                     PermissionCache(self.env,
-                                                     username='other')), None)
+        self.assertEqual(self.check('WIKI_DELETE', 'other', resource,
+                                    PermissionCache(self.env,
+                                                    username='other')), None)
 
 
 class TagSystemTestCase(_BaseTestCase):
@@ -103,16 +103,16 @@ class TagSystemTestCase(_BaseTestCase):
 
     def test_available_actions(self):
         for action in self.actions:
-            self.failIf(action not in self.perms.get_actions())
+            self.assertFalse(action not in self.perms.get_actions())
 
     def test_available_providers(self):
         # Standard implementations of DefaultTagProvider should be registered.
         seen = []
         for provider in [TicketTagProvider(self.env),
                          WikiTagProvider(self.env)]:
-            self.failIf(provider not in self.tag_s.tag_providers)
+            self.assertFalse(provider not in self.tag_s.tag_providers)
             # Ensure unique provider references, a possible bug in Trac-0.11.
-            self.failIf(provider in seen)
+            self.assertFalse(provider in seen)
             seen.append(provider)
 
     def test_set_tags_no_perms(self):
@@ -134,13 +134,13 @@ class TagSystemTestCase(_BaseTestCase):
         #   reported as th:ticket:7857.
 
         req = MockRequest(self.env, authname='editor')
-        self.assertEquals([(res, tags) for res, tags in
-                           self.tag_s.query(req, query='')],
-                          [])
+        self.assertEqual([(res, tags) for res, tags in
+                          self.tag_s.query(req, query='')],
+                         [])
 
     def test_get_taggable_realms(self):
 
-        class HiddenTagProvider(tractags.api.DefaultTagProvider):
+        class HiddenTagProvider(api.DefaultTagProvider):
 
             implements(IPermissionRequestor)
 
@@ -158,22 +158,22 @@ class TagSystemTestCase(_BaseTestCase):
         all_realms = set(['hidden', 'ticket', 'wiki'])
         # Mock an anonymous request.
         req = MockRequest(self.env, authname='anonymous')
-        self.assertEquals(all_realms - set(['hidden']),
-                          self.tag_s.get_taggable_realms(req.perm))
+        self.assertEqual(all_realms - set(['hidden']),
+                         self.tag_s.get_taggable_realms(req.perm))
 
         self.perms.grant_permission('testuser', 'TEST_VIEW')
         req = MockRequest(self.env, authname='testuser')
-        self.assertEquals(all_realms,
-                          self.tag_s.get_taggable_realms(req.perm))
+        self.assertEqual(all_realms,
+                         self.tag_s.get_taggable_realms(req.perm))
         # Get realms unconditionally.
-        self.assertEquals(all_realms, self.tag_s.get_taggable_realms())
+        self.assertEqual(all_realms, self.tag_s.get_taggable_realms())
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(doctest.DocTestSuite(module=tractags.api))
-    suite.addTest(unittest.makeSuite(TagPolicyTestCase))
-    suite.addTest(unittest.makeSuite(TagSystemTestCase))
+    suite.addTest(doctest.DocTestSuite(module=api))
+    suite.addTest(makeSuite(TagPolicyTestCase))
+    suite.addTest(makeSuite(TagSystemTestCase))
     return suite
 
 

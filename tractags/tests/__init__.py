@@ -10,6 +10,10 @@
 import unittest
 
 
+def makeSuite(test):
+    return unittest.defaultTestLoader.loadTestsFromTestCase(test)
+
+
 def test_suite():
     suite = unittest.TestSuite()
 

@@ -13,7 +13,8 @@ import unittest
 
 from trac.test import EnvironmentStub
 
-from tractags.admin import TagChangeAdminPanel
+from ..admin import TagChangeAdminPanel
+from . import makeSuite
 
 
 class TagChangeAdminPanelTestCase(unittest.TestCase):
@@ -34,7 +35,7 @@ class TagChangeAdminPanelTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagChangeAdminPanelTestCase))
+    suite.addTest(makeSuite(TagChangeAdminPanelTestCase))
     return suite
 
 

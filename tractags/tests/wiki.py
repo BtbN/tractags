@@ -16,9 +16,10 @@ from trac.resource import Resource
 from trac.test import EnvironmentStub, MockRequest
 from trac.wiki.test import wikisyntax_test_suite
 
-from tractags.api import TagSystem
-from tractags.db import TagSetup
-from tractags.wiki import WikiTagProvider
+from ..api import TagSystem
+from ..db import TagSetup
+from ..wiki import WikiTagProvider
+from . import makeSuite
 
 
 def _revert_tractags_schema_init(env):
@@ -212,9 +213,9 @@ class WikiTagProviderTestCase(unittest.TestCase):
     def test_get_tags(self):
         resource = Resource('wiki', 'WikiStart')
         req = MockRequest(self.env, authname='editor')
-        self.assertEquals([tag for tag in
+        self.assertEqual([tag for tag in
                            self.tag_wp.get_resource_tags(req, resource)],
-                          self.tags)
+                         self.tags)
 
     def test_exclude_template_tags(self):
         # Populate table with more test data.
@@ -224,9 +225,9 @@ class WikiTagProviderTestCase(unittest.TestCase):
             VALUES ('wiki', 'PageTemplates/Template', 'tag2')
             """)
         tags = ['tag1', 'tag2']
-        self.assertEquals(list(self.tag_s.get_all_tags(req).keys()), self.tags)
+        self.assertEqual(sorted(self.tag_s.get_all_tags(req)), self.tags)
         self.env.config.set('tags', 'query_exclude_wiki_templates', False)
-        self.assertEquals(list(self.tag_s.get_all_tags(req).keys()), tags)
+        self.assertEqual(sorted(self.tag_s.get_all_tags(req)), tags)
 
     def test_set_tags_no_perms(self):
         resource = Resource('wiki', 'TaggedPage')
@@ -279,7 +280,7 @@ def wiki_teardown(tc):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(WikiTagProviderTestCase))
+    suite.addTest(makeSuite(WikiTagProviderTestCase))
     suite.addTest(wikisyntax_test_suite(TEST_CASES, wiki_setup,
                                         __file__, wiki_teardown))
     suite.addTest(wikisyntax_test_suite(TEST_NOPERM, wiki_setup_no_perm,

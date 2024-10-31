@@ -13,9 +13,10 @@ import unittest
 from trac.perm import PermissionCache, PermissionSystem
 from trac.test import EnvironmentStub, MockRequest
 
-from tractags.api import TagSystem
-from tractags.db import TagSetup
-from tractags.xmlrpc import TagRPC
+from ..api import TagSystem
+from ..db import TagSetup
+from ..xmlrpc import TagRPC
+from . import makeSuite
 
 
 class TagRPCTestCase(unittest.TestCase):
@@ -63,7 +64,7 @@ class TagRPCTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagRPCTestCase))
+    suite.addTest(makeSuite(TagRPCTestCase))
     return suite
 
 

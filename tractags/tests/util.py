@@ -12,7 +12,8 @@ import unittest
 
 from trac.test import EnvironmentStub
 
-from tractags.util import MockReq
+from ..util import MockReq
+from . import makeSuite
 
 
 class MockReqTestCase(unittest.TestCase):
@@ -34,7 +35,7 @@ class MockReqTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MockReqTestCase))
+    suite.addTest(makeSuite(MockReqTestCase))
     return suite
 
 

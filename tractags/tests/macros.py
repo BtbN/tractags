@@ -19,8 +19,10 @@ from trac.web.chrome import Chrome
 from trac.web.href import Href
 from trac.wiki.test import wikisyntax_test_suite
 
-from tractags.db import TagSetup
-from tractags.macros import TagWikiMacros, query_realms
+from ..db import TagSetup
+from ..macros import TagWikiMacros, query_realms
+
+from . import makeSuite
 
 
 def _revert_tractags_schema_init(env):
@@ -252,10 +254,10 @@ class TagCloudMacroTestCase(_BaseTestCase):
         self.assertFalse('">bar</a>' in result, repr(result))
 
         result = to_unicode(self._expand_macro('realm=unknown'))
-        self.assertEquals('No tags found', result)
+        self.assertEqual('No tags found', result)
 
         result = to_unicode(self._expand_macro('mincount=100'))
-        self.assertEquals('No tags found', result)
+        self.assertEqual('No tags found', result)
 
 
 class QueryRealmsTestCase(unittest.TestCase):
@@ -277,14 +279,14 @@ class QueryRealmsTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagTemplateProviderTestCase))
-    suite.addTest(unittest.makeSuite(ListTaggedMacroTestCase))
+    suite.addTest(makeSuite(TagTemplateProviderTestCase))
+    suite.addTest(makeSuite(ListTaggedMacroTestCase))
     suite.addTest(
         wikisyntax_test_suite(LISTTAGGED_MACRO_TEST_CASES, listtagged_setup,
                               __file__, listtagged_teardown,
                               enable_components=('trac.*', 'tractags.*')))
-    suite.addTest(unittest.makeSuite(TagCloudMacroTestCase))
-    suite.addTest(unittest.makeSuite(QueryRealmsTestCase))
+    suite.addTest(makeSuite(TagCloudMacroTestCase))
+    suite.addTest(makeSuite(QueryRealmsTestCase))
     return suite
 
 

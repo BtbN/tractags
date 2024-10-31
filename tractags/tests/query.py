@@ -9,7 +9,8 @@
 import doctest
 import unittest
 
-import tractags.query
+from .. import query
+from . import makeSuite
 
 
 class QueryTestCase(unittest.TestCase):
@@ -19,14 +20,14 @@ class QueryTestCase(unittest.TestCase):
         This as been reported as th:ticket:9057.
         """
         singlequote_phrase = r"""alpha'beta"gamma or 'alpha\'beta"gamma'"""
-        q = tractags.query.Query
-        self.assertEquals("""\
+        q = query.Query
+        self.assertEqual("""\
 (or
   ("alpha'beta\"gamma")
   ("alpha'beta\"gamma"))""", repr(q(singlequote_phrase)))
 
         doublequote_phrase = r'alpha or "beta\'gamma\"delta" or ""'
-        self.assertEquals("""\
+        self.assertEqual("""\
 (or
   ("alpha")
   (or
@@ -36,8 +37,8 @@ class QueryTestCase(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(doctest.DocTestSuite(module=tractags.query))
-    suite.addTest(unittest.makeSuite(QueryTestCase))
+    suite.addTest(doctest.DocTestSuite(module=query))
+    suite.addTest(makeSuite(QueryTestCase))
     return suite
 
 

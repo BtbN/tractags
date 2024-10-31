@@ -15,8 +15,9 @@ from trac.db import Table, Column, Index
 from trac.db.api import DatabaseManager
 from trac.test import EnvironmentStub
 
-from tractags import db_default
-from tractags.db import TagSetup
+from .. import db_default
+from ..db import TagSetup
+from . import makeSuite
 
 
 class TagSetupTestCase(unittest.TestCase):
@@ -57,7 +58,7 @@ class TagSetupTestCase(unittest.TestCase):
         # Current tractags schema is setup with enabled component anyway.
         #   Revert these changes for clean install testing.
         self._revert_tractags_schema_init()
-        self.assertEquals(0, setup.get_schema_version())
+        self.assertEqual(0, setup.get_schema_version())
         self.assertTrue(setup.environment_needs_upgrade())
 
         setup.upgrade_environment()
@@ -66,9 +67,9 @@ class TagSetupTestCase(unittest.TestCase):
             cursor = db.cursor()
             cursor.execute("SELECT * FROM tags")
             cols = [col[0] for col in self._get_cursor_description(cursor)]
-            self.assertEquals([], cursor.fetchall())
-            self.assertEquals(['tagspace', 'name', 'tag'], cols)
-        self.assertEquals(db_default.schema_version, self.get_db_version())
+            self.assertEqual([], cursor.fetchall())
+            self.assertEqual(['tagspace', 'name', 'tag'], cols)
+        self.assertEqual(db_default.schema_version, self.get_db_version())
 
     def test_upgrade_schema_v1(self):
         # Ancient, unversioned schema - wiki only.
@@ -94,8 +95,8 @@ class TagSetupTestCase(unittest.TestCase):
                   VALUES ('WikiStart', 'tag')""")
 
         tags = self.env.db_query("SELECT * FROM wiki_namespace")
-        self.assertEquals([('WikiStart', 'tag')], tags)
-        self.assertEquals(1, setup.get_schema_version())
+        self.assertEqual([('WikiStart', 'tag')], tags)
+        self.assertEqual(1, setup.get_schema_version())
         self.assertTrue(setup.environment_needs_upgrade())
 
         setup.upgrade_environment()
@@ -106,9 +107,9 @@ class TagSetupTestCase(unittest.TestCase):
             tags = cursor.fetchall()
             cols = [col[0] for col in self._get_cursor_description(cursor)]
             # Db content should be migrated.
-            self.assertEquals([('wiki', 'WikiStart', 'tag')], tags)
-            self.assertEquals(['tagspace', 'name', 'tag'], cols)
-            self.assertEquals(db_default.schema_version, self.get_db_version())
+            self.assertEqual([('wiki', 'WikiStart', 'tag')], tags)
+            self.assertEqual(['tagspace', 'name', 'tag'], cols)
+            self.assertEqual(db_default.schema_version, self.get_db_version())
 
     def test_upgrade_schema_v2(self):
         # Just register a current, but unversioned schema.
@@ -136,8 +137,8 @@ class TagSetupTestCase(unittest.TestCase):
                   VALUES ('wiki', 'WikiStart', 'tag')""")
 
         tags = self.env.db_query("SELECT * FROM tags")
-        self.assertEquals([('wiki', 'WikiStart', 'tag')], tags)
-        self.assertEquals(2, setup.get_schema_version())
+        self.assertEqual([('wiki', 'WikiStart', 'tag')], tags)
+        self.assertEqual(2, setup.get_schema_version())
         self.assertTrue(setup.environment_needs_upgrade())
 
         setup.upgrade_environment()
@@ -148,9 +149,9 @@ class TagSetupTestCase(unittest.TestCase):
             tags = cursor.fetchall()
             cols = [col[0] for col in self._get_cursor_description(cursor)]
             # Db should be unchanged.
-            self.assertEquals([('wiki', 'WikiStart', 'tag')], tags)
-            self.assertEquals(['tagspace', 'name', 'tag'], cols)
-            self.assertEquals(db_default.schema_version, self.get_db_version())
+            self.assertEqual([('wiki', 'WikiStart', 'tag')], tags)
+            self.assertEqual(['tagspace', 'name', 'tag'], cols)
+            self.assertEqual(db_default.schema_version, self.get_db_version())
 
     def test_upgrade_schema_v3(self):
         # Add table for tag change records to the schema.
@@ -177,7 +178,7 @@ class TagSetupTestCase(unittest.TestCase):
             db("""INSERT INTO system (name, value)
                   VALUES ('tags_version', '3')""")
 
-        self.assertEquals(3, setup.get_schema_version())
+        self.assertEqual(3, setup.get_schema_version())
         self.assertTrue(setup.environment_needs_upgrade())
 
         setup.upgrade_environment()
@@ -186,14 +187,14 @@ class TagSetupTestCase(unittest.TestCase):
             cursor = db.cursor()
             cursor.execute("SELECT * FROM tags_change")
             cols = [col[0] for col in self._get_cursor_description(cursor)]
-            self.assertEquals(['tagspace', 'name', 'time', 'author',
-                               'oldtags', 'newtags'], cols)
-        self.assertEquals(db_default.schema_version, self.get_db_version())
+            self.assertEqual(['tagspace', 'name', 'time', 'author',
+                              'oldtags', 'newtags'], cols)
+        self.assertEqual(db_default.schema_version, self.get_db_version())
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TagSetupTestCase))
+    suite.addTest(makeSuite(TagSetupTestCase))
     return suite
 
 

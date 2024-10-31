@@ -18,9 +18,10 @@ from trac.test import EnvironmentStub, MockRequest
 from trac.ticket.model import Ticket
 from trac.util.text import to_unicode
 
-from tractags.api import TagSystem
-from tractags.db import TagSetup
-from tractags.ticket import TicketTagProvider
+from ..api import TagSystem
+from ..db import TagSetup
+from ..ticket import TicketTagProvider
+from . import makeSuite
 
 try:
     dict.iteritems
@@ -96,14 +97,14 @@ class TicketTagProviderTestCase(unittest.TestCase):
     def test_get_tagged_resources(self):
         # No tags, no restrictions, all resources.
         req = MockRequest(self.env, authname='editor')
-        self.assertEquals(
+        self.assertEqual(
             [r for r in
              self.provider.get_tagged_resources(req, None)][0][1],
             set(self.tags))
         # Force fine-grained perm-check check for all tags, not just the one
         # from query.
         self.provider.fast_permcheck = False
-        self.assertEquals(
+        self.assertEqual(
             [r for r in
              self.provider.get_tagged_resources(req,
                                                 set(self.tags[:1]))][0][1],
@@ -127,7 +128,7 @@ class TicketTagProviderTestCase(unittest.TestCase):
         ticket['keywords'] = tags[0]
         # Tags get updated by TicketChangeListener method.
         ticket.save_changes(req.authname)
-        self.assertEquals(list(self.tag_sys.get_all_tags(req).keys()), tags)
+        self.assertEqual(list(self.tag_sys.get_all_tags(req).keys()), tags)
 
     def test_remove_tags(self):
         req = MockRequest(self.env, authname='editor')
@@ -139,12 +140,12 @@ class TicketTagProviderTestCase(unittest.TestCase):
         # Shouldn't raise an error with appropriate permission.
         self.provider.remove_resource_tags(req, resource, 'comment')
         ticket = Ticket(self.env, 1)
-        self.assertEquals(ticket['keywords'], '')
+        self.assertEqual(ticket['keywords'], '')
 
     def test_describe_tagged_resource(self):
         req = MockRequest(self.env, authname='editor')
         resource = Resource('ticket', 1)
-        self.assertEquals(
+        self.assertEqual(
             self.provider.describe_tagged_resource(req, resource),
             'defect: summary')
 
@@ -152,23 +153,23 @@ class TicketTagProviderTestCase(unittest.TestCase):
         req = MockRequest(self.env, authname='editor')
         ticket = self._create_ticket(self.tags, reporter='anonymous')
         tags = self.provider.get_resource_tags(req, ticket.resource)
-        self.assertEquals(tags, set(self.tags))
+        self.assertEqual(tags, set(self.tags))
 
     def test_update_ticket_by_anonymous(self):
         req = MockRequest(self.env, authname='editor')
         ticket = self._create_ticket([])
         tags = self.provider.get_resource_tags(req, ticket.resource)
-        self.assertEquals(tags, set([]))
+        self.assertEqual(tags, set([]))
 
         ticket['keywords'] = ', '.join(self.tags)
         ticket.save_changes('anonymous', comment='Adding keywords')
         tags = self.provider.get_resource_tags(req, ticket.resource)
-        self.assertEquals(tags, set(self.tags))
+        self.assertEqual(tags, set(self.tags))
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TicketTagProviderTestCase))
+    suite.addTest(makeSuite(TicketTagProviderTestCase))
     return suite
 
 
