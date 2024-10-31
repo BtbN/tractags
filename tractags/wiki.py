@@ -15,6 +15,7 @@ import re
 from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.resource import Resource, render_resource_link, get_resource_url
+from trac.util import lazy
 from trac.util.datefmt import to_utimestamp
 from trac.util.html import Fragment, Markup, tag
 from trac.util.text import to_unicode
@@ -96,9 +97,6 @@ class WikiTagInterface(TagTemplateProvider):
     """[main] Implements the user interface for tagging Wiki pages."""
 
     implements(IRequestFilter, IWikiChangeListener, IWikiPageManipulator)
-
-    def __init__(self):
-        self.tag_system = TagSystem(self.env)
 
     # IRequestFilter methods
 
@@ -182,6 +180,11 @@ class WikiTagInterface(TagTemplateProvider):
         pass
 
     # Internal methods
+
+    @lazy
+    def tag_system(self):
+        return TagSystem(self.env)
+
     def _page_tags(self, req):
         pagename = req.args.get('page', 'WikiStart')
         # 'version' and 'tags_version' are part of the url
@@ -319,9 +322,6 @@ class TagWikiSyntaxProvider(Component):
 
     implements(IWikiSyntaxProvider)
 
-    def __init__(self):
-        self.tag_system = TagSystem(self.env)
-
     # IWikiSyntaxProvider methods
 
     def get_wiki_syntax(self):
@@ -347,6 +347,12 @@ class TagWikiSyntaxProvider(Component):
     def get_link_resolvers(self):
         return [('tag', self._format_tagged),
                 ('tagged', self._format_tagged)]
+
+    # Internal methods
+
+    @lazy
+    def tag_system(self):
+        return TagSystem(self.env)
 
     def _format_tagged(self, formatter, ns, target, label, fullmatch=None):
         """Tag and tag query expression link formatter."""

@@ -8,6 +8,7 @@
 
 from trac.core import Component, implements
 from trac.resource import Resource, ResourceNotFound, resource_exists
+from trac.util import lazy
 
 from tracrpc.api import IXMLRPCHandler
 
@@ -23,9 +24,6 @@ class TagRPC(Component):
     """
 
     implements(IXMLRPCHandler)
-
-    def __init__(self):
-        self.tag_system = TagSystem(self.env)
 
     # IXMLRPCHandler methods
 
@@ -101,6 +99,10 @@ class TagRPC(Component):
         return split_into_tags(tag_str)
 
     # Private methods
+
+    @lazy
+    def tag_system(self):
+        return TagSystem(self.env)
 
     def _get_tags(self, req, resource):
         if not resource_exists(self.env, resource):

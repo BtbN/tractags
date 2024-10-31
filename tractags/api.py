@@ -21,7 +21,7 @@ from trac.perm import IPermissionPolicy, IPermissionRequestor
 from trac.perm import PermissionError, PermissionSystem
 from trac.resource import IResourceManager, get_resource_url
 from trac.resource import get_resource_description
-from trac.util import get_reporter_id
+from trac.util import get_reporter_id, lazy
 from trac.util.text import to_unicode
 from trac.util.translation import domain_functions
 from trac.wiki.model import WikiPage
@@ -238,15 +238,10 @@ class TagSystem(Component):
     wiki_page_prefix = Option('tags', 'wiki_page_prefix', '',
         doc="Prefix for tag wiki page names.")
 
-    # Internal variables
-    _realm_provider_map = None
-
     def __init__(self):
         # Bind the 'tractags' catalog to the specified locale directory.
         locale_dir = pkg_resources.resource_filename(__name__, 'locale')
         add_domain(self.env.path, locale_dir)
-
-        self._populate_provider_map()
 
     # Public methods
 
@@ -458,12 +453,10 @@ class TagSystem(Component):
 
     # Internal methods
 
-    def _populate_provider_map(self):
-        if self._realm_provider_map is None:
-            # Only use the map once it is fully initialized.
-            map = dict((provider.get_taggable_realm(), provider)
-                       for provider in self.tag_providers)
-            self._realm_provider_map = map
+    @lazy
+    def _realm_provider_map(self):
+        return dict((provider.get_taggable_realm(), provider)
+                    for provider in self.tag_providers)
 
     def _get_provider(self, realm):
         try:
