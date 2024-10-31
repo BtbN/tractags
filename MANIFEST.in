@@ -1,0 +1,7 @@
+include COPYING
+include changelog
+include messages.cfg
+include tractags/htdocs/css/*
+include tractags/htdocs/js/*
+include tractags/locale/*/LC_MESSAGES/tractags.po
+include tractags/templates/*.html
