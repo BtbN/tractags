@@ -34,6 +34,7 @@ from tractags.macros import TagTemplateProvider
 from tractags.model import delete_tags, tag_changes
 from tractags.web_ui import render_tag_changes
 from tractags.util import JTransformer, MockReq, query_realms, split_into_tags
+from tractags.query import InvalidQuery
 
 
 try:
@@ -403,5 +404,7 @@ def iter_is_empty(i):
     try:
         next_iter(i)
     except StopIteration:
+        return True
+    except InvalidQuery:
         return True
     return False
